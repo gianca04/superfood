@@ -68,8 +68,9 @@ Route::get('/storage-link', function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/actas/{id}/exportar-excel', [ExcelExportController::class, 'export'])
-        ->name('actas.export.excel');
+    // Una sola ruta que descarga el Excel directamente
+    Route::get('/actas/{id}/excel', [ExcelExportController::class, 'downloadActaExcel'])
+        ->name('actas.excel');
 });
 
 Route::get('/crear-symlink', function () {

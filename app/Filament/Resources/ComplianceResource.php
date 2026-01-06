@@ -39,26 +39,44 @@ class ComplianceResource extends Resource
                             ->searchable()
                             ->required()
                             ->live()
-                            ->afterStateUpdated(function (Set $set, ?string $state) {
+                            ->afterStateHydrated(function (Set $set, ?string $state) {
+                                // Se ejecuta cuando se carga el formulario (edit)
                                 if ($state) {
                                     $project = Project::with(['subClient.client'])->find($state);
-                                    
+
                                     if ($project) {
                                         $subClient = $project->subClient;
                                         $client = $subClient?->client;
-                                        
+
+                                        $set('razon_social', $client?->business_name ?? '');
+                                        $set('ruc', $client?->document_number ?? '');
+                                        $set('tienda', $subClient?->name ?? '');
+                                        $set('direccion', $subClient?->address ?? '');
+                                        $set('start_date', $project->start_date?->format('Y-m-d'));
+                                        $set('end_date', $project->end_date?->format('Y-m-d'));
+                                    }
+                                }
+                            })
+                            ->afterStateUpdated(function (Set $set, ?string $state) {
+                                if ($state) {
+                                    $project = Project::with(['subClient.client'])->find($state);
+
+                                    if ($project) {
+                                        $subClient = $project->subClient;
+                                        $client = $subClient?->client;
+
                                         // A1) Razón Social - desde Client
                                         $set('razon_social', $client?->business_name ?? '');
-                                        
+
                                         // R.U.C. - desde Client (document_number)
                                         $set('ruc', $client?->document_number ?? '');
-                                        
+
                                         // A2) Tienda - desde SubClient (name)
                                         $set('tienda', $subClient?->name ?? '');
-                                        
+
                                         // Dirección - desde SubClient (address)
                                         $set('direccion', $subClient?->address ?? '');
-                                        
+
                                         // Fechas desde Project
                                         $set('start_date', $project->start_date?->format('Y-m-d'));
                                         $set('end_date', $project->end_date?->format('Y-m-d'));
@@ -125,10 +143,10 @@ class ComplianceResource extends Resource
                                     ->label('Cantidad')
                                     ->numeric()
                                     ->minValue(0)
-                                    ->visible(fn (Get $get) => $get('assets.tablero_autosoportado.selected')),
+                                    ->visible(fn(Get $get) => $get('assets.tablero_autosoportado.selected')),
                                 Forms\Components\TextInput::make('assets.tablero_autosoportado.comments')
                                     ->label('Comentarios')
-                                    ->visible(fn (Get $get) => $get('assets.tablero_autosoportado.selected')),
+                                    ->visible(fn(Get $get) => $get('assets.tablero_autosoportado.selected')),
                             ])->columns(3),
 
                         // 2. Tablero Adosados
@@ -142,10 +160,10 @@ class ComplianceResource extends Resource
                                     ->label('Cantidad')
                                     ->numeric()
                                     ->minValue(0)
-                                    ->visible(fn (Get $get) => $get('assets.tablero_adosados.selected')),
+                                    ->visible(fn(Get $get) => $get('assets.tablero_adosados.selected')),
                                 Forms\Components\TextInput::make('assets.tablero_adosados.comments')
                                     ->label('Comentarios')
-                                    ->visible(fn (Get $get) => $get('assets.tablero_adosados.selected')),
+                                    ->visible(fn(Get $get) => $get('assets.tablero_adosados.selected')),
                             ])->columns(3),
 
                         // 3. Banco de Condensadores
@@ -159,10 +177,10 @@ class ComplianceResource extends Resource
                                     ->label('Cantidad')
                                     ->numeric()
                                     ->minValue(0)
-                                    ->visible(fn (Get $get) => $get('assets.banco_condensadores.selected')),
+                                    ->visible(fn(Get $get) => $get('assets.banco_condensadores.selected')),
                                 Forms\Components\TextInput::make('assets.banco_condensadores.comments')
                                     ->label('Comentarios')
-                                    ->visible(fn (Get $get) => $get('assets.banco_condensadores.selected')),
+                                    ->visible(fn(Get $get) => $get('assets.banco_condensadores.selected')),
                             ])->columns(3),
 
                         // 4. Pozos a Tierra Baja Tensión
@@ -176,10 +194,10 @@ class ComplianceResource extends Resource
                                     ->label('Cantidad')
                                     ->numeric()
                                     ->minValue(0)
-                                    ->visible(fn (Get $get) => $get('assets.pozos_baja_tension.selected')),
+                                    ->visible(fn(Get $get) => $get('assets.pozos_baja_tension.selected')),
                                 Forms\Components\TextInput::make('assets.pozos_baja_tension.comments')
                                     ->label('Comentarios')
-                                    ->visible(fn (Get $get) => $get('assets.pozos_baja_tension.selected')),
+                                    ->visible(fn(Get $get) => $get('assets.pozos_baja_tension.selected')),
                             ])->columns(3),
 
                         // 5. Pozos a Tierra Media Tensión
@@ -193,18 +211,31 @@ class ComplianceResource extends Resource
                                     ->label('Cantidad')
                                     ->numeric()
                                     ->minValue(0)
-                                    ->visible(fn (Get $get) => $get('assets.pozos_media_tension.selected')),
+                                    ->visible(fn(Get $get) => $get('assets.pozos_media_tension.selected')),
                                 Forms\Components\TextInput::make('assets.pozos_media_tension.comments')
                                     ->label('Comentarios')
-                                    ->visible(fn (Get $get) => $get('assets.pozos_media_tension.selected')),
+                                    ->visible(fn(Get $get) => $get('assets.pozos_media_tension.selected')),
                             ])->columns(3),
                     ]),
 
                 Forms\Components\Section::make('SECCIÓN B2: Observaciones')
                     ->schema([
-                        Forms\Components\Textarea::make('maintenance_observations')
+                        Forms\Components\RichEditor::make('maintenance_observations')
                             ->label('Observaciones Generales de Mantenimiento')
-                            ->rows(4),
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'strike',
+                                'bulletList',
+                                'orderedList',
+                                'h2',
+                                'h3',
+                                'blockquote',
+                                'redo',
+                                'undo',
+                            ])
+                            ->columnSpanFull(),
                     ]),
             ]);
     }
@@ -235,7 +266,19 @@ class ComplianceResource extends Resource
                     ->sortable(),
             ])
             ->actions([
-                //EditAction::make(),
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('downloadExcel')
+        ->label('Excel')
+        ->icon('heroicon-o-document-arrow-down')
+        ->color('success')
+        ->url(fn (Compliance $record) => route('actas.excel', $record->id))
+        ->openUrlInNewTab(),
+    Tables\Actions\Action::make('downloadPdf')
+        ->label('PDF')
+        ->icon('heroicon-o-document-text')
+        ->color('danger')
+        ->url(fn (Compliance $record) => '#') // TODO: implementar
+        ->openUrlInNewTab(),
             ])
             ->bulkActions([
                 DeleteBulkAction::make(),
