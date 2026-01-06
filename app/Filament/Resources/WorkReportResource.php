@@ -69,7 +69,7 @@ class WorkReportResource extends Resource
                                                 ->when($get('search'), function ($query, $search) {
                                                     $query->where('first_name', 'like', "%{$search}%")
                                                         ->orWhere('last_name', 'like', "%{$search}%")
-                                                        ->orWhere('document_number', 'like', "%{$search}%");
+                                                        ->orWhere('document_numbers', 'like', "%{$search}%");
                                                 })
                                                 ->get()
                                                 ->mapWithKeys(function ($employee) {

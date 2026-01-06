@@ -16,16 +16,17 @@ use Filament\Tables;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
+use Saade\FilamentAutograph\Forms\Components\SignaturePad;
 
 class ComplianceResource extends Resource
 {
     protected static ?string $model = Compliance::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-check';
+    protected static ?string $navigationLabel = 'Actas de Conformidad';
 
-    protected static ?string $navigationLabel = 'Compliance Acts';
-
-    protected static ?string $pluralModelLabel = 'Compliance Acts';
+    protected static ?string $pluralModelLabel = 'Actas de Conformidad';
 
     public static function form(Form $form): Form
     {
@@ -237,6 +238,82 @@ class ComplianceResource extends Resource
                             ])
                             ->columnSpanFull(),
                     ]),
+
+                Forms\Components\Section::make('SECCIÓN C: Responsabilidad de la conformidad y firmas')
+                    ->schema([
+                        // Cliente
+                        Forms\Components\Fieldset::make('Cliente')
+                            ->schema([
+                                Forms\Components\TextInput::make('fullname_cliente')
+                                    ->label('Nombre Completo')
+                                    ->required(),
+                                Forms\Components\Select::make('document_type')
+                                    ->label('Tipo de Documento')
+                                    ->options([
+                                        'DNI' => 'DNI',
+                                        'CARNET DE EXTRANJERIA' => 'Carnet de Extranjería',
+                                        'PASAPORTE' => 'Pasaporte',
+                                    ])
+                                    ->default('DNI')
+                                    ->required()
+                                    ->live(),
+                                Forms\Components\TextInput::make('document_number')
+                                    ->label('Número de Documento')
+                                    ->required()
+                                    ->numeric()
+                                    ->minLength(fn(Get $get) => $get('document_type') === 'DNI' ? 8 : 9)
+                                    ->maxLength(fn(Get $get) => $get('document_type') === 'DNI' ? 8 : 12)
+                                    ->hint(fn(Get $get) => match ($get('document_type')) {
+                                        'DNI' => 'DNI: 8 dígitos',
+                                        'CARNET DE EXTRANJERIA' => 'Carnet: 9-12 dígitos',
+                                        'PASAPORTE' => 'Pasaporte: 9-12 caracteres',
+                                        default => ''
+                                    }),
+                                SignaturePad::make('client_signature')
+                                    ->label('Firma del Cliente')
+                                    ->dotSize(2.0)
+                                    ->penColor('#000')
+                                    ->penColorOnDark('#00f')
+                                    ->lineMinWidth(0.2)
+                                    ->lineMaxWidth(2.5)
+                                    ->throttle(16)
+                                    ->minDistance(5)
+                                    ->velocityFilterWeight(0.7)
+                                    ->confirmable(),
+                            ])->columns(2),
+
+                        // Empleado
+                        Forms\Components\Fieldset::make('Empleado')
+                            ->schema([
+                                Forms\Components\Placeholder::make('employee_info')
+                                    ->label('Datos del Empleado')
+                                    ->content(function () {
+                                        $employee = Auth::user()?->employee;
+                                        if (!$employee) return 'No identificado';
+
+                                        return new \Illuminate\Support\HtmlString("
+                                            <div class='text-sm shadow-sm p-3 border rounded-lg bg-gray-50 dark:bg-gray-800'>
+                                                <p><strong>Nombre:</strong> {$employee->first_name} {$employee->last_name}</p>
+                                                <p><strong>{$employee->document_type}:</strong> {$employee->document_number}</p>
+                                            </div>
+                                        ");
+                                    })
+                                    ->columnSpanFull(),
+
+                                SignaturePad::make('employee_signature')
+                                    ->label('Firma validado por supervisor / técnico')
+                                    ->dotSize(2.0)
+                                    ->penColor('#000')
+                                    ->penColorOnDark('#00f')
+                                    ->lineMinWidth(0.2)
+                                    ->lineMaxWidth(2.5)
+                                    ->throttle(16)
+                                    ->minDistance(5)
+                                    ->velocityFilterWeight(0.7)
+                                    ->confirmable()
+                                    ->columnSpanFull(),
+                            ]),
+                    ]),
             ]);
     }
 
@@ -268,17 +345,17 @@ class ComplianceResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('downloadExcel')
-        ->label('Excel')
-        ->icon('heroicon-o-document-arrow-down')
-        ->color('success')
-        ->url(fn (Compliance $record) => route('actas.excel', $record->id))
-        ->openUrlInNewTab(),
-    Tables\Actions\Action::make('downloadPdf')
-        ->label('PDF')
-        ->icon('heroicon-o-document-text')
-        ->color('danger')
-        ->url(fn (Compliance $record) => '#') // TODO: implementar
-        ->openUrlInNewTab(),
+                    ->label('Excel')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->color('success')
+                    ->url(fn(Compliance $record) => route('actas.excel', $record->id))
+                    ->openUrlInNewTab(),
+                Tables\Actions\Action::make('downloadPdf')
+                    ->label('PDF')
+                    ->icon('heroicon-o-document-text')
+                    ->color('danger')
+                    ->url(fn(Compliance $record) => route('actas.pdf', $record->id))
+                    ->openUrlInNewTab(),
             ])
             ->bulkActions([
                 DeleteBulkAction::make(),

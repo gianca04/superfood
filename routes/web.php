@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ExcelExportController;
 use App\Http\Controllers\VisitReportPdfController;
+use App\Http\Controllers\WorkReportExcelController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WorkReportPdfController;
 use App\Http\Controllers\WorkReportConsolidatedController;
@@ -71,6 +72,11 @@ Route::middleware(['auth'])->group(function () {
     // Una sola ruta que descarga el Excel directamente
     Route::get('/actas/{id}/excel', [ExcelExportController::class, 'downloadActaExcel'])
         ->name('actas.excel');
+    Route::get('/actas/{id}/pdf', [ExcelExportController::class, 'downloadActaPdf'])->name('actas.pdf');
+
+    Route::get('/work-report/{workReport}/xls', [WorkReportExcelController::class, 'generateReport'])
+    ->name('work-report.xls')
+    ->middleware('auth');
 });
 
 Route::get('/crear-symlink', function () {

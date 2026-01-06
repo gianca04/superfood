@@ -15,6 +15,11 @@ class Compliance extends Model
         'project_id',
         'assets',
         'maintenance_observations',
+        'fullname_cliente',
+        'document_type',
+        'document_number',
+        'client_signature', //firma cliente
+        'employee_signature', //firma empleado
     ];
 
     protected $casts = [
