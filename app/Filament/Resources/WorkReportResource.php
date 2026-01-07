@@ -16,6 +16,7 @@ use Closure;
 use Illuminate\Validation\ValidationException;
 use App\Models\Quote;
 use App\Models\SubClient;
+use App\Models\Position;
 use Illuminate\Support\Facades\Auth;
 use App\Models\WorkReport;
 use Filament\Forms;
@@ -596,10 +597,19 @@ class WorkReportResource extends Resource
                                 // INICIO DE INPUT DE FECHA
                                 Forms\Components\DatePicker::make('report_date')
                                     ->label('Fecha')
-                                    ->native(false) // Desactiva el selector nativo para usar el de Filament
+                                    ->native(false)
                                     ->displayFormat('d/m/Y')
                                     ->required()
-                                    ->helperText('Selecciona la fecha y hora del trabajo'),
+                                    ->helperText('Selecciona la fecha del trabajo o presiona el botón para establecer hoy')
+                                    ->suffixAction(
+                                        Forms\Components\Actions\Action::make('set_today')
+                                            ->icon('heroicon-o-calendar')
+                                            ->tooltip('Establecer fecha de hoy')
+                                            ->color('primary')
+                                            ->action(function (callable $set) {
+                                                $set('report_date', now()->format('Y-m-d'));
+                                            })
+                                    ),
                                 // FIN DE INPUT DE FECHA
 
                                 // INICIO DE INPUT DE HORA DE INICIO
@@ -732,11 +742,208 @@ class WorkReportResource extends Resource
                         // INICIO DEL TAB DE LISTA DE PERSONAL
                         Tabs\Tab::make('Personal')
                             ->icon('heroicon-o-user-group')
-                            ->columns(2)
+                            ->columns(1)
                             ->schema([
-                                \App\Forms\Components\PersonnelTable::make('personnel')
+                                Forms\Components\Repeater::make('personnel')
                                     ->label('Personal que realizó el trabajo')
                                     ->helperText('Agrega el personal que participó en el trabajo y las horas hombre.')
+                                    ->schema([
+                                        Forms\Components\Grid::make(6)
+                                            ->schema([
+                                                Forms\Components\Toggle::make('is_custom_text')
+                                                    ->label('Texto libre')
+                                                    ->helperText('Escribir nombre manualmente')
+                                                    ->default(false)
+                                                    ->live()
+                                                    ->afterStateUpdated(function (callable $set) {
+                                                        $set('employee_id', null);
+                                                        $set('employee_name', null);
+                                                        $set('position_id', null);
+                                                    })
+                                                    ->columnSpan(1),
+
+                                                // Select para empleado (visible cuando is_custom_text = false)
+                                                Forms\Components\Select::make('employee_id')
+                                                    ->label('Empleado')
+                                                    ->placeholder('Seleccionar empleado...')
+                                                    ->options(fn() => Employee::where('active', true)
+                                                        ->orderBy('first_name')
+                                                        ->get()
+                                                        ->mapWithKeys(fn($e) => [$e->id => $e->first_name . ' ' . $e->last_name]))
+                                                    ->searchable()
+                                                    ->preload()
+                                                    ->live()
+                                                    ->visible(fn(callable $get) => !$get('is_custom_text'))
+                                                    ->afterStateUpdated(function ($state, callable $set) {
+                                                        if ($state) {
+                                                            $employee = Employee::with('position')->find($state);
+                                                            if ($employee) {
+                                                                $set('employee_name', $employee->first_name . ' ' . $employee->last_name);
+                                                                $set('position_id', $employee->position_id);
+                                                                $set('position_name', $employee->position?->name);
+                                                            }
+                                                        } else {
+                                                            $set('employee_name', null);
+                                                            $set('position_id', null);
+                                                            $set('position_name', null);
+                                                        }
+                                                    })
+                                                    ->createOptionForm([
+                                                        Forms\Components\Section::make('Nuevo Empleado')
+                                                            ->description('Datos básicos del empleado')
+                                                            ->schema([
+                                                                Forms\Components\TextInput::make('first_name')
+                                                                    ->label('Nombres')
+                                                                    ->required()
+                                                                    ->maxLength(255),
+                                                                Forms\Components\TextInput::make('last_name')
+                                                                    ->label('Apellidos')
+                                                                    ->required()
+                                                                    ->maxLength(255),
+                                                                Forms\Components\Select::make('document_type')
+                                                                    ->label('Tipo de documento')
+                                                                    ->options([
+                                                                        'DNI' => 'DNI',
+                                                                        'PASAPORTE' => 'Pasaporte',
+                                                                        'CARNET DE EXTRANJERIA' => 'Carné de Extranjería',
+                                                                    ])
+                                                                    ->default('DNI'),
+                                                                Forms\Components\TextInput::make('document_number')
+                                                                    ->label('Número de documento')
+                                                                    ->required()
+                                                                    ->maxLength(20),
+                                                                Forms\Components\Select::make('position_id')
+                                                                    ->label('Cargo')
+                                                                    ->options(fn() => Position::orderBy('name')->pluck('name', 'id'))
+                                                                    ->searchable()
+                                                                    ->preload(),
+                                                            ])
+                                                            ->columns(2),
+                                                    ])
+                                                    ->createOptionUsing(function (array $data): int {
+                                                        $data['active'] = true;
+                                                        $employee = Employee::create($data);
+                                                        return $employee->id;
+                                                    })
+                                                    ->createOptionAction(function (FormAction $action) {
+                                                        return $action
+                                                            ->modalHeading('Crear nuevo empleado')
+                                                            ->modalButton('Crear empleado')
+                                                            ->modalWidth('2xl');
+                                                    })
+                                                    ->columnSpan(1),
+
+                                                // TextInput para nombre manual (visible cuando is_custom_text = true)
+                                                Forms\Components\TextInput::make('employee_name')
+                                                    ->label('Nombre del personal')
+                                                    ->placeholder('Escribir nombre...')
+                                                    ->visible(fn(callable $get) => $get('is_custom_text'))
+                                                    ->required(fn(callable $get) => $get('is_custom_text'))
+                                                    ->maxLength(255)
+                                                    ->columnSpan(1),
+
+                                                Forms\Components\TextInput::make('hh')
+                                                    ->label('H.H')
+                                                    ->numeric()
+                                                    ->step(0.5)
+                                                    ->minValue(0)
+                                                    ->placeholder('0')
+                                                    ->suffix('hrs')
+                                                    ->columnSpan(1),
+
+                                                Forms\Components\Toggle::make('is_custom_position')
+                                                    ->label('Cargo libre')
+                                                    ->helperText('Escribir cargo manualmente')
+                                                    ->default(false)
+                                                    ->live()
+                                                    ->afterStateUpdated(function (callable $set) {
+                                                        $set('position_id', null);
+                                                        $set('position_name', null);
+                                                    })
+                                                    ->columnSpan(1),
+
+                                                // Select para cargo (visible cuando is_custom_position = false)
+                                                Forms\Components\Select::make('position_id')
+                                                    ->label('Cargo')
+                                                    ->placeholder('Seleccionar cargo...')
+                                                    ->options(fn() => Position::orderBy('name')->pluck('name', 'id'))
+                                                    ->searchable()
+                                                    ->preload()
+                                                    ->live()
+                                                    ->visible(fn(callable $get) => !$get('is_custom_position'))
+                                                    ->afterStateUpdated(function ($state, callable $set) {
+                                                        if ($state) {
+                                                            $position = Position::find($state);
+                                                            if ($position) {
+                                                                $set('position_name', $position->name);
+                                                            }
+                                                        } else {
+                                                            $set('position_name', null);
+                                                        }
+                                                    })
+                                                    ->createOptionForm([
+                                                        Forms\Components\TextInput::make('name')
+                                                            ->label('Nombre del cargo')
+                                                            ->required()
+                                                            ->maxLength(255),
+                                                    ])
+                                                    ->createOptionUsing(function (array $data): int {
+                                                        $position = Position::create($data);
+                                                        return $position->id;
+                                                    })
+                                                    ->createOptionAction(function (FormAction $action) {
+                                                        return $action
+                                                            ->modalHeading('Crear nuevo cargo')
+                                                            ->modalButton('Crear cargo')
+                                                            ->modalWidth('md');
+                                                    })
+                                                    ->columnSpan(1),
+
+                                                // TextInput para cargo manual (visible cuando is_custom_position = true)
+                                                Forms\Components\TextInput::make('position_name')
+                                                    ->label('Nombre del cargo')
+                                                    ->placeholder('Escribir cargo...')
+                                                    ->visible(fn(callable $get) => $get('is_custom_position'))
+                                                    ->maxLength(255)
+                                                    ->columnSpan(1),
+                                            ]),
+                                    ])
+                                    ->addActionLabel('Agregar personal')
+                                    ->reorderable(false)
+                                    ->defaultItems(0)
+                                    ->collapsible()
+                                    ->afterStateHydrated(function ($component, $state) {
+                                        // Hidratar employee_name y position_name desde IDs para registros existentes
+                                        if (!is_array($state)) return;
+
+                                        $hydratedState = collect($state)->map(function ($item) {
+                                            if (!is_array($item)) return $item;
+
+                                            // Hidratar employee_name si tiene employee_id pero no employee_name
+                                            if (empty($item['employee_name']) && !empty($item['employee_id'])) {
+                                                $employee = Employee::with('position')->find($item['employee_id']);
+                                                if ($employee) {
+                                                    $item['employee_name'] = $employee->first_name . ' ' . $employee->last_name;
+                                                    $item['position_id'] = $employee->position_id;
+                                                    $item['position_name'] = $employee->position?->name;
+                                                }
+                                            }
+
+                                            // Hidratar position_name si tiene position_id pero no position_name
+                                            if (empty($item['position_name']) && !empty($item['position_id'])) {
+                                                $position = Position::find($item['position_id']);
+                                                if ($position) {
+                                                    $item['position_name'] = $position->name;
+                                                }
+                                            }
+
+                                            return $item;
+                                        })->toArray();
+
+                                        $component->state($hydratedState);
+                                    })
+                                    ->cloneable()
+                                    ->itemLabel(fn(array $state): ?string => $state['employee_name'] ?? 'Personal sin nombre')
                                     ->columnSpanFull()
                                     ->disabled(fn(string $operation): bool => $operation === 'view'),
                             ]),
@@ -790,7 +997,7 @@ class WorkReportResource extends Resource
                                     ->minDistance(5)
                                     ->velocityFilterWeight(0.7)
                                     ->confirmable(),
-                                
+
                             ]),
                         // FIN DE TAB DE FIRMAS
                         */

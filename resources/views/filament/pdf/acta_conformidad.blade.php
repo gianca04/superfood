@@ -426,23 +426,12 @@
         <button class="btn-back" onclick="cerrarPestana()" title="Cerrar pestaña">
             <span>⬅️</span> Volver
         </button>
-        @if(!(isset($isPreview) && $isPreview === true))
-            <button class="btn-pdf" onclick="descargarPDF()" title="Descargar como PDF">
-                <span>📄</span> Descargar PDF
-            </button>
-            <button class="btn-excel" onclick="descargarExcel()" title="Descargar como Excel">
-                <span>📊</span> Descargar Excel
-            </button>
-        @else
-            <button class="btn-pdf" disabled style="opacity: 0.5; cursor: not-allowed;"
-                title="No disponible en previsualización">
-                <span>📄</span> Descargar PDF
-            </button>
-            <button class="btn-excel" disabled style="opacity: 0.5; cursor: not-allowed;"
-                title="No disponible en previsualización">
-                <span>📊</span> Descargar Excel
-            </button>
-        @endif
+        <button class="btn-pdf" onclick="descargarPDF()" title="Descargar como PDF">
+            <span>📄</span> Descargar PDF
+        </button>
+        <button class="btn-excel" onclick="descargarExcel()" title="Descargar como Excel">
+            <span>📊</span> Descargar Excel
+        </button>
         <button class="btn-print" onclick="imprimirDocumento()" title="Imprimir documento">
             <span>🖨️</span> Imprimir
         </button>
@@ -459,8 +448,9 @@
                         $logoData = file_exists($logoPath) ? base64_encode(file_get_contents($logoPath)) : '';
                         $logoMime = 'image/png';
                     @endphp
-                    @if($logoData)
-                        <img src="data:{{ $logoMime }};base64,{{ $logoData }}" alt="Logo2" style="height: 80px;">
+                    @if ($logoData)
+                        <img src="data:{{ $logoMime }};base64,{{ $logoData }}" alt="Logo2"
+                            style="height: 80px;">
                     @endif
                 </td>
                 <td class="header-title">
@@ -548,10 +538,11 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($assets as $index => $asset)
+                        @foreach ($assets as $index => $asset)
                             <tr>
                                 <td class="number">{{ $index + 1 }}</td>
-                                <td class="asset-name">{{ $asset['name'] }} ({{ $asset['selected'] ? 'X' : '  ' }})</td>
+                                <td class="asset-name">{{ $asset['name'] }} ({{ $asset['selected'] ? 'X' : '  ' }})
+                                </td>
                                 <td style="text-align: center;">{{ $asset['quantity'] }}</td>
                                 <td>{{ $asset['comments'] }}</td>
                             </tr>
@@ -596,7 +587,7 @@
                             <div class="signature-header">CLIENTE</div>
 
                             <div class="signature-area">
-                                @if($firma_cliente)
+                                @if ($firma_cliente)
                                     <img src="{{ $firma_cliente }}" alt="Firma Cliente">
                                 @endif
                             </div>
@@ -621,7 +612,7 @@
                             <div class="signature-header">SAT INDUSTRIALES S.A.C.</div>
 
                             <div class="signature-area">
-                                @if($firma_empleado)
+                                @if ($firma_empleado)
                                     <img src="{{ $firma_empleado }}" alt="Firma Empleado">
                                 @endif
                             </div>
@@ -646,17 +637,15 @@
         </div>
     </div>
 
-    @if(isset($isPreview) && $isPreview === true)
+    @if (isset($isPreview) && $isPreview === true)
         <script>
             // Scripts desactivados en previsualización para evitar bucles infinitos
             function descargarPDF() {
-                // Desactivado en vista previa
-                console.log('Descarga de PDF no disponible en previsualización');
+                window.open('{{ route('actas.pdf', $id ?? 0) }}', '_blank');
             }
 
             function descargarExcel() {
-                // Desactivado en vista previa
-                console.log('Descarga de Excel no disponible en previsualización');
+                window.open('{{ route('actas.excel', $id ?? 0) }}', '_blank');
             }
 
             function imprimirDocumento() {
@@ -665,17 +654,20 @@
 
             function cerrarPestana() {
                 window.close();
+                setTimeout(function() {
+                    window.history.back();
+                }, 300);
             }
         </script>
     @else
         <script>
             // Funciones para los botones de acción
             function descargarPDF() {
-                window.location.href = '{{ route("actas.pdf", $id ?? 0) }}';
+                window.location.href = '{{ route('actas.pdf', $id ?? 0) }}';
             }
 
             function descargarExcel() {
-                window.location.href = '{{ route("actas.excel", $id ?? 0) }}';
+                window.location.href = '{{ route('actas.excel', $id ?? 0) }}';
             }
 
             function imprimirDocumento() {

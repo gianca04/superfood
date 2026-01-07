@@ -5,7 +5,7 @@
             <div class="flex items-center space-x-2">
                 <x-heroicon-o-building-office-2 class="w-5 h-5 text-gray-500" />
                 <div>
-                    <p class="text-sm font-medium text-gray-700">Nombre del proyecot</p>
+                    <p class="text-sm font-medium text-gray-700">Nombre del proyecto</p>
                     <p class="text-sm text-gray-900">{{ $project->name }}</p>
                 </div>
             </div>
@@ -72,7 +72,7 @@
         </div>
     </div>
 
-    @if($project->description)
+    @if ($project->description)
         <div class="pt-4 border-t">
             <div class="flex items-start space-x-2">
                 <x-heroicon-o-document-text class="w-5 h-5 text-gray-500 mt-0.5" />

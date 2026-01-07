@@ -340,8 +340,16 @@ class WorkReportsRelationManager extends RelationManager
                     ->preload(),
             ])
             ->headerActions([
-                // WorkReports se crean desde el Project, no desde el Compliance
-                // Solo mostramos los reportes existentes del proyecto asociado
+                Tables\Actions\Action::make('create_work_report')
+                    ->label('Crear nuevo Reporte de Trabajo')
+                    ->icon('heroicon-o-plus-circle')
+                    ->color('success')
+                    ->url(function () {
+                        $projectId = $this->ownerRecord->project_id;
+                        return route('filament.dashboard.resources.work-reports.create', [], false)
+                            . '?project_id=' . $projectId;
+                    })
+                    ->openUrlInNewTab(false),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()

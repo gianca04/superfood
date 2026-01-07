@@ -10,6 +10,7 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\DeleteBulkAction;
@@ -300,7 +301,6 @@ class ComplianceResource extends Resource
                     ->description('Registre las observaciones generales del mantenimiento realizado')
                     ->icon('heroicon-o-clipboard-document-list')
                     ->collapsible()
-                    ->collapsed()
                     ->schema([
                         Forms\Components\RichEditor::make('maintenance_observations')
                             ->label('')
@@ -396,7 +396,7 @@ class ComplianceResource extends Resource
                                                 $employee = Auth::user()?->employee;
                                                 if (!$employee) {
                                                     return new \Illuminate\Support\HtmlString("
-                                                        <div class='p-4 rounded-lg bg-warning-50 dark:bg-warning-900/20 border border-warning-200 dark:border-warning-800'>
+                                                        <div class='p-4 border rounded-lg bg-warning-50 dark:bg-warning-900/20 border-warning-200 dark:border-warning-800'>
                                                             <div class='flex items-center gap-2 text-warning-600 dark:text-warning-400'>
                                                                 <svg class='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                                                                     <path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z'/>
@@ -408,9 +408,9 @@ class ComplianceResource extends Resource
                                                 }
 
                                                 return new \Illuminate\Support\HtmlString("
-                                                    <div class='p-4 rounded-lg bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800'>
+                                                    <div class='p-4 border rounded-lg bg-primary-50 dark:bg-primary-900/20 border-primary-200 dark:border-primary-800'>
                                                         <div class='flex items-center gap-3'>
-                                                            <div class='flex-shrink-0 w-12 h-12 rounded-full bg-primary-100 dark:bg-primary-800 flex items-center justify-center'>
+                                                            <div class='flex items-center justify-center flex-shrink-0 w-12 h-12 rounded-full bg-primary-100 dark:bg-primary-800'>
                                                                 <svg class='w-6 h-6 text-primary-600 dark:text-primary-400' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                                                                     <path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'/>
                                                                 </svg>
@@ -491,26 +491,45 @@ class ComplianceResource extends Resource
                     ->icon('heroicon-o-user')
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                // Columna de resumen de activos
-                TextColumn::make('assets')
-                    ->label('Activos')
-                    ->formatStateUsing(function ($state) {
-                        if (!is_array($state)) return '-';
+                Tables\Columns\TextColumn::make('assets')
+                    ->label('Activos Seleccionados')
+                    ->html()
+                    ->formatStateUsing(function ($record) {
+                        // 1. Obtenemos el dato crudo (la lógica que te funcionó)
+                        $rawAttribute = $record->getAttributes()['assets'] ?? null;
 
-                        $count = collect($state)
-                            ->filter(fn($asset) => $asset['selected'] ?? false)
-                            ->count();
+                        if (is_null($rawAttribute)) return '---';
 
-                        return $count > 0 ? "{$count} activo(s)" : 'Sin activos';
-                    })
-                    ->badge()
-                    ->color(
-                        fn($state) =>
-                        is_array($state) && collect($state)->filter(fn($a) => $a['selected'] ?? false)->count() > 0
-                            ? 'success'
-                            : 'gray'
-                    )
-                    ->toggleable(),
+                        // 2. Decodificamos el JSON
+                        $assets = is_string($rawAttribute) ? json_decode($rawAttribute, true) : $rawAttribute;
+
+                        if (!is_array($assets)) return '---';
+
+                        // 3. Tu Diccionario de nombres
+                        $labels = [
+                            'tablero_autosoportado' => 'Tablero Autosoportado',
+                            'tablero_adosados'      => 'Tablero Adosados',
+                            'banco_condensadores'   => 'Banco de Condensadores',
+                            'pozos_baja_tension'    => 'Pozos Tierra (BT)',
+                            'pozos_media_tension'   => 'Pozos Tierra (MT)',
+                        ];
+
+                        // 4. Filtramos solo los TRUE y aplicamos el diccionario
+                        return collect($assets)
+                            ->filter(function ($item) {
+                                // Filtramos por el booleano 'selected'
+                                return isset($item['selected']) && ($item['selected'] === true || $item['selected'] === "true");
+                            })
+                            ->map(function ($item, $key) use ($labels) {
+                                // Buscamos el nombre en el diccionario o limpiamos la key si no existe
+                                $nombreLimpio = $labels[$key] ?? str($key)->replace('_', ' ')->title();
+                                $cantidad = $item['quantity'] ?? 0;
+
+                                // Formato final para la fila
+                                return "<strong>{$cantidad}</strong> x {$nombreLimpio}";
+                            })
+                            ->join('<br>'); // Salto de línea para que se vea como lista
+                    }),
 
                 IconColumn::make('client_signature')
                     ->label('Firma Cliente')
@@ -586,33 +605,56 @@ class ComplianceResource extends Resource
             ->filtersFormColumns(3)
             ->actions([
                 Tables\Actions\ActionGroup::make([
-                    Tables\Actions\ViewAction::make()
-                        ->icon('heroicon-o-eye')
-                        ->color('info'),
                     Tables\Actions\EditAction::make()
-                        ->icon('heroicon-o-pencil')
-                        ->color('warning'),
+                        ->label('Editar Registro')
+                        ->color('info'), // Azul para edición es estándar
+
+                    // Acción Excel
                     Tables\Actions\Action::make('downloadExcel')
-                        ->label('Descargar Excel')
-                        ->icon('heroicon-o-document-arrow-down')
+                        ->label('Exportar a Excel')
+                        ->icon('heroicon-m-table-cells') // Icono más específico de Excel
                         ->color('success')
+                        ->action(function (Compliance $record) {
+                            Notification::make()
+                                ->title('Preparando Excel')
+                                ->body('La descarga comenzará en un momento.')
+                                ->success()
+                                ->send();
+                        })
                         ->url(fn(Compliance $record) => route('actas.excel', $record->id))
                         ->openUrlInNewTab(),
+
+                    // Acción PDF
                     Tables\Actions\Action::make('downloadPdf')
-                        ->label('Descargar PDF')
-                        ->icon('heroicon-o-document-text')
+                        ->label('Descargar Acta PDF')
+                        ->icon('heroicon-m-arrow-down-tray')
                         ->color('danger')
+                        ->requiresConfirmation() // Evita descargas accidentales
+                        ->modalHeading('Generar Documento PDF')
+                        ->modalDescription('El sistema procesará los activos y generará el acta oficial. ¿Continuar?')
+                        ->modalSubmitActionLabel('Descargar ahora')
+                        ->action(function (Compliance $record) {
+                            Notification::make()
+                                ->title('Generando archivo...')
+                                ->body('El PDF se abrirá en una nueva pestaña.')
+                                ->warning()
+                                ->send();
+                        })
                         ->url(fn(Compliance $record) => route('actas.pdf', $record->id))
                         ->openUrlInNewTab(),
+
+                    // Acción Vista Previa
                     Tables\Actions\Action::make('previewActaPdf')
-                        ->label('Vista Previa')
-                        ->icon('heroicon-o-document-magnifying-glass')
-                        ->color('primary')
+                        ->label('Vista Rápida')
+                        ->icon('heroicon-m-magnifying-glass-circle')
+                        ->color('gray')
                         ->url(fn(Compliance $record) => route('actas.preview', $record->id))
                         ->openUrlInNewTab(),
                 ])
-                    ->icon('heroicon-m-ellipsis-vertical')
-                    ->tooltip('Acciones'),
+                    ->icon('heroicon-m-cog-6-tooth') // Cambiado a un engranaje (ajustes/acciones)
+                    ->button() // Esto lo convierte en un botón con texto en lugar de solo iconos
+                    ->label('Opciones')
+                    ->color('gray')
             ])
             ->bulkActions([
                 DeleteBulkAction::make()

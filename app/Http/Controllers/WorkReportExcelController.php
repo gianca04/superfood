@@ -19,7 +19,7 @@ class WorkReportExcelController extends Controller
      * Ruta de la plantilla Excel
      */
     private string $templatePath;
-    
+
     protected CloudConvertService $cloudConvertService;
 
     public function __construct(CloudConvertService $cloudConvertService)
@@ -71,7 +71,7 @@ class WorkReportExcelController extends Controller
 
     /**
      * Descarga el reporte de trabajo como PDF usando vista Blade
-     * 
+     *
      * Este método genera un PDF directamente desde una vista Blade,
      * procesando todos los datos del WorkReport incluyendo:
      * - Información del cliente y tienda
@@ -102,7 +102,7 @@ class WorkReportExcelController extends Controller
                 'defaultFont' => 'DejaVu Sans',
                 'isHtml5ParserEnabled' => true,
                 'isPhpEnabled' => true,
-                'dpi' => 150,
+                'dpi' => 90,
                 'enable_remote' => true,
             ]);
 
@@ -117,7 +117,7 @@ class WorkReportExcelController extends Controller
 
     /**
      * Previsualiza el reporte de trabajo como PDF en el navegador
-     * 
+     *
      * Este método genera un PDF directamente desde una vista Blade
      * y lo muestra en el navegador (inline) sin descargarlo.
      *
@@ -159,7 +159,7 @@ class WorkReportExcelController extends Controller
 
     /**
      * Prepara todos los datos necesarios para la vista Blade del PDF
-     * 
+     *
      * Procesa los datos del WorkReport y los transforma en un formato
      * listo para ser consumido por la vista Blade, incluyendo:
      * - Datos básicos (fecha, horas, cliente, tienda)
@@ -220,7 +220,7 @@ class WorkReportExcelController extends Controller
 
     /**
      * Procesa y combina herramientas y materiales en un solo array
-     * 
+     *
      * @param array $tools Array de herramientas [{"herramienta":"...","unidad":"...","cantidad":"..."}]
      * @param array $materials Array de materiales [{"material":"...","unidad":"...","cantidad":"..."}]
      * @return array Array combinado con estructura uniforme
@@ -252,7 +252,7 @@ class WorkReportExcelController extends Controller
 
     /**
      * Procesa el array de personal resolviendo nombres de empleados y cargos
-     * 
+     *
      * @param array $personnel Array de personal [{"employee_id":3,"hh":"2","position_id":"3"}]
      * @return array ['personnel' => array, 'totalHours' => float]
      */
@@ -312,10 +312,10 @@ class WorkReportExcelController extends Controller
         $workReport = WorkReport::with('project')->find($id);
         $projectName = $workReport?->project?->name ?? 'sin_proyecto';
         $date = $workReport?->report_date?->format('Y-m-d') ?? now()->format('Y-m-d');
-        
+
         // Limpiar caracteres especiales del nombre
         $projectName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $projectName);
-        
+
         return "reporte_trabajo_{$projectName}_{$date}";
     }
 
@@ -362,7 +362,7 @@ class WorkReportExcelController extends Controller
 
     /**
      * Llena los datos del reporte en la hoja de cálculo
-     * 
+     *
      * Mapeo de celdas:
      * - K4:  Fecha del reporte (concatenado con "FECHA: ")
      * - M6:  Hora de inicio del trabajo
@@ -374,13 +374,13 @@ class WorkReportExcelController extends Controller
      * - B18: Trabajos realizados (work_done)
      * - B24: Trabajos a realizar (work_to_do)
      * - B56: Recomendaciones (suggestions)
-     * 
+     *
      * Tabla de Materiales/Herramientas (desde fila 31):
      * - B30: Encabezado "Materiales/Herramientas"
      * - J30: Encabezado "Unidad"
      * - L30: Encabezado "Cantidad"
      * - B31+: Datos de tools y materials JSON
-     * 
+     *
      * Tabla de Personal (desde fila 45):
      * - B44: Encabezado "Personal que realizó el trabajo"
      * - J44: Encabezado "H.H"
@@ -455,10 +455,10 @@ class WorkReportExcelController extends Controller
 
     /**
      * Llena la tabla de herramientas y materiales en el Excel
-     * 
+     *
      * Primero recorre el array de tools (herramientas) y luego
      * continúa con el array de materials (materiales) en las siguientes filas.
-     * 
+     *
      * Columnas:
      * - B: Materiales/Herramientas (herramienta o material)
      * - J: Unidad (unidad)
@@ -479,10 +479,10 @@ class WorkReportExcelController extends Controller
         foreach ($tools as $tool) {
             // B - Herramienta
             $sheet->setCellValue('B' . $currentRow, $tool['herramienta'] ?? '');
-            
+
             // J - Unidad
             $sheet->setCellValue('J' . $currentRow, $tool['unidad'] ?? '');
-            
+
             // L - Cantidad
             $sheet->setCellValue('L' . $currentRow, $tool['cantidad'] ?? '');
 
@@ -494,10 +494,10 @@ class WorkReportExcelController extends Controller
         foreach ($materials as $material) {
             // B - Material
             $sheet->setCellValue('B' . $currentRow, $material['material'] ?? '');
-            
+
             // J - Unidad
             $sheet->setCellValue('J' . $currentRow, $material['unidad'] ?? '');
-            
+
             // L - Cantidad
             $sheet->setCellValue('L' . $currentRow, $material['cantidad'] ?? '');
 
@@ -509,7 +509,7 @@ class WorkReportExcelController extends Controller
 
     /**
      * Llena la tabla de personal en el Excel
-     * 
+     *
      * Columnas:
      * - B44: Personal que realizó el trabajo (nombre completo del empleado)
      * - J44: H.H (horas hombre)
@@ -544,8 +544,8 @@ class WorkReportExcelController extends Controller
 
             // Obtener nombre completo del empleado
             $employee = $employees->get($employeeId);
-            $employeeName = $employee 
-                ? trim($employee->first_name . ' ' . $employee->last_name) 
+            $employeeName = $employee
+                ? trim($employee->first_name . ' ' . $employee->last_name)
                 : 'N/A';
 
             // Obtener nombre del cargo
@@ -554,10 +554,10 @@ class WorkReportExcelController extends Controller
 
             // B - Personal que realizó el trabajo (nombre completo)
             $sheet->setCellValue('B' . $currentRow, $employeeName);
-            
+
             // J - H.H (horas hombre)
             $sheet->setCellValue('J' . $currentRow, $hh);
-            
+
             // L - Cargo
             $sheet->setCellValue('L' . $currentRow, $positionName);
 
@@ -572,7 +572,7 @@ class WorkReportExcelController extends Controller
 
     /**
      * Limpia el contenido HTML y lo convierte a texto plano
-     * 
+     *
      * Conversiones realizadas:
      * - <br>, <br/>, </p> → salto de línea
      * - <li> → "• " (bullet point)
@@ -594,31 +594,31 @@ class WorkReportExcelController extends Controller
         $text = preg_replace('/<br\s*\/?>/i', "\n", $html);
         $text = preg_replace('/<\/p>/i', "\n", $text);
         $text = preg_replace('/<\/div>/i', "\n", $text);
-        
+
         // Reemplazar listas
         $text = preg_replace('/<li>/i', '• ', $text);
         $text = preg_replace('/<\/li>/i', "\n", $text);
         $text = preg_replace('/<\/?[uo]l>/i', "\n", $text);
-        
+
         // Reemplazar encabezados (agregar salto de línea antes)
         $text = preg_replace('/<h[2-6][^>]*>/i', "\n", $text);
         $text = preg_replace('/<\/h[2-6]>/i', "\n", $text);
-        
+
         // Eliminar todas las demás etiquetas HTML
         $text = strip_tags($text);
-        
+
         // Decodificar entidades HTML (&nbsp;, &amp;, etc.)
         $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        
+
         // Limpiar espacios múltiples y saltos de línea excesivos
         $text = preg_replace('/[ \t]+/', ' ', $text); // Múltiples espacios → uno solo
         $text = preg_replace('/\n\s*\n\s*\n/', "\n\n", $text); // Máximo 2 saltos de línea seguidos
-        
+
         // Eliminar espacios al inicio y final de cada línea
         $lines = explode("\n", $text);
         $lines = array_map('trim', $lines);
         $text = implode("\n", $lines);
-        
+
         // Eliminar espacios al inicio y final del texto completo
         return trim($text);
     }
