@@ -5,34 +5,22 @@
     <meta charset="UTF-8">
     <title>Acta de Conformidad - SAT Industriales S.A.C.</title>
     <style>
-        /* ===== Reset y Fuentes ===== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        /* ===== Estilos Simples para mPDF ===== */
         body {
-            font-family: Arial, Helvetica, sans-serif;
+            font-family: Arial, sans-serif;
             font-size: 11px;
-            background-color: #f5f5f5;
-            padding: 20px;
             color: #000;
             margin: 0;
+            padding: 10px;
         }
 
-        /* ===== Contenedor Principal ===== */
         .page {
             width: 100%;
-            max-width: 900px;
-            background: white;
-            padding: 10px 15px;
             border: 1px solid #00a99d;
-            margin: 0 auto;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 10px;
         }
 
-        /* ===== Encabezado con Tabla ===== */
+        /* ===== Encabezado ===== */
         .header-table {
             width: 100%;
             border-collapse: collapse;
@@ -48,11 +36,6 @@
             font-weight: bold;
             font-size: 14px;
             color: #00a99d;
-        }
-
-        .company-subtitle {
-            font-size: 8px;
-            color: #000;
         }
 
         .header-title {
@@ -113,7 +96,6 @@
         .form-label {
             font-weight: bold;
             font-size: 10px;
-            white-space: nowrap;
         }
 
         .form-value {
@@ -121,7 +103,7 @@
             font-size: 10px;
         }
 
-        /* ===== Tabla Compuesta OT/Descripción ===== */
+        /* ===== Tabla Compuesta ===== */
         .composite-table {
             width: 100%;
             border-collapse: collapse;
@@ -166,7 +148,6 @@
         .conformity-note {
             font-size: 10px;
             margin: 10px 0 0 0;
-            line-height: 1.3;
         }
 
         /* ===== Tabla de Activos ===== */
@@ -189,7 +170,6 @@
             text-align: center;
             border: 1px solid #00a99d;
             font-size: 10px;
-            background: transparent;
         }
 
         .assets-table td {
@@ -228,7 +208,6 @@
             border: 1px solid #00a99d;
             padding: 5px;
             font-size: 10px;
-            line-height: 1.4;
         }
 
         /* ===== Sección de Firmas ===== */
@@ -236,7 +215,6 @@
             font-size: 9px;
             text-align: justify;
             margin-bottom: 10px;
-            line-height: 1.3;
         }
 
         .client-acceptance {
@@ -250,22 +228,12 @@
         .signatures-table {
             width: 100%;
             border-collapse: collapse;
-            table-layout: fixed;
         }
 
-        .signatures-table>tbody>tr>td {
+        .signatures-table td {
             width: 50%;
             vertical-align: top;
             padding: 0 10px;
-            display: table-cell;
-        }
-
-        @media screen and (max-width: 768px) {
-            .signatures-table>tbody>tr>td {
-                width: 100%;
-                padding: 10px 0;
-                display: block;
-            }
         }
 
         .signature-header {
@@ -274,9 +242,8 @@
             text-align: center;
             padding: 6px 4px;
             font-weight: bold;
-            font-size: 16px;
+            font-size: 14px;
             margin-bottom: 12px;
-            letter-spacing: 0.5px;
         }
 
         .signature-area {
@@ -297,8 +264,7 @@
 
         .signature-field-table td {
             padding: 4px 0;
-            font-size: 12px;
-            line-height: 1.5;
+            font-size: 11px;
         }
 
         .signature-field-table .label {
@@ -311,156 +277,18 @@
             border-bottom: 2px solid #00a99d;
             font-weight: 500;
         }
-
-        /* ===== Botones de Acción ===== */
-        .action-buttons {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding: 15px 20px;
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-back {
-            background-color: #6c757d;
-            color: white;
-            padding: 10px 20px;
-            font-size: 14px;
-            font-weight: bold;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-        }
-
-        .btn-back:hover {
-            background-color: #5a6268;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
-        }
-
-        .button-group {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .action-buttons button {
-            padding: 10px 20px;
-            font-size: 14px;
-            font-weight: bold;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-pdf {
-            background-color: #dc3545;
-            color: white;
-        }
-
-        .btn-pdf:hover {
-            background-color: #c82333;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
-        }
-
-        .btn-excel {
-            background-color: #28a745;
-            color: white;
-        }
-
-        .btn-excel:hover {
-            background-color: #218838;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
-        }
-
-        .btn-print {
-            background-color: #007bff;
-            color: white;
-        }
-
-        .btn-print:hover {
-            background-color: #0056b3;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
-        }
-
-        @media print {
-            body {
-                padding: 0 !important;
-                margin: 0 !important;
-                background: white !important;
-                font-size: 12px !important;
-            }
-
-
-            .action-buttons {
-                display: none !important;
-            }
-
-
-            @page {
-                size: A4 portrait !important;
-                margin: 3mm !important;
-            }
-        }
     </style>
 </head>
 
 <body>
-    <!-- ===== BOTONES DE ACCIÓN ===== -->
-    <div class="action-buttons">
-        <button class="btn-back" onclick="cerrarPestana()" title="Cerrar pestaña">
-            <span>⬅️</span> Volver
-        </button>
-        @if(!(isset($isPreview) && $isPreview === true))
-            <button class="btn-pdf" onclick="descargarPDF()" title="Descargar como PDF">
-                <span>📄</span> Descargar PDF
-            </button>
-            <button class="btn-excel" onclick="descargarExcel()" title="Descargar como Excel">
-                <span>📊</span> Descargar Excel
-            </button>
-        @else
-            <button class="btn-pdf" disabled style="opacity: 0.5; cursor: not-allowed;"
-                title="No disponible en previsualización">
-                <span>📄</span> Descargar PDF
-            </button>
-            <button class="btn-excel" disabled style="opacity: 0.5; cursor: not-allowed;"
-                title="No disponible en previsualización">
-                <span>📊</span> Descargar Excel
-            </button>
-        @endif
-        <button class="btn-print" onclick="imprimirDocumento()" title="Imprimir documento">
-            <span>🖨️</span> Imprimir
-        </button>
-    </div>
-
     <div class="page">
 
         <!-- ===== ENCABEZADO ===== -->
         <table class="header-table">
             <tr>
                 <td style="width: 200px;">
-                    @php
-                        $logoPath = public_path('images/Logo2.png');
-                        $logoData = file_exists($logoPath) ? base64_encode(file_get_contents($logoPath)) : '';
-                        $logoMime = 'image/png';
-                    @endphp
-                    @if($logoData)
-                        <img src="data:{{ $logoMime }};base64,{{ $logoData }}" alt="Logo2" style="height: 80px;">
+                    @if(isset($logo_base64) && $logo_base64)
+                        <img src="{{ $logo_base64 }}" alt="Logo" style="height: 80px;">
                     @endif
                 </td>
                 <td class="header-title">
@@ -645,48 +473,6 @@
             </div>
         </div>
     </div>
-
-    @if(isset($isPreview) && $isPreview === true)
-        <script>
-            // Scripts desactivados en previsualización para evitar bucles infinitos
-            function descargarPDF() {
-                // Desactivado en vista previa
-                console.log('Descarga de PDF no disponible en previsualización');
-            }
-
-            function descargarExcel() {
-                // Desactivado en vista previa
-                console.log('Descarga de Excel no disponible en previsualización');
-            }
-
-            function imprimirDocumento() {
-                window.print();
-            }
-
-            function cerrarPestana() {
-                window.close();
-            }
-        </script>
-    @else
-        <script>
-            // Funciones para los botones de acción
-            function descargarPDF() {
-                window.location.href = '{{ route("actas.pdf", $id ?? 0) }}';
-            }
-
-            function descargarExcel() {
-                window.location.href = '{{ route("actas.excel", $id ?? 0) }}';
-            }
-
-            function imprimirDocumento() {
-                window.print();
-            }
-
-            function cerrarPestana() {
-                window.close();
-            }
-        </script>
-    @endif
 </body>
 
 </html>

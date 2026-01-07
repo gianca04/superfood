@@ -274,6 +274,31 @@ class WorkReportsRelationManager extends RelationManager
                                     }),
                                 // FIN DE SELECT DE PROYECTO
 
+                                // INICIO DE SELECT DE COMPLIANCE
+                                Forms\Components\Select::make('compliance_id')
+                                    ->label('Compliance')
+                                    ->required() // Asuming required based on "pertenezca a una sola Compliance"
+                                    ->options(function (callable $get) {
+                                        $projectId = $get('project_id');
+                                        if (!$projectId) {
+                                            return \App\Models\Compliance::all()->pluck('fullname_cliente', 'id');
+                                        }
+                                        return \App\Models\Compliance::where('project_id', $projectId)
+                                            ->get()
+                                            ->mapWithKeys(function ($compliance) {
+                                                // Create a descriptive label
+                                                $label = $compliance->fullname_cliente;
+                                                if ($compliance->document_number) {
+                                                    $label .= ' - ' . $compliance->document_number;
+                                                }
+                                                return [$compliance->id => $label];
+                                            });
+                                    })
+                                    ->searchable()
+                                    ->preload()
+                                    ->reactive(),
+                                // FIN DE SELECT DE COMPLIANCE
+
                                 // INICIO DE INPUT DE NOMBRE DEL REPORTE
                                 Forms\Components\TextInput::make('name')
                                     ->required()

@@ -24,8 +24,8 @@ class WorkReport extends Model
         'work_to_do',      // Trabajos a realizar
         'work_done',       // Trabajos realizados
         'start_time',  // Hora de inicio del trabajo
-        'end_time',    // Hora de finalizaci��n del trabajo
-        'report_date'  // Fecha del reporte (solo fecha)
+        'end_time',    // Hora de finalizacin del trabajo
+        'report_date',  // Fecha del reporte (solo fecha)
     ];
 
     protected $casts = [
@@ -38,7 +38,7 @@ class WorkReport extends Model
     ];
 
     /**
-     * Relaci��n: Un reporte de trabajo pertenece a un empleado.
+     * Relacin: Un reporte de trabajo pertenece a un empleado.
      */
     public function employee()
     {
@@ -46,12 +46,13 @@ class WorkReport extends Model
     }
 
     /**
-     * Relaci��n: Un reporte de trabajo pertenece a un proyecto.
+     * Relacin: Un reporte de trabajo pertenece a un proyecto.
      */
     public function project()
     {
         return $this->belongsTo(Project::class);
     }
+
     public function photos()
     {
         return $this->hasMany(Photo::class, 'work_report_id');
