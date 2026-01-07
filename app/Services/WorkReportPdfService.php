@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\WorkReport;
+use App\Models\Employee;
+use App\Models\Position;
 use App\Jobs\GenerateWorkReportPdfJob;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
@@ -114,12 +116,115 @@ class WorkReportPdfService
      */
     public function prepareViewData(WorkReport $workReport): array
     {
+        // Procesar herramientas y materiales (JSON -> array estructurado)
+        $toolsAndMaterials = $this->processToolsAndMaterials(
+            $workReport->tools ?? [],
+            $workReport->materials ?? []
+        );
+
+        // Procesar personal con nombres y cargos resueltos
+        $personnelData = $this->processPersonnelForPdf($workReport->personnel ?? []);
+
         return [
             'workReport' => $workReport,
             'employee' => $workReport->employee,
             'project' => $workReport->project,
             'photos' => $workReport->photos,
             'generatedAt' => now(),
+            // Nuevos campos procesados
+            'toolsAndMaterials' => $toolsAndMaterials,
+            'personnelList' => $personnelData['personnel'],
+            'totalHours' => $personnelData['totalHours'],
+        ];
+    }
+
+    /**
+     * Procesa y combina herramientas y materiales en un solo array
+     *
+     * @param array $tools Array de herramientas [{"herramienta":"...","unidad":"...","cantidad":"..."}]
+     * @param array $materials Array de materiales [{"material":"...","unidad":"...","cantidad":"..."}]
+     * @return array Array combinado con estructura uniforme
+     */
+    private function processToolsAndMaterials(array $tools, array $materials): array
+    {
+        $combined = [];
+
+        // Agregar herramientas
+        foreach ($tools as $tool) {
+            $combined[] = [
+                'nombre' => $tool['herramienta'] ?? '',
+                'unidad' => $tool['unidad'] ?? '',
+                'cantidad' => $tool['cantidad'] ?? '',
+                'tipo' => 'herramienta',
+            ];
+        }
+
+        // Agregar materiales
+        foreach ($materials as $material) {
+            $combined[] = [
+                'nombre' => $material['material'] ?? '',
+                'unidad' => $material['unidad'] ?? '',
+                'cantidad' => $material['cantidad'] ?? '',
+                'tipo' => 'material',
+            ];
+        }
+
+        return $combined;
+    }
+
+    /**
+     * Procesa el array de personal resolviendo nombres de empleados y cargos
+     *
+     * @param array $personnel Array de personal [{"employee_id":3,"hh":"2","position_id":"3"}]
+     * @return array ['personnel' => array, 'totalHours' => float]
+     */
+    private function processPersonnelForPdf(array $personnel): array
+    {
+        $processedPersonnel = [];
+        $totalHours = 0;
+
+        if (empty($personnel)) {
+            return ['personnel' => [], 'totalHours' => 0];
+        }
+
+        // Obtener IDs únicos para consultas eficientes (fallback para datos antiguos)
+        $employeeIds = array_filter(array_column($personnel, 'employee_id'));
+        $positionIds = array_filter(array_column($personnel, 'position_id'));
+
+        // Cargar empleados y posiciones en memoria solo si hay IDs
+        $employees = !empty($employeeIds) ? Employee::whereIn('id', $employeeIds)->get()->keyBy('id') : collect();
+        $positions = !empty($positionIds) ? Position::whereIn('id', $positionIds)->get()->keyBy('id') : collect();
+
+        foreach ($personnel as $person) {
+            $hh = $person['hh'] ?? 0;
+            $totalHours += (float) $hh;
+
+            // 1. Prioridad: employee_name del JSON (para texto libre)
+            // 2. Fallback: buscar por employee_id
+            $employeeName = $person['employee_name'] ?? null;
+            if (!$employeeName && isset($person['employee_id'])) {
+                $employee = $employees->get($person['employee_id']);
+                $employeeName = $employee ? trim($employee->first_name . ' ' . $employee->last_name) : null;
+            }
+
+            // 3. Prioridad: position_name del JSON (para texto libre)
+            // 4. Fallback: buscar por position_id
+            $positionName = $person['position_name'] ?? null;
+            if (!$positionName && isset($person['position_id'])) {
+                $position = $positions->get($person['position_id']);
+                $positionName = $position?->name ?? null;
+            }
+
+            $processedPersonnel[] = [
+                'nombre' => $employeeName ?: 'N/A',
+                'hh' => $hh,
+                'cargo' => $positionName ?: 'N/A',
+            ];
+        }
+
+        return [
+            'personnel' => $processedPersonnel,
+            'totalHours' => $totalHours,
         ];
     }
 

@@ -48,7 +48,7 @@
             </tr>
         </thead>
     </table>
-    
+
     <table class="info-table">
         <thead>
             <tr>
@@ -102,7 +102,8 @@
             </tr>
             <tr>
                 <th style="width: 150px;">Fecha de inicio</th>
-                <td style="width: 350px;">{{ $project->start_date ? $project->start_date->format('d/m/Y') : 'N/A' }}</td>
+                <td style="width: 350px;">{{ $project->start_date ? $project->start_date->format('d/m/Y') : 'N/A' }}
+                </td>
                 <th style="width: 150px;">Fecha de fin</th>
                 <td>{{ $project->end_date ? $project->end_date->format('d/m/Y') : 'N/A' }}</td>
             </tr>
@@ -121,7 +122,7 @@
             <tr>
                 <th style="width: 150px;">Rango de Fechas</th>
                 <td colspan="3">
-                    @if($workReports->count() > 0)
+                    @if ($workReports->count() > 0)
                         {{ $workReports->first()->report_date }} - {{ $workReports->last()->report_date }}
                     @else
                         N/A
@@ -142,12 +143,12 @@
             <tr>
                 <td>
                     <ol class="reports-index">
-                        @foreach($workReports as $index => $report)
+                        @foreach ($workReports as $index => $report)
                             <li>
                                 <strong>{{ $report->name }}</strong><br>
                                 <span class="report-details">
-                                    Fecha: {{ $report->report_date }} | 
-                                    Supervisor: {{ $report->employee->full_name ?? 'N/A' }} | 
+                                    Fecha: {{ $report->report_date }} |
+                                    Supervisor: {{ $report->employee->full_name ?? 'N/A' }} |
                                     Evidencias: {{ $report->photos->count() }}
                                 </span>
                             </li>
@@ -162,8 +163,7 @@
     <div class="page-break"></div>
 
     {{-- ITERACIÓN POR CADA REPORTE DE TRABAJO --}}
-    @foreach($workReports as $workReportIndex => $workReport)
-        
+    @foreach ($workReports as $workReportIndex => $workReport)
         {{-- TÍTULO DEL REPORTE --}}
         <div class="report-header">
             <h2>Reporte {{ $workReportIndex + 1 }}: {{ $workReport->name }}</h2>
@@ -184,184 +184,212 @@
             </tbody>
         </table>
 
-        {{-- DESCRIPCIÓN DE ACTIVIDAD --}}
-        @if($workReport->description)
-        <table class="basic-info-text">
-            <thead>
-                <tr>
-                    <th>Descripción de actividad</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>{!! $workReport->description !!}</td>
-                </tr>
-            </tbody>
-        </table>
+        {{-- Trabajos a realizar --}}
+        @if ($workReport->work_to_do)
+            <table class="basic-info-text">
+                <thead>
+                    <tr>
+                        <th>Trabajos a realizar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{!! $workReport->work_to_do !!}</td>
+                    </tr>
+                </tbody>
+            </table>
+        @endif
+
+        {{-- TRABAJOS REALIZADOS --}}
+        @if ($workReport->work_done)
+            <table class="basic-info-text">
+                <thead>
+                    <tr>
+                        <th>Trabajos realizados</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{!! $workReport->work_done !!}</td>
+                    </tr>
+                </tbody>
+            </table>
         @endif
 
         {{-- SUGERENCIAS --}}
-        @if($workReport->suggestions)
-        <table class="basic-info-text">
-            <thead>
-                <tr>
-                    <th>Sugerencias</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>{!! $workReport->suggestions !!}</td>
-                </tr>
-            </tbody>
-        </table>
+        @if ($workReport->suggestions)
+            <table class="basic-info-text">
+                <thead>
+                    <tr>
+                        <th>Sugerencias</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{!! $workReport->suggestions !!}</td>
+                    </tr>
+                </tbody>
+            </table>
         @endif
 
         {{-- HERRAMIENTAS --}}
-        @if($workReport->tools)
-        <table class="basic-info-text">
-            <thead>
-                <tr>
-                    <th>Herramientas</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>{!! $workReport->tools !!}</td>
-                </tr>
-            </tbody>
-        </table>
+        @if ($workReport->tools)
+            <table class="basic-info-text">
+                <thead>
+                    <tr>
+                        <th>Herramientas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{!! $workReport->tools !!}</td>
+                    </tr>
+                </tbody>
+            </table>
         @endif
 
         {{-- MATERIALES --}}
-        @if($workReport->materials)
-        <table class="basic-info-text">
-            <thead>
-                <tr>
-                    <th>Materiales</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>{!! $workReport->materials !!}</td>
-                </tr>
-            </tbody>
-        </table>
+        @if ($workReport->materials)
+            <table class="basic-info-text">
+                <thead>
+                    <tr>
+                        <th>Materiales</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{!! $workReport->materials !!}</td>
+                    </tr>
+                </tbody>
+            </table>
         @endif
 
         {{-- PERSONAL --}}
-        @if($workReport->personnel)
-        <table class="basic-info-text">
-            <thead>
-                <tr>
-                    <th>Personal</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>{!! $workReport->personnel !!}</td>
-                </tr>
-            </tbody>
-        </table>
+        @if ($workReport->personnel)
+            <table class="basic-info-text">
+                <thead>
+                    <tr>
+                        <th>Personal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{!! $workReport->personnel !!}</td>
+                    </tr>
+                </tbody>
+            </table>
         @endif
 
         {{-- EVIDENCIAS FOTOGRAFICAS DEL REPORTE --}}
-        @if($workReport->photos->count() > 0)
+        @if ($workReport->photos->count() > 0)
             @foreach ($workReport->photos as $photoIndex => $photo)
-            @php
-            $hasBefore = $photo->before_work_photo_path && file_exists(public_path('storage/' . $photo->before_work_photo_path));
-            $hasAfter = $photo->photo_path && file_exists(public_path('storage/' . $photo->photo_path));
-            $defaultImg = public_path('images/image-no-found.png');
-            @endphp
+                @php
+                    $hasBefore =
+                        $photo->before_work_photo_path &&
+                        file_exists(public_path('storage/' . $photo->before_work_photo_path));
+                    $hasAfter = $photo->photo_path && file_exists(public_path('storage/' . $photo->photo_path));
+                    $defaultImg = public_path('images/image-no-found.png');
+                @endphp
 
-            @if($hasBefore && $hasAfter)
-            {{-- Two columns --}}
-            <table class="evidence-table">
-                <thead>
-                    <tr>
-                        <th class="evidence-th">Evidencia Inicial</th>
-                        <th class="evidence-th">Evidencia del Trabajo Realizado</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="evidence-td">
-                            <div class="evidence-img-container">
-                                @if ($hasBefore)
-                                <img class="photo-image" src="{{ public_path('storage/' . $photo->before_work_photo_path) }}" alt="Evidencia inicial {{ $loop->iteration }}">
-                                @else
-                                <img class="photo-image" src="{{ $defaultImg }}" alt="Sin imagen inicial disponible">
-                                @endif
-                            </div>
-                        </td>
+                @if ($hasBefore && $hasAfter)
+                    {{-- Two columns --}}
+                    <table class="evidence-table">
+                        <thead>
+                            <tr>
+                                <th class="evidence-th">Evidencia Inicial</th>
+                                <th class="evidence-th">Evidencia del Trabajo Realizado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="evidence-td">
+                                    <div class="evidence-img-container">
+                                        @if ($hasBefore)
+                                            <img class="photo-image"
+                                                src="{{ public_path('storage/' . $photo->before_work_photo_path) }}"
+                                                alt="Evidencia inicial {{ $loop->iteration }}">
+                                        @else
+                                            <img class="photo-image" src="{{ $defaultImg }}"
+                                                alt="Sin imagen inicial disponible">
+                                        @endif
+                                    </div>
+                                </td>
 
-                        <td class="evidence-td">
-                            <div class="evidence-img-container">
-                                @if ($hasAfter)
-                                <img class="photo-image" src="{{ public_path('storage/' . $photo->photo_path) }}" alt="Evidencia final {{ $loop->iteration }}">
-                                @else
-                                <img class="photo-image" src="{{ $defaultImg }}" alt="Sin imagen final disponible">
-                                @endif
-                            </div>
-                        </td>
-                    </tr>
+                                <td class="evidence-td">
+                                    <div class="evidence-img-container">
+                                        @if ($hasAfter)
+                                            <img class="photo-image"
+                                                src="{{ public_path('storage/' . $photo->photo_path) }}"
+                                                alt="Evidencia final {{ $loop->iteration }}">
+                                        @else
+                                            <img class="photo-image" src="{{ $defaultImg }}"
+                                                alt="Sin imagen final disponible">
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
 
-                    <tr>
-                        <td class="evidence-desc">
-                            {!! $photo->before_work_descripcion ?? 'Sin descripción' !!}
-                        </td>
-                        <td class="evidence-desc">
-                            {!! $photo->descripcion ?? 'Sin descripción' !!}
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            @elseif($hasBefore)
-            {{-- Only before --}}
-            <table class="evidence-table">
-                <thead>
-                    <tr>
-                        <th class="evidence-th" style="width: 100%;">Evidencia Inicial</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="evidence-td" style="width: 100%;">
-                            <div class="evidence-img-container">
-                                <img class="photo-image" src="{{ public_path('storage/' . $photo->before_work_photo_path) }}" alt="Evidencia inicial {{ $loop->iteration }}">
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="evidence-desc" style="width: 100%;">
-                            {!! $photo->before_work_descripcion ?? 'Sin descripción' !!}
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            @elseif($hasAfter)
-            {{-- Only after --}}
-            <table class="evidence-table">
-                <thead>
-                    <tr>
-                        <th class="evidence-th" style="width: 100%;">Evidencia del Trabajo Realizado</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="evidence-td" style="width: 100%;">
-                            <div class="evidence-img-container">
-                                <img class="photo-image" src="{{ public_path('storage/' . $photo->photo_path) }}" alt="Evidencia final {{ $loop->iteration }}">
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="evidence-desc" style="width: 100%;">
-                            {!! $photo->descripcion ?? 'Sin descripción' !!}
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            @endif
+                            <tr>
+                                <td class="evidence-desc">
+                                    {!! $photo->before_work_descripcion ?? 'Sin descripción' !!}
+                                </td>
+                                <td class="evidence-desc">
+                                    {!! $photo->descripcion ?? 'Sin descripción' !!}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                @elseif($hasBefore)
+                    {{-- Only before --}}
+                    <table class="evidence-table">
+                        <thead>
+                            <tr>
+                                <th class="evidence-th" style="width: 100%;">Evidencia Inicial</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="evidence-td" style="width: 100%;">
+                                    <div class="evidence-img-container">
+                                        <img class="photo-image"
+                                            src="{{ public_path('storage/' . $photo->before_work_photo_path) }}"
+                                            alt="Evidencia inicial {{ $loop->iteration }}">
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="evidence-desc" style="width: 100%;">
+                                    {!! $photo->before_work_descripcion ?? 'Sin descripción' !!}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                @elseif($hasAfter)
+                    {{-- Only after --}}
+                    <table class="evidence-table">
+                        <thead>
+                            <tr>
+                                <th class="evidence-th" style="width: 100%;">Evidencia del Trabajo Realizado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="evidence-td" style="width: 100%;">
+                                    <div class="evidence-img-container">
+                                        <img class="photo-image"
+                                            src="{{ public_path('storage/' . $photo->photo_path) }}"
+                                            alt="Evidencia final {{ $loop->iteration }}">
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="evidence-desc" style="width: 100%;">
+                                    {!! $photo->descripcion ?? 'Sin descripción' !!}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                @endif
             @endforeach
         @else
             <table class="basic-info-text">
@@ -379,52 +407,52 @@
         @endif
 
         {{-- FIRMAS DEL REPORTE --}}
-        @if($workReport->manager_signature || $workReport->supervisor_signature)
-        <div class="divider"></div>
-        <table class="signature-table">
-            <tr>
-                <th>Firma del Gerente / Subgerente</th>
-                <th>Firma del Supervisor / Técnico</th>
-            </tr>
-            <tr>
-                <td class="signature-cell">
-                    @if ($workReport->manager_signature)
-                        <img src="{{ $workReport->manager_signature }}" alt="Firma del Gerente" class="signature-image" />
-                    @else
-                        <br>
-                        <br>
-                        <br>
-                        <br>
-                        <span class="no-data">_____________________________________</span>
-                    @endif
-                    <div class="signature-label">
-                        Gerencia / Subgerencia
-                    </div>
-                </td>
-                <td class="signature-cell">
-                    @if ($workReport->supervisor_signature)
-                        <img src="{{ $workReport->supervisor_signature }}" alt="Firma del Supervisor"
-                            class="signature-image" />
-                    @else
-                        <br>
-                        <br>
-                        <br>
-                        <br>
-                        <span class="no-data">_____________________________________</span>
-                    @endif
-                    <div class="signature-label">
-                        Supervisión / Técnico
-                    </div>
-                </td>
-            </tr>
-        </table>
+        @if ($workReport->manager_signature || $workReport->supervisor_signature)
+            <div class="divider"></div>
+            <table class="signature-table">
+                <tr>
+                    <th>Firma del Gerente / Subgerente</th>
+                    <th>Firma del Supervisor / Técnico</th>
+                </tr>
+                <tr>
+                    <td class="signature-cell">
+                        @if ($workReport->manager_signature)
+                            <img src="{{ $workReport->manager_signature }}" alt="Firma del Gerente"
+                                class="signature-image" />
+                        @else
+                            <br>
+                            <br>
+                            <br>
+                            <br>
+                            <span class="no-data">_____________________________________</span>
+                        @endif
+                        <div class="signature-label">
+                            Gerencia / Subgerencia
+                        </div>
+                    </td>
+                    <td class="signature-cell">
+                        @if ($workReport->supervisor_signature)
+                            <img src="{{ $workReport->supervisor_signature }}" alt="Firma del Supervisor"
+                                class="signature-image" />
+                        @else
+                            <br>
+                            <br>
+                            <br>
+                            <br>
+                            <span class="no-data">_____________________________________</span>
+                        @endif
+                        <div class="signature-label">
+                            Supervisión / Técnico
+                        </div>
+                    </td>
+                </tr>
+            </table>
         @endif
 
         {{-- SALTO DE PÁGINA ENTRE REPORTES (excepto el último) --}}
-        @if(!$loop->last)
+        @if (!$loop->last)
             <div class="page-break"></div>
         @endif
-
     @endforeach
 
     <div>

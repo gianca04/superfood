@@ -283,11 +283,14 @@
             height: 60px;
             text-align: center;
             margin-bottom: 8px;
+            width: 100%;
         }
 
         .signature-area img {
+            width: 100%;
+            height: auto;
             max-height: 55px;
-            max-width: 160px;
+            object-fit: contain;
         }
 
         .signature-field-table {
@@ -419,6 +422,7 @@
         }
     </style>
 </head>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <body>
     <!-- ===== BOTONES DE ACCIÓN ===== -->
@@ -639,17 +643,70 @@
 
     @if (isset($isPreview) && $isPreview === true)
         <script>
-            // Scripts desactivados en previsualización para evitar bucles infinitos
             function descargarPDF() {
-                window.open('{{ route('actas.pdf', $id ?? 0) }}', '_blank');
+                Swal.fire({
+                    title: 'Generando PDF...',
+                    text: 'Estamos preparando tu documento, por favor espera.',
+                    icon: 'info',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+
+                        // 1. Iniciamos la apertura del PDF
+                        window.open('{{ route('actas.pdf', $id ?? 0) }}', '_blank');
+
+                        // 2. Esperamos un poco más para mostrar el éxito
+                        // Subimos a 3000ms (3 segundos) para que se note el proceso
+                        setTimeout(() => {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Documento Generado!',
+                                text: 'Si no se abrió automáticamente, revisa tus ventanas emergentes.',
+                                timer: 2500, // El mensaje de éxito ahora dura más
+                                timerProgressBar: true,
+                                showConfirmButton: false
+                            });
+                        }, 3000);
+                    }
+                });
             }
+            const Toast = Swal.mixin({
+                timer: 2000,
+                timerProgressBar: true,
+                showConfirmButton: false
+            });
 
             function descargarExcel() {
-                window.open('{{ route('actas.excel', $id ?? 0) }}', '_blank');
+                Swal.fire({
+                    title: 'Preparando Excel',
+                    html: 'Estamos organizando tus datos...',
+                    icon: 'success',
+                    timer: 1500,
+                    showConfirmButton: false,
+                    willClose: () => {
+                        console.log("Iniciando descarga de Excel...");
+                        window.open('{{ route('actas.excel', parameters: $id ?? 0) }}', '_blank');
+                    }
+
+                })
             }
 
             function imprimirDocumento() {
-                window.print();
+                Swal.fire({
+                    title: '¿Preparar impresión?',
+                    text: "Se abrirá el diálogo de impresión del sistema.",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Sí, imprimir',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.print();
+                    }
+                });
             }
 
             function cerrarPestana() {

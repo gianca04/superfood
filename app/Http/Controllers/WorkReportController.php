@@ -6,14 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreWorkReportRequest;
 use App\Http\Requests\UpdateWorkReportRequest;
 use App\Models\WorkReport;
+use Filament\Forms\Components\Actions\Action as FormAction;
 use App\Services\WorkReportService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Mpdf\Utils\PdfDate;
 
 class WorkReportController extends Controller
 {
+
     /**
      * Obtener work reports con filtros avanzados y búsqueda.
      */

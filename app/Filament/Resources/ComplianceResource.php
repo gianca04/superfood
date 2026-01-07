@@ -32,7 +32,35 @@ class ComplianceResource extends Resource
     protected static ?string $modelLabel = 'Acta de Conformidad';
     protected static ?string $navigationGroup = 'Documentos';
     protected static ?int $navigationSort = 1;
+    public static function updateProjectDetails($state, \Filament\Forms\Set $set)
+    {
+        if (!$state) {
+            $set('razon_social', null);
+            $set('ruc', null);
+            $set('tienda', null);
+            $set('direccion', null);
+            $set('start_date', null);
+            $set('end_date', null);
+            return;
+        }
 
+        // Buscamos el proyecto con sus relaciones
+        $project = \App\Models\Project::with(['subClient.client'])->find($state);
+
+        if ($project) {
+            $subClient = $project->subClient;
+            $client = $subClient?->client;
+
+            $set('razon_social', $client?->business_name);
+            $set('ruc', $client?->document_number);
+            $set('tienda', $subClient?->name);
+            $set('direccion', $subClient?->address);
+
+            // Importante: formatear para que el DatePicker lo entienda
+            $set('start_date', $project->start_date?->format('Y-m-d'));
+            $set('end_date', $project->end_date?->format('Y-m-d'));
+        }
+    }
     public static function form(Form $form): Form
     {
         return $form
@@ -45,106 +73,43 @@ class ComplianceResource extends Resource
                     ->icon('heroicon-o-building-office-2')
                     ->collapsible()
                     ->schema([
+
                         Forms\Components\Select::make('project_id')
                             ->label('Proyecto')
-                            ->relationship('project', 'name')
+                            ->required()
+                            ->prefixIcon('heroicon-m-briefcase')
                             ->searchable()
                             ->preload()
-                            ->required()
-                            ->live()
-                            ->prefixIcon('heroicon-o-briefcase')
-                            ->placeholder('Buscar proyecto...')
-                            ->helperText('Al seleccionar un proyecto se cargarán los datos del cliente')
-                            ->afterStateHydrated(function (Set $set, ?string $state) {
-                                if ($state) {
-                                    $project = Project::with(['subClient.client'])->find($state);
-                                    if ($project) {
-                                        $subClient = $project->subClient;
-                                        $client = $subClient?->client;
+                            ->live() // Fundamental para que el botón aparezca dinámicamente
+                            ->options(
+                                fn() => Project::query()
+                                    ->get()
+                                    ->mapWithKeys(fn($p) => [$p->id => "{$p->name} - {$p->quote_id}"])
+                            )
+                            ->afterStateUpdated(fn($state, $set) => self::updateProjectDetails($state, $set))
+                            ->afterStateHydrated(fn($state, $set) => self::updateProjectDetails($state, $set))
 
-                                        $set('razon_social', $client?->business_name ?? '');
-                                        $set('ruc', $client?->document_number ?? '');
-                                        $set('tienda', $subClient?->name ?? '');
-                                        $set('direccion', $subClient?->address ?? '');
-                                        $set('start_date', $project->start_date?->format('Y-m-d'));
-                                        $set('end_date', $project->end_date?->format('Y-m-d'));
-                                    }
-                                }
-                            })
-                            ->afterStateUpdated(function (Set $set, ?string $state) {
-                                if ($state) {
-                                    $project = Project::with(['subClient.client'])->find($state);
-                                    if ($project) {
-                                        $subClient = $project->subClient;
-                                        $client = $subClient?->client;
+                            // ACCIÓN DEL SUFIJO
+                            ->suffixAction(
+                                Forms\Components\Actions\Action::make('view_project')
+                                    ->icon('heroicon-o-eye')
+                                    ->color('info')
+                                    ->tooltip('Ver detalles')
+                                    // Esta línea hace que aparezca SOLO cuando hay un ID seleccionado
+                                    ->visible(fn($get) => !empty($get('project_id')))
+                                    ->modalHeading('Información del Proyecto')
+                                    ->modalWidth('3xl')
+                                    ->modalSubmitAction(false)
+                                    ->modalCancelActionLabel('Cerrar')
+                                    // Importante: Pasamos el proyecto actual al modal
+                                    ->modalContent(function ($get) {
+                                        $record = Project::with(['subClient.client'])->find($get('project_id'));
+                                        if (! $record) return null;
 
-                                        $set('razon_social', $client?->business_name ?? '');
-                                        $set('ruc', $client?->document_number ?? '');
-                                        $set('tienda', $subClient?->name ?? '');
-                                        $set('direccion', $subClient?->address ?? '');
-                                        $set('start_date', $project->start_date?->format('Y-m-d'));
-                                        $set('end_date', $project->end_date?->format('Y-m-d'));
-                                    }
-                                } else {
-                                    $set('razon_social', '');
-                                    $set('ruc', '');
-                                    $set('tienda', '');
-                                    $set('direccion', '');
-                                    $set('start_date', null);
-                                    $set('end_date', null);
-                                }
-                            })
-                            ->columnSpanFull(),
-
-                        // Datos del Cliente (Solo lectura)
-                        Forms\Components\Fieldset::make('Datos del Cliente')
-                            ->schema([
-                                Forms\Components\TextInput::make('razon_social')
-                                    ->label('Razón Social')
-                                    ->prefixIcon('heroicon-o-building-storefront')
-                                    ->disabled()
-                                    ->dehydrated(false)
-                                    ->placeholder('Se cargará automáticamente'),
-
-                                Forms\Components\TextInput::make('ruc')
-                                    ->label('R.U.C.')
-                                    ->prefixIcon('heroicon-o-identification')
-                                    ->disabled()
-                                    ->dehydrated(false)
-                                    ->placeholder('Se cargará automáticamente'),
-
-                                Forms\Components\TextInput::make('tienda')
-                                    ->label('Tienda / Sucursal')
-                                    ->prefixIcon('heroicon-o-map-pin')
-                                    ->disabled()
-                                    ->dehydrated(false)
-                                    ->placeholder('Se cargará automáticamente'),
-
-                                Forms\Components\TextInput::make('direccion')
-                                    ->label('Dirección')
-                                    ->prefixIcon('heroicon-o-home')
-                                    ->disabled()
-                                    ->dehydrated(false)
-                                    ->placeholder('Se cargará automáticamente'),
-                            ])->columns(2),
-
-                        // Fechas del Proyecto
-                        Forms\Components\Fieldset::make('Periodo del Proyecto')
-                            ->schema([
-                                Forms\Components\DatePicker::make('start_date')
-                                    ->label('Fecha de Inicio')
-                                    ->prefixIcon('heroicon-o-calendar')
-                                    ->displayFormat('d/m/Y')
-                                    ->disabled()
-                                    ->dehydrated(false),
-
-                                Forms\Components\DatePicker::make('end_date')
-                                    ->label('Fecha de Fin')
-                                    ->prefixIcon('heroicon-o-calendar-days')
-                                    ->displayFormat('d/m/Y')
-                                    ->disabled()
-                                    ->dehydrated(false),
-                            ])->columns(2),
+                                        return view('filament.components.project-info', ['project' => $record]);
+                                    })
+                            )
+                            ->columnSpanFull()
                     ]),
 
                 // ═══════════════════════════════════════════════════════════════

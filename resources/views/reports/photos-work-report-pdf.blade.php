@@ -11,112 +11,118 @@
 
     {{-- EVIDENCIAS FOTOGRÁFICAS --}}
     @foreach ($photos as $index => $photo)
-    @php
-    $hasBefore = $photo->before_work_photo_path && file_exists(public_path('storage/' . $photo->before_work_photo_path));
-    $hasAfter = $photo->photo_path && file_exists(public_path('storage/' . $photo->photo_path));
-    $defaultImg = public_path('images/image-no-found.png');
-    @endphp
+        @php
+            // Verificar si las imágenes existen en disco
+            $beforePath = $photo->before_work_photo_path
+                ? public_path('storage/' . $photo->before_work_photo_path)
+                : null;
+            $afterPath = $photo->photo_path ? public_path('storage/' . $photo->photo_path) : null;
+            $hasBefore = $beforePath && file_exists($beforePath);
+            $hasAfter = $afterPath && file_exists($afterPath);
+            $defaultImg = public_path('images/image-no-found.png');
 
-    @if($hasBefore && $hasAfter)
-    {{-- Two columns --}}
-    <table class="evidence-table">
-        <thead>
-            <tr>
-                <th class="evidence-th">Evidencia Inicial</th>
-                <th class="evidence-th">Evidencia del Trabajo Realizado</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                {{-- FOTO ANTES --}}
-                <td class="evidence-td">
-                    <div class="evidence-img-container">
-                        @if ($hasBefore)
-                        <img class="photo-image" src="{{ public_path('storage/' . $photo->before_work_photo_path) }}" alt="Evidencia inicial {{ $loop->iteration }}">
+            // Determinar si hay contenido que mostrar (imagen o descripción)
+            $hasBeforeContent = $photo->before_work_photo_path || $photo->before_work_descripcion;
+            $hasAfterContent = $photo->photo_path || $photo->descripcion;
+        @endphp
+
+        {{-- Mostrar tabla si hay cualquier contenido (antes, después, o ambos) --}}
+        @if ($hasBeforeContent || $hasAfterContent)
+            <table class="evidence-table">
+                <thead>
+                    <tr>
+                        @if ($hasBeforeContent && $hasAfterContent)
+                            <th class="evidence-th">Evidencia Inicial</th>
+                            <th class="evidence-th">Evidencia del Trabajo Realizado</th>
+                        @elseif($hasBeforeContent)
+                            <th class="evidence-th" style="width: 100%;">Evidencia Inicial</th>
                         @else
-                        <img class="photo-image" src="{{ $defaultImg }}" alt="Sin imagen inicial disponible">
+                            <th class="evidence-th" style="width: 100%;">Evidencia del Trabajo Realizado</th>
                         @endif
-                    </div>
-                </td>
-
-                {{-- FOTO DESPUÉS --}}
-                <td class="evidence-td">
-                    <div class="evidence-img-container">
-                        @if ($hasAfter)
-                        <img class="photo-image" src="{{ public_path('storage/' . $photo->photo_path) }}" alt="Evidencia final {{ $loop->iteration }}">
+                    </tr>
+                </thead>
+                <tbody>
+                    {{-- FILA DE IMÁGENES --}}
+                    <tr>
+                        @if ($hasBeforeContent && $hasAfterContent)
+                            {{-- Dos columnas --}}
+                            <td class="evidence-td">
+                                <div class="evidence-img-container">
+                                    @if ($hasBefore)
+                                        <img class="photo-image" src="{{ $beforePath }}"
+                                            alt="Evidencia inicial {{ $loop->iteration }}">
+                                    @else
+                                        {{-- <img class="photo-image" src="{{ $defaultImg }}" alt="Imagen no disponible"> --}}
+                                    @endif
+                                </div>
+                            </td>
+                            <td class="evidence-td">
+                                <div class="evidence-img-container">
+                                    @if ($hasAfter)
+                                        <img class="photo-image" src="{{ $afterPath }}"
+                                            alt="Evidencia final {{ $loop->iteration }}">
+                                    @else
+                                        {{-- <img class="photo-image" src="{{ $defaultImg }}" alt="Imagen no disponible"> --}}
+                                    @endif
+                                </div>
+                            </td>
+                        @elseif($hasBeforeContent)
+                            {{-- Solo columna antes --}}
+                            <td class="evidence-td" style="width: 100%;">
+                                <div class="evidence-img-container">
+                                    @if ($hasBefore)
+                                        <img class="photo-image" src="{{ $beforePath }}"
+                                            alt="Evidencia inicial {{ $loop->iteration }}">
+                                    @else
+                                        {{-- <img class="photo-image" src="{{ $defaultImg }}" alt="Imagen no disponible"> --}}
+                                    @endif
+                                </div>
+                            </td>
                         @else
-                        <img class="photo-image" src="{{ $defaultImg }}" alt="Sin imagen final disponible">
+                            {{-- Solo columna después --}}
+                            <td class="evidence-td" style="width: 100%;">
+                                <div class="evidence-img-container">
+                                    @if ($hasAfter)
+                                        <img class="photo-image" src="{{ $afterPath }}"
+                                            alt="Evidencia final {{ $loop->iteration }}">
+                                    @else
+                                        {{-- <img class="photo-image" src="{{ $defaultImg }}" alt="Imagen no disponible"> --}}
+                                    @endif
+                                </div>
+                            </td>
                         @endif
-                    </div>
-                </td>
-            </tr>
+                    </tr>
 
-            {{-- DESCRIPCIONES --}}
-            <tr>
-                <td class="evidence-desc">
-                    <div class="desc-text">
-                        {!! $photo->before_work_descripcion ?? 'Sin descripción' !!}
-                    </div>
-                </td>
-                <td class="evidence-desc">
-                    <div class="desc-text">
-                        {!! $photo->descripcion ?? 'Sin descripción' !!}
-                    </div>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-    @elseif($hasBefore)
-    {{-- Only before --}}
-    <table class="evidence-table">
-        <thead>
-            <tr>
-                <th class="evidence-th" style="width: 100%;">Evidencia Inicial</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td class="evidence-td" style="width: 100%;">
-                    <div class="evidence-img-container">
-                        <img class="photo-image" src="{{ public_path('storage/' . $photo->before_work_photo_path) }}" alt="Evidencia inicial {{ $loop->iteration }}">
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td class="evidence-desc" style="width: 100%;">
-                    <div class="desc-text">
-                        {!! $photo->before_work_descripcion ?? 'Sin descripción' !!}
-                    </div>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-    @elseif($hasAfter)
-    {{-- Only after --}}
-    <table class="evidence-table">
-        <thead>
-            <tr>
-                <th class="evidence-th" style="width: 100%;">Evidencia del Trabajo Realizado</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td class="evidence-td" style="width: 100%;">
-                    <div class="evidence-img-container">
-                        <img class="photo-image" src="{{ public_path('storage/' . $photo->photo_path) }}" alt="Evidencia final {{ $loop->iteration }}">
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td class="evidence-desc" style="width: 100%;">
-                    <div class="desc-text">
-                        {!! $photo->descripcion ?? 'Sin descripción' !!}
-                    </div>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-    @endif
+                    {{-- FILA DE DESCRIPCIONES --}}
+                    <tr>
+                        @if ($hasBeforeContent && $hasAfterContent)
+                            <td class="evidence-desc">
+                                <div class="desc-text">
+                                    {!! $photo->before_work_descripcion ?? 'Sin descripción' !!}
+                                </div>
+                            </td>
+                            <td class="evidence-desc">
+                                <div class="desc-text">
+                                    {!! $photo->descripcion ?? 'Sin descripción' !!}
+                                </div>
+                            </td>
+                        @elseif($hasBeforeContent)
+                            <td class="evidence-desc" style="width: 100%;">
+                                <div class="desc-text">
+                                    {!! $photo->before_work_descripcion ?? 'Sin descripción' !!}
+                                </div>
+                            </td>
+                        @else
+                            <td class="evidence-desc" style="width: 100%;">
+                                <div class="desc-text">
+                                    {!! $photo->descripcion ?? 'Sin descripción' !!}
+                                </div>
+                            </td>
+                        @endif
+                    </tr>
+                </tbody>
+            </table>
+        @endif
     @endforeach
 
     {{-- TABLA DE FIRMAS --}}
@@ -129,10 +135,10 @@
         <tr>
             <td class="signature-cell">
                 @if ($workReport->manager_signature)
-                <img src="{{ $workReport->manager_signature }}" alt="Firma del Gerente" class="signature-image" />
+                    <img src="{{ $workReport->manager_signature }}" alt="Firma del Gerente" class="signature-image" />
                 @else
-                <br><br><br><br>
-                <span class="no-data">_____________________________________</span>
+                    <br><br><br><br>
+                    <span class="no-data">_____________________________________</span>
                 @endif
                 <div class="signature-label">
                     Gerencia / Subgerencia
@@ -141,10 +147,11 @@
 
             <td class="signature-cell">
                 @if ($workReport->supervisor_signature)
-                <img src="{{ $workReport->supervisor_signature }}" alt="Firma del Supervisor" class="signature-image" />
+                    <img src="{{ $workReport->supervisor_signature }}" alt="Firma del Supervisor"
+                        class="signature-image" />
                 @else
-                <br><br><br><br>
-                <span class="no-data">_____________________________________</span>
+                    <br><br><br><br>
+                    <span class="no-data">_____________________________________</span>
                 @endif
                 <div class="signature-label">
                     Supervisión / Técnico

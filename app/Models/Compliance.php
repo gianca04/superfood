@@ -20,10 +20,13 @@ class Compliance extends Model
         'document_number',
         'client_signature', //firma cliente
         'employee_signature', //firma empleado
+        'state'
     ];
 
     protected $casts = [
         'assets' => 'array',
+        'start_date' => 'date',
+        'end_date' => 'date',
     ];
 
     public function project()

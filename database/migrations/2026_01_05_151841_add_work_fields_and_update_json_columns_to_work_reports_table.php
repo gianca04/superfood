@@ -26,9 +26,8 @@ return new class extends Migration
             $table->json('materials')->nullable()->change();
             $table->json('tools')->nullable()->change();
 
-            // Añadir nuevos campos
-            $table->longText('work_to_do')->nullable();  // Trabajos a realizar
-            $table->longText('work_done')->nullable();   // Trabajos realizados
+            // Renombrar la columna 'description' a 'work_to_do'
+            $table->renameColumn('description', 'work_to_do');
         });
     }
 
@@ -43,8 +42,8 @@ return new class extends Migration
             $table->longText('materials')->nullable()->change();
             $table->longText('tools')->nullable()->change();
 
-            // Eliminar los nuevos campos
-            $table->dropColumn(['work_to_do', 'work_done']);
+            // Revertir el nombre de la columna 'work_to_do' a 'description'
+            $table->renameColumn('work_to_do', 'description');
         });
     }
 };

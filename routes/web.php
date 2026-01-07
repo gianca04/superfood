@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Artisan;
 use Livewire\Livewire;
 use App\Http\Controllers\WorkReportWordController;
 use App\Http\Controllers\RequestConsolidatedController;
-
+use App\Http\Controllers\WorkReportController;
 
 // Redirigir la raíz al dashboard de Filament
 Route::redirect('/', '/dashboard');
@@ -24,13 +24,18 @@ Route::get('/evidence-report/{workReport}/pdf', [EvidenceReportController::class
 Route::get('/visit-report/{workReport}/pdf', [VisitReportPdfController::class, 'generateReport'])
     ->name('visit-report.pdf')
     ->middleware('auth');
-
+Route::get(
+    '/work-reports/download-multiple/{projectId}',
+    [WorkReportExcelController::class, 'downloadMultiplePdf']
+)
+    ->name('work-reports.download-multiple-pdf')
+    ->middleware('auth');
 // Rutas para reporte consolidado de trabajo por proyecto
 Route::prefix('project/{project}')->middleware('auth')->group(function () {
     Route::get('/consolidated-report/pdf', [WorkReportConsolidatedController::class, 'generateConsolidatedReport'])
         ->name('project.consolidated-report.pdf');
 
-    Route::get('/consolidated-report/preview', [WorkReportConsolidatedController::class, 'previewConsolidatedReport'])
+    Route::get('/consolidated-report/preview', action: [WorkReportConsolidatedController::class, 'previewConsolidatedReport'])
         ->name('project.consolidated-report.preview');
 
     Route::get('/consolidated-report/statistics', [WorkReportConsolidatedController::class, 'getConsolidatedStatistics'])
@@ -76,6 +81,8 @@ Route::middleware(['auth'])->group(function () {
         ->name('actas.pdf');
     Route::get('/actas/{id}/preview', [ExcelExportController::class, 'previewActaPdf'])
         ->name('actas.preview');
+    Route::get('/actas/{id}/pdf-with-reports', [ExcelExportController::class, 'downloadActaWithReports'])
+        ->name('actas.pdf-with-reports');
 
     // Reportes de Trabajo
     Route::get('/work-report/{id}/xls', [WorkReportExcelController::class, 'downloadExcel'])
@@ -86,7 +93,6 @@ Route::middleware(['auth'])->group(function () {
         ->name('work-report.pdf');
     Route::get('/work-report/{id}/preview', [WorkReportExcelController::class, 'previewBladePdf'])
         ->name('work-report.preview');
-    
 });
 
 Route::get('/crear-symlink', function () {

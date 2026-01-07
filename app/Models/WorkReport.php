@@ -14,7 +14,6 @@ class WorkReport extends Model
         'employee_id',
         'project_id',
         'name',
-        'description',
         'supervisor_signature',
         'manager_signature',
         'suggestions',
@@ -51,6 +50,10 @@ class WorkReport extends Model
     public function project()
     {
         return $this->belongsTo(Project::class);
+    }
+    public function getSubClientAttribute()
+    {
+        return $this->project?->subClient;
     }
 
     public function photos()

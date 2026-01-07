@@ -250,11 +250,14 @@
             height: 60px;
             text-align: center;
             margin-bottom: 8px;
+            width: 100%;
         }
 
         .signature-area img {
+            width: 100%;
+            height: auto;
             max-height: 55px;
-            max-width: 160px;
+            object-fit: contain;
         }
 
         .signature-field-table {
@@ -287,7 +290,7 @@
         <table class="header-table">
             <tr>
                 <td style="width: 200px;">
-                    @if(isset($logo_base64) && $logo_base64)
+                    @if (isset($logo_base64) && $logo_base64)
                         <img src="{{ $logo_base64 }}" alt="Logo" style="height: 80px;">
                     @endif
                 </td>
@@ -376,10 +379,11 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($assets as $index => $asset)
+                        @foreach ($assets as $index => $asset)
                             <tr>
                                 <td class="number">{{ $index + 1 }}</td>
-                                <td class="asset-name">{{ $asset['name'] }} ({{ $asset['selected'] ? 'X' : '  ' }})</td>
+                                <td class="asset-name">{{ $asset['name'] }} ({{ $asset['selected'] ? 'X' : '  ' }})
+                                </td>
                                 <td style="text-align: center;">{{ $asset['quantity'] }}</td>
                                 <td>{{ $asset['comments'] }}</td>
                             </tr>
@@ -424,7 +428,7 @@
                             <div class="signature-header">CLIENTE</div>
 
                             <div class="signature-area">
-                                @if($firma_cliente)
+                                @if ($firma_cliente)
                                     <img src="{{ $firma_cliente }}" alt="Firma Cliente">
                                 @endif
                             </div>
@@ -449,7 +453,7 @@
                             <div class="signature-header">SAT INDUSTRIALES S.A.C.</div>
 
                             <div class="signature-area">
-                                @if($firma_empleado)
+                                @if ($firma_empleado)
                                     <img src="{{ $firma_empleado }}" alt="Firma Empleado">
                                 @endif
                             </div>

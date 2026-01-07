@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reporte de Trabajo - SAT Industriales S.A.C</title>
     <style>
-        /* Reset and Base Styles */
+        /* Reset */
         * {
             margin: 0;
             padding: 0;
@@ -15,177 +15,192 @@
 
         body {
             font-family: Arial, sans-serif;
-            font-size: 10px;
+            font-size: 9pt;
             color: #000;
-            background-color: #fff;
-            padding: 0;
             line-height: 1.3;
+            margin: 0;
+            padding: 0;
         }
 
-        /* Page Container */
         .page {
             width: 100%;
-            min-height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .wrapper {
+            width: 195mm;
+            /* Fixed mm width to force layout stability */
             margin: 0 auto;
-            background: #fff;
-            padding: 10px 15px;
+            border-left: 1.5pt solid #00B0B9;
+            border-right: 1.5pt solid #00B0B9;
+            min-height: 275mm;
+            padding: 5mm 8mm;
+            box-sizing: border-box;
         }
 
         /* ==================== HEADER ==================== */
-        .header {
-            width: 100%;
-            margin-bottom: 5px;
-        }
-
         .header-table {
             width: 100%;
             border-collapse: collapse;
+            margin-bottom: 5px;
+            table-layout: fixed;
+            /* Ensures strict adherence to widths */
         }
 
-        .header-left {
-            width: 55%;
+        .logo-cell {
+            width: 60%;
             vertical-align: top;
-        }
-
-        .header-right {
-            width: 45%;
-            vertical-align: top;
-            text-align: right;
         }
 
         .logo-img {
-            width: 200px;
+            width: 150px;
             height: auto;
-            margin-bottom: 3px;
         }
 
         .contact-info {
-            font-size: 8px;
+            font-size: 7.2pt;
             color: #000;
-            line-height: 1.4;
-        }
-
-        .report-number {
-            font-size: 22px;
-            font-weight: bold;
-            color: #E30613;
-            text-align: right;
-        }
-
-        .report-title {
-            font-size: 11px;
-            font-weight: bold;
-            color: #000;
-            text-align: right;
+            line-height: 1.2;
             margin-top: 2px;
         }
 
-        /* Date Section */
-        .date-box-container {
+        .report-info-cell {
+            width: 40%;
+            vertical-align: top;
+            text-align: right;
+        }
+
+        .report-number {
+            font-size: 16pt;
+            font-weight: bold;
+            color: #E30613;
+        }
+
+        .report-title {
+            font-size: 10pt;
+            font-weight: bold;
+            color: #000;
+            margin-top: 2px;
+        }
+
+        /* Date Box */
+        .date-section {
             margin-top: 5px;
+            text-align: right;
         }
 
         .date-table {
+            margin-left: auto;
             border-collapse: collapse;
-            float: right;
         }
 
         .date-header {
-            font-size: 9px;
+            font-size: 8pt;
             font-weight: bold;
             text-align: center;
+            padding: 2px 8px;
+        }
+
+        .date-row td {
             padding: 2px 5px;
+            font-size: 8pt;
         }
 
         .date-label {
-            font-size: 9px;
             text-align: right;
-            padding: 2px 5px;
+            padding-right: 5px;
         }
 
         .date-box {
             border: 1.5px solid #00B0B9;
-            width: 80px;
-            height: 18px;
+            width: 70px;
+            height: 16px;
             text-align: center;
-            font-size: 9px;
-            padding: 2px;
+            font-size: 8pt;
         }
 
-        /* ==================== CYAN LINE SEPARATOR ==================== */
+        /* ==================== CYAN SEPARATOR ==================== */
         .cyan-line {
             border-bottom: 2px solid #00B0B9;
-            margin: 3px 0;
-        }
-
-        .cyan-line-thin {
-            border-bottom: 1px solid #00B0B9;
-            margin: 2px 0;
+            margin: 8px 0 5px 0;
         }
 
         /* ==================== CLIENT INFO ==================== */
-        .client-table {
+        .info-table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 3px;
+            table-layout: fixed;
         }
 
-        .client-label {
-            font-size: 9px;
-            font-weight: normal;
-            color: #000;
-            width: 70px;
+        .info-table td {
             padding: 3px 0;
+            font-size: 8pt;
+            vertical-align: bottom;
         }
 
-        .client-value {
-            font-size: 9px;
+        .info-label {
+            font-weight: normal;
+            white-space: nowrap;
+            width: 70px;
+        }
+
+        .info-value {
             border-bottom: 1px solid #000;
-            padding: 3px 5px;
+            padding-left: 5px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
-        /* ==================== WORK SECTIONS ==================== */
-        .section-label {
-            font-size: 9px;
-            color: #000;
+        /* ==================== SECTIONS ==================== */
+        .section-title {
+            font-size: 8pt;
+            font-weight: bold;
             margin-top: 8px;
-            margin-bottom: 2px;
+            margin-bottom: 3px;
         }
 
-        .work-line {
+        .cyan-underline {
             border-bottom: 1px solid #00B0B9;
-            min-height: 18px;
-            padding: 3px 5px;
-            font-size: 9px;
-            line-height: 1.4;
+            min-height: 14px;
+            padding: 2px 3px;
+            font-size: 8pt;
+            margin-bottom: 0;
+            word-wrap: break-word;
+            white-space: normal;
         }
 
-        /* ==================== TABLES (Materials & Personnel) ==================== */
+        /* ==================== DATA TABLES ==================== */
         .data-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 8px;
+            table-layout: fixed;
         }
 
         .data-table th {
-            background: #EAF8F8;
+            background-color: #E8F7F7;
             border: 1px solid #00B0B9;
-            padding: 5px;
-            font-size: 9px;
+            padding: 4px 5px;
+            font-size: 8pt;
             font-weight: normal;
             text-align: center;
-            color: #000;
         }
 
         .data-table td {
             border: 1px solid #00B0B9;
-            padding: 4px 5px;
-            font-size: 9px;
-            height: 18px;
+            padding: 3px 5px;
+            font-size: 8pt;
+            min-height: 14px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            vertical-align: middle;
         }
 
-        .col-materials {
+        .col-name {
             width: 55%;
+            text-align: left;
         }
 
         .col-unit {
@@ -198,76 +213,24 @@
             text-align: center;
         }
 
-        .col-personal {
-            width: 55%;
-        }
-
-        .col-hh {
-            width: 22%;
-            text-align: center;
-        }
-
-        .col-cargo {
-            width: 23%;
-            text-align: center;
-        }
-
+        /* Total Row */
         .total-row td {
-            border: 1px solid #00B0B9;
+            font-weight: normal;
         }
 
         .total-label {
             text-align: right;
             padding-right: 10px;
-            font-weight: normal;
-        }
-
-        .no-border-right {
             border-right: none !important;
         }
 
-        /* ==================== SIGNATURES SECTION ==================== */
-        .signatures-section {
-            margin-top: 25px;
-            width: 100%;
-        }
-
-        .signatures-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .signature-column {
-            width: 50%;
-            vertical-align: top;
-            padding: 0 20px;
-        }
-
-        .signature-title {
-            font-size: 10px;
-            font-weight: bold;
+        .total-value {
             text-align: center;
-            margin-bottom: 20px;
-            color: #000;
         }
 
-        .signature-row {
-            margin-bottom: 18px;
-        }
-
-        .signature-label {
-            font-size: 9px;
-            font-weight: bold;
-            color: #000;
-            display: inline-block;
-            width: 65px;
-        }
-
-        .signature-line {
-            display: inline-block;
-            width: 140px;
-            border-bottom: 1px solid #000;
-            margin-left: 3px;
+        .no-border {
+            border: none !important;
+            background: transparent !important;
         }
 
         /* ==================== RECOMMENDATIONS ==================== */
@@ -275,20 +238,60 @@
             margin-top: 10px;
         }
 
-        .recommendations-label {
-            font-size: 9px;
-            margin-bottom: 2px;
+        .recommendations-title {
+            font-size: 8pt;
+            margin-bottom: 3px;
         }
 
-        .recommendation-line {
-            border-bottom: 1px solid #00B0B9;
-            min-height: 16px;
-            margin-bottom: 0;
+        /* ==================== SIGNATURES ==================== */
+        .signatures-section {
+            margin-top: 20px;
+        }
+
+        .signatures-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .signature-col {
+            width: 50%;
+            vertical-align: top;
+            padding: 0 10px;
+        }
+
+        .signature-header {
+            font-size: 9pt;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+            height: 30px;
+        }
+
+        .inner-signature-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .inner-signature-table td {
+            font-size: 8pt;
+            padding: 10px 0 2px 0;
+            vertical-align: bottom;
+        }
+
+        .inner-signature-table .sig-label {
+            font-weight: bold;
+            width: 55px;
+            white-space: nowrap;
+        }
+
+        .inner-signature-table .sig-line {
+            border-bottom: 1px solid #000;
         }
 
         /* ==================== PRINT STYLES ==================== */
         @page {
-            margin: 8mm;
+            margin: 10mm;
             size: A4 portrait;
         }
 
@@ -302,33 +305,36 @@
 </head>
 
 <body>
-    <div class="page">
-        <!-- ==================== HEADER ==================== -->
+    <div class="wrapper">
+        <!-- HEADER -->
         <table class="header-table">
             <tr>
-                <td class="header-left">
-                    <img src="{{ public_path('images/logo_sat.png') }}" alt="SAT Industriales S.A.C Logo" class="logo-img">
+                <td class="logo-cell">
+                    @if (!empty($logoBase64))
+                        <img src="{{ $logoBase64 }}" alt="SAT Industriales S.A.C" class="logo-img">
+                    @else
+                        <div style="font-size: 14pt; font-weight: bold; color: #00B0B9;">SAT INDUSTRIALES S.A.C
+                        </div>
+                    @endif
                     <div class="contact-info">
                         <div>Calle uno Principal s/n Las Mercedes de Pedregal, Piura - Piura</div>
-                        <div style="margin-top: 2px;">
-                            Tel.: 934451894 &nbsp;&nbsp;&nbsp; Web: www.sat-industriales.pe
-                        </div>
-                        <div style="margin-left: 15px;">Email: operaciones@sat-industriales.pe</div>
+                        <div>Tel.: 934451894 &nbsp;&nbsp;&nbsp; Web: www.sat-industriales.pe</div>
+                        <div>Email: operaciones@sat-industriales.pe</div>
                     </div>
                 </td>
-                <td class="header-right">
+                <td class="report-info-cell">
                     <div class="report-number">N° {{ str_pad($reportId, 6, '0', STR_PAD_LEFT) }}</div>
                     <div class="report-title">REPORTE DE TRABAJO</div>
-                    <div class="date-box-container">
+                    <div class="date-section">
                         <table class="date-table">
                             <tr>
                                 <td class="date-header" colspan="2">FECHA</td>
                             </tr>
-                            <tr>
+                            <tr class="date-row">
                                 <td class="date-label">Inicio :</td>
                                 <td class="date-box">{{ $startTime }}</td>
                             </tr>
-                            <tr>
+                            <tr class="date-row">
                                 <td class="date-label">Fin :</td>
                                 <td class="date-box">{{ $endTime }}</td>
                             </tr>
@@ -338,213 +344,193 @@
             </tr>
         </table>
 
-        <!-- Cyan Line Separator -->
+        <!-- Cyan Separator -->
         <div class="cyan-line"></div>
 
-        <!-- ==================== CLIENT INFO ==================== -->
-        <table class="client-table">
+        <!-- CLIENT INFO -->
+        <table class="info-table">
             <tr>
-                <td class="client-label">Razón Social :</td>
-                <td class="client-value" style="width: 40%;">{{ $clientName }}</td>
-                <td class="client-label" style="text-align: right; width: 60px;">R.U.C. :</td>
-                <td class="client-value">{{ $documentNumber }}</td>
+                <td class="info-label">Razón Social :</td>
+                <td class="info-value" style="width: 35%;">{{ $clientName }}</td>
+                <td class="info-label" style="text-align: right; width: 70px;">R.U.C. :</td>
+                <td class="info-value" style="width: 45%;">{{ $documentNumber }}</td>
             </tr>
         </table>
-        <table class="client-table">
+        <table class="info-table">
             <tr>
-                <td class="client-label">Tienda :</td>
-                <td class="client-value" style="width: 40%;">{{ $storeName }}</td>
-                <td class="client-label" style="text-align: right; width: 60px;">Dirección :</td>
-                <td class="client-value">{{ $storeAddress }}</td>
+                <td class="info-label">Tienda :</td>
+                <td class="info-value" style="width: 35%;">{{ $storeName }}</td>
+                <td class="info-label" style="text-align: right; width: 70px;">Dirección :</td>
+                <td class="info-value" style="width: 45%;">{{ $storeAddress }}</td>
             </tr>
         </table>
 
-        <!-- Cyan Line -->
-        <div class="cyan-line-thin"></div>
-
-        <!-- ==================== TRABAJOS A REALIZAR ==================== -->
-        <div class="section-label"><strong>Trabajos a Realizar:</strong></div>
+        <!-- TRABAJOS A REALIZAR -->
+        <div class="section-title">Trabajos a Realizar:</div>
         @php
             $workToDoLines = $workToDo !== 'N/A' ? explode("\n", $workToDo) : [];
-            $minLines = 3;
+            $minLines = 2;
         @endphp
-        @if(count($workToDoLines) > 0)
-            @foreach($workToDoLines as $line)
-                <div class="work-line">{{ $line }}</div>
+        @if (count($workToDoLines) > 0)
+            @foreach ($workToDoLines as $line)
+                <div class="cyan-underline">{{ $line }}</div>
             @endforeach
-            @for($i = count($workToDoLines); $i < $minLines; $i++)
-                <div class="work-line">&nbsp;</div>
+            @for ($i = count($workToDoLines); $i < $minLines; $i++)
+                <div class="cyan-underline">&nbsp;</div>
             @endfor
         @else
-            @for($i = 0; $i < $minLines; $i++)
-                <div class="work-line">&nbsp;</div>
+            @for ($i = 0; $i < $minLines; $i++)
+                <div class="cyan-underline">&nbsp;</div>
             @endfor
         @endif
 
-        <!-- Cyan Line -->
-        <div class="cyan-line-thin"></div>
-
-        <!-- ==================== TRABAJOS REALIZADOS ==================== -->
-        <div class="section-label"><strong>Trabajos Realizados:</strong></div>
+        <!-- TRABAJOS REALIZADOS -->
+        <div class="section-title">Trabajos Realizados:</div>
         @php
             $workDoneLines = $workDone !== 'N/A' ? explode("\n", $workDone) : [];
-            $minLinesRealizados = 4;
+            $minLinesRealizados = 3;
         @endphp
-        @if(count($workDoneLines) > 0)
-            @foreach($workDoneLines as $line)
-                <div class="work-line">{{ $line }}</div>
+        @if (count($workDoneLines) > 0)
+            @foreach ($workDoneLines as $line)
+                <div class="cyan-underline">{{ $line }}</div>
             @endforeach
-            @for($i = count($workDoneLines); $i < $minLinesRealizados; $i++)
-                <div class="work-line">&nbsp;</div>
+            @for ($i = count($workDoneLines); $i < $minLinesRealizados; $i++)
+                <div class="cyan-underline">&nbsp;</div>
             @endfor
         @else
-            @for($i = 0; $i < $minLinesRealizados; $i++)
-                <div class="work-line">&nbsp;</div>
+            @for ($i = 0; $i < $minLinesRealizados; $i++)
+                <div class="cyan-underline">&nbsp;</div>
             @endfor
         @endif
 
-        <!-- ==================== MATERIALES/HERRAMIENTAS TABLE ==================== -->
+        <!-- MATERIALES/HERRAMIENTAS TABLE -->
         <table class="data-table">
             <thead>
                 <tr>
-                    <th class="col-materials">Materiales/Herramientas</th>
+                    <th class="col-name">Materiales/Herramientas</th>
                     <th class="col-unit">Unidad</th>
                     <th class="col-qty">Cantidad</th>
                 </tr>
             </thead>
             <tbody>
-                @php $materialRows = 7; @endphp
-                @forelse($toolsAndMaterials as $index => $item)
+                @php $materialRows = 6; @endphp
+                @forelse($toolsAndMaterials as $item)
                     <tr>
-                        <td>{{ $item['nombre'] }}</td>
+                        <td class="col-name">{{ $item['nombre'] }}</td>
                         <td class="col-unit">{{ $item['unidad'] }}</td>
                         <td class="col-qty">{{ $item['cantidad'] }}</td>
                     </tr>
                 @empty
-                    @for($i = 0; $i < $materialRows; $i++)
-                        <tr>
-                            <td>&nbsp;</td>
-                            <td class="col-unit">&nbsp;</td>
-                            <td class="col-qty">&nbsp;</td>
-                        </tr>
-                    @endfor
                 @endforelse
-                @if(count($toolsAndMaterials) > 0 && count($toolsAndMaterials) < $materialRows)
-                    @for($i = count($toolsAndMaterials); $i < $materialRows; $i++)
-                        <tr>
-                            <td>&nbsp;</td>
-                            <td class="col-unit">&nbsp;</td>
-                            <td class="col-qty">&nbsp;</td>
-                        </tr>
-                    @endfor
-                @endif
+                @for ($i = count($toolsAndMaterials); $i < $materialRows; $i++)
+                    <tr>
+                        <td class="col-name">&nbsp;</td>
+                        <td class="col-unit">&nbsp;</td>
+                        <td class="col-qty">&nbsp;</td>
+                    </tr>
+                @endfor
             </tbody>
         </table>
 
-        <!-- ==================== PERSONAL TABLE ==================== -->
+        <!-- PERSONAL TABLE -->
         <table class="data-table">
             <thead>
                 <tr>
-                    <th class="col-personal">Personal que realizó el trabajo:</th>
-                    <th class="col-hh">H.H</th>
-                    <th class="col-cargo">Cargo</th>
+                    <th class="col-name">Personal que realizó el trabajo:</th>
+                    <th class="col-unit">H.H</th>
+                    <th class="col-qty">Cargo</th>
                 </tr>
             </thead>
             <tbody>
-                @php $personnelRows = 6; @endphp
+                @php $personnelRows = 5; @endphp
                 @forelse($personnel as $person)
                     <tr>
-                        <td>{{ $person['nombre'] }}</td>
-                        <td class="col-hh">{{ $person['hh'] }}</td>
-                        <td class="col-cargo">{{ $person['cargo'] }}</td>
+                        <td class="col-name">{{ $person['nombre'] }}</td>
+                        <td class="col-unit">{{ $person['hh'] }}</td>
+                        <td class="col-qty">{{ $person['cargo'] }}</td>
                     </tr>
                 @empty
-                    @for($i = 0; $i < $personnelRows; $i++)
-                        <tr>
-                            <td>&nbsp;</td>
-                            <td class="col-hh">&nbsp;</td>
-                            <td class="col-cargo">&nbsp;</td>
-                        </tr>
-                    @endfor
                 @endforelse
-                @if(count($personnel) > 0 && count($personnel) < $personnelRows)
-                    @for($i = count($personnel); $i < $personnelRows; $i++)
-                        <tr>
-                            <td>&nbsp;</td>
-                            <td class="col-hh">&nbsp;</td>
-                            <td class="col-cargo">&nbsp;</td>
-                        </tr>
-                    @endfor
-                @endif
+                @for ($i = count($personnel); $i < $personnelRows; $i++)
+                    <tr>
+                        <td class="col-name">&nbsp;</td>
+                        <td class="col-unit">&nbsp;</td>
+                        <td class="col-qty">&nbsp;</td>
+                    </tr>
+                @endfor
             </tbody>
             <tfoot>
                 <tr class="total-row">
-                    <td class="total-label no-border-right">TOTAL H.H.</td>
-                    <td class="col-hh">{{ $totalHours }}</td>
-                    <td style="border: none; background: transparent;"></td>
+                    <td class="total-label">TOTAL H.H.</td>
+                    <td class="total-value">{{ $totalHours }}</td>
+                    <td class="no-border"></td>
                 </tr>
             </tfoot>
         </table>
 
-        <!-- ==================== RECOMENDACIONES ==================== -->
+        <!-- RECOMENDACIONES -->
         <div class="recommendations-section">
-            <div class="recommendations-label"><strong>Recomendaciones u Observaciones:</strong></div>
+            <div class="recommendations-title"><strong>Recomendaciones u Observaciones:</strong></div>
             @php
                 $suggestionsLines = $suggestions !== 'N/A' ? explode("\n", $suggestions) : [];
-                $minSuggestionLines = 3;
+                $minSuggestionLines = 2;
             @endphp
-            @if(count($suggestionsLines) > 0)
-                @foreach($suggestionsLines as $line)
-                    <div class="recommendation-line" style="padding: 2px 5px; font-size: 9px;">{{ $line }}</div>
+            @if (count($suggestionsLines) > 0)
+                @foreach ($suggestionsLines as $line)
+                    <div class="cyan-underline">{{ $line }}</div>
                 @endforeach
-                @for($i = count($suggestionsLines); $i < $minSuggestionLines; $i++)
-                    <div class="recommendation-line">&nbsp;</div>
+                @for ($i = count($suggestionsLines); $i < $minSuggestionLines; $i++)
+                    <div class="cyan-underline">&nbsp;</div>
                 @endfor
             @else
-                @for($i = 0; $i < $minSuggestionLines; $i++)
-                    <div class="recommendation-line">&nbsp;</div>
+                @for ($i = 0; $i < $minSuggestionLines; $i++)
+                    <div class="cyan-underline">&nbsp;</div>
                 @endfor
             @endif
         </div>
 
-        <!-- ==================== SIGNATURES ==================== -->
+        <!-- SIGNATURES -->
         <div class="signatures-section">
             <table class="signatures-table">
                 <tr>
-                    <td class="signature-column">
-                        <div class="signature-title">CLIENTE</div>
-                        <div class="signature-row">
-                            <span class="signature-label">FIRMA :</span>
-                            <span class="signature-line"></span>
-                        </div>
-                        <div class="signature-row">
-                            <span class="signature-label">NOMBRE :</span>
-                            <span class="signature-line"></span>
-                        </div>
-                        <div class="signature-row">
-                            <span class="signature-label">DNI :</span>
-                            <span class="signature-line"></span>
-                        </div>
+                    <td class="signature-col">
+                        <div class="signature-header">CLIENTE</div>
+                        <table class="inner-signature-table">
+                            <tr>
+                                <td class="sig-label">FIRMA :</td>
+                                <td class="sig-line">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td class="sig-label">NOMBRE :</td>
+                                <td class="sig-line">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td class="sig-label">DNI :</td>
+                                <td class="sig-line">&nbsp;</td>
+                            </tr>
+                        </table>
                     </td>
-                    <td class="signature-column">
-                        <div class="signature-title">SAT INDUSTRIALES S.A.C.</div>
-                        <div class="signature-row">
-                            <span class="signature-label">FIRMA :</span>
-                            <span class="signature-line"></span>
-                        </div>
-                        <div class="signature-row">
-                            <span class="signature-label">NOMBRE :</span>
-                            <span class="signature-line"></span>
-                        </div>
-                        <div class="signature-row">
-                            <span class="signature-label">DNI :</span>
-                            <span class="signature-line"></span>
-                        </div>
+                    <td class="signature-col">
+                        <div class="signature-header">SAT INDUSTRIALES S.A.C.</div>
+                        <table class="inner-signature-table">
+                            <tr>
+                                <td class="sig-label">FIRMA :</td>
+                                <td class="sig-line">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td class="sig-label">NOMBRE :</td>
+                                <td class="sig-line">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td class="sig-label">DNI :</td>
+                                <td class="sig-line">&nbsp;</td>
+                            </tr>
+                        </table>
                     </td>
                 </tr>
             </table>
+
         </div>
-    </div>
 </body>
 
 </html>

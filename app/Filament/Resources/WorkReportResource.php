@@ -101,10 +101,12 @@ class WorkReportResource extends Resource
                                             })
                                             ->modalContent(function (callable $get) {
                                                 $employeeId = $get('employee_id');
-                                                if (!$employeeId) return null;
+                                                if (!$employeeId)
+                                                    return null;
 
                                                 $employee = Employee::with('user')->find($employeeId);
-                                                if (!$employee) return null;
+                                                if (!$employee)
+                                                    return null;
 
                                                 return view('filament.components.employee-info-modal', compact('employee'));
                                             })
@@ -178,10 +180,12 @@ class WorkReportResource extends Resource
                                             })
                                             ->modalContent(function (callable $get) {
                                                 $projectId = $get('project_id');
-                                                if (!$projectId) return null;
+                                                if (!$projectId)
+                                                    return null;
 
                                                 $project = Project::with('clients')->find($projectId);
-                                                if (!$project) return null;
+                                                if (!$project)
+                                                    return null;
 
                                                 return view('filament.components.project-info-modal', compact('project'));
                                             })
@@ -299,10 +303,12 @@ class WorkReportResource extends Resource
                                                             })
                                                             ->modalContent(function (callable $get) {
                                                                 $clientId = $get('client_id');
-                                                                if (!$clientId) return null;
+                                                                if (!$clientId)
+                                                                    return null;
 
                                                                 $client = Client::with('subClients')->find($clientId);
-                                                                if (!$client) return null;
+                                                                if (!$client)
+                                                                    return null;
 
                                                                 return view('filament.components.client-info-modal', compact('client'));
                                                             })
@@ -474,10 +480,12 @@ class WorkReportResource extends Resource
                                                             })
                                                             ->modalContent(function (callable $get) {
                                                                 $subClientId = $get('sub_client_id');
-                                                                if (!$subClientId) return null;
+                                                                if (!$subClientId)
+                                                                    return null;
 
                                                                 $subClient = SubClient::with('client')->find($subClientId);
-                                                                if (!$subClient) return null;
+                                                                if (!$subClient)
+                                                                    return null;
 
                                                                 return view('filament.components.sub-client-info-modal', compact('subClient'));
                                                             })
@@ -639,47 +647,6 @@ class WorkReportResource extends Resource
 
                         // FIN DE TAB DE ORDEN DE TRABAJO
 
-                        // INICIO TAB DESCRIPCIÓN DEL REPORTE
-                        Tabs\Tab::make('Descripción')
-                            ->icon('heroicon-o-clipboard-document-check')
-                            ->columns(2)
-                            ->schema([
-                                Forms\Components\RichEditor::make('description')
-                                    ->label('Descripción del reporte')
-                                    ->helperText('Proporciona una descripción detallada del trabajo realizado.')
-                                    ->toolbarButtons([
-                                        'attachFiles',
-                                        'bold',
-                                        'bulletList',
-                                        'h2',
-                                        'h3',
-                                        'italic',
-                                        'orderedList',
-                                        'redo',
-                                        'strike',
-                                        'underline',
-                                        'undo',
-                                    ]),
-                                Forms\Components\RichEditor::make('suggestions')
-                                    ->label('Recomendaciones')
-                                    ->helperText('Proporciona sugerencias o comentarios adicionales sobre el trabajo realizado.')
-                                    ->maxLength(5000)
-                                    ->toolbarButtons([
-                                        'attachFiles',
-                                        'bold',
-                                        'bulletList',
-                                        'h2',
-                                        'h3',
-                                        'italic',
-                                        'orderedList',
-                                        'redo',
-                                        'strike',
-                                        'underline',
-                                        'undo',
-                                    ]),
-                            ]),
-                        // FIN TAB DESCRIPCIÓN DEL REPORTE
-
                         // INICIO TAB ACTIVIDADES DEL REPORTE
                         Tabs\Tab::make('Actividades')
                             ->icon('heroicon-o-clipboard-document-list')
@@ -748,21 +715,11 @@ class WorkReportResource extends Resource
                                     ->label('Personal que realizó el trabajo')
                                     ->helperText('Agrega el personal que participó en el trabajo y las horas hombre.')
                                     ->schema([
-                                        Forms\Components\Grid::make(6)
+                                        Forms\Components\Grid::make(3)
                                             ->schema([
-                                                Forms\Components\Toggle::make('is_custom_text')
-                                                    ->label('Texto libre')
-                                                    ->helperText('Escribir nombre manualmente')
-                                                    ->default(false)
-                                                    ->live()
-                                                    ->afterStateUpdated(function (callable $set) {
-                                                        $set('employee_id', null);
-                                                        $set('employee_name', null);
-                                                        $set('position_id', null);
-                                                    })
-                                                    ->columnSpan(1),
 
-                                                // Select para empleado (visible cuando is_custom_text = false)
+
+                                                // Select para empleado (visible cuando is_not_registered = false)
                                                 Forms\Components\Select::make('employee_id')
                                                     ->label('Empleado')
                                                     ->placeholder('Seleccionar empleado...')
@@ -773,7 +730,7 @@ class WorkReportResource extends Resource
                                                     ->searchable()
                                                     ->preload()
                                                     ->live()
-                                                    ->visible(fn(callable $get) => !$get('is_custom_text'))
+                                                    ->visible(fn(callable $get) => !$get('is_not_registered'))
                                                     ->afterStateUpdated(function ($state, callable $set) {
                                                         if ($state) {
                                                             $employee = Employee::with('position')->find($state);
@@ -833,12 +790,12 @@ class WorkReportResource extends Resource
                                                     })
                                                     ->columnSpan(1),
 
-                                                // TextInput para nombre manual (visible cuando is_custom_text = true)
+                                                // TextInput para nombre manual (visible cuando is_not_registered = true)
                                                 Forms\Components\TextInput::make('employee_name')
                                                     ->label('Nombre del personal')
                                                     ->placeholder('Escribir nombre...')
-                                                    ->visible(fn(callable $get) => $get('is_custom_text'))
-                                                    ->required(fn(callable $get) => $get('is_custom_text'))
+                                                    ->visible(fn(callable $get) => $get('is_not_registered'))
+                                                    ->required(fn(callable $get) => $get('is_not_registered'))
                                                     ->maxLength(255)
                                                     ->columnSpan(1),
 
@@ -851,18 +808,7 @@ class WorkReportResource extends Resource
                                                     ->suffix('hrs')
                                                     ->columnSpan(1),
 
-                                                Forms\Components\Toggle::make('is_custom_position')
-                                                    ->label('Cargo libre')
-                                                    ->helperText('Escribir cargo manualmente')
-                                                    ->default(false)
-                                                    ->live()
-                                                    ->afterStateUpdated(function (callable $set) {
-                                                        $set('position_id', null);
-                                                        $set('position_name', null);
-                                                    })
-                                                    ->columnSpan(1),
-
-                                                // Select para cargo (visible cuando is_custom_position = false)
+                                                // Select para cargo (visible cuando is_not_registered = false)
                                                 Forms\Components\Select::make('position_id')
                                                     ->label('Cargo')
                                                     ->placeholder('Seleccionar cargo...')
@@ -870,7 +816,7 @@ class WorkReportResource extends Resource
                                                     ->searchable()
                                                     ->preload()
                                                     ->live()
-                                                    ->visible(fn(callable $get) => !$get('is_custom_position'))
+                                                    ->visible(fn(callable $get) => !$get('is_not_registered'))
                                                     ->afterStateUpdated(function ($state, callable $set) {
                                                         if ($state) {
                                                             $position = Position::find($state);
@@ -899,12 +845,23 @@ class WorkReportResource extends Resource
                                                     })
                                                     ->columnSpan(1),
 
-                                                // TextInput para cargo manual (visible cuando is_custom_position = true)
+                                                // TextInput para cargo manual (visible cuando is_not_registered = true)
                                                 Forms\Components\TextInput::make('position_name')
                                                     ->label('Nombre del cargo')
                                                     ->placeholder('Escribir cargo...')
-                                                    ->visible(fn(callable $get) => $get('is_custom_position'))
+                                                    ->visible(fn(callable $get) => $get('is_not_registered'))
                                                     ->maxLength(255)
+                                                    ->columnSpan(1),
+                                                Forms\Components\Toggle::make('is_not_registered')
+                                                    ->label('No Registrado')
+                                                    ->default(false)
+                                                    ->live()
+                                                    ->afterStateUpdated(function (callable $set) {
+                                                        $set('employee_id', null);
+                                                        $set('employee_name', null);
+                                                        $set('position_id', null);
+                                                        $set('position_name', null);
+                                                    })
                                                     ->columnSpan(1),
                                             ]),
                                     ])
@@ -914,10 +871,17 @@ class WorkReportResource extends Resource
                                     ->collapsible()
                                     ->afterStateHydrated(function ($component, $state) {
                                         // Hidratar employee_name y position_name desde IDs para registros existentes
-                                        if (!is_array($state)) return;
+                                        if (!is_array($state))
+                                            return;
 
                                         $hydratedState = collect($state)->map(function ($item) {
-                                            if (!is_array($item)) return $item;
+                                            if (!is_array($item))
+                                                return $item;
+
+                                            // Migrar is_custom_text o is_custom_position a is_not_registered
+                                            if (!isset($item['is_not_registered'])) {
+                                                $item['is_not_registered'] = ($item['is_custom_text'] ?? false) || ($item['is_custom_position'] ?? false);
+                                            }
 
                                             // Hidratar employee_name si tiene employee_id pero no employee_name
                                             if (empty($item['employee_name']) && !empty($item['employee_id'])) {
@@ -942,7 +906,6 @@ class WorkReportResource extends Resource
 
                                         $component->state($hydratedState);
                                     })
-                                    ->cloneable()
                                     ->itemLabel(fn(array $state): ?string => $state['employee_name'] ?? 'Personal sin nombre')
                                     ->columnSpanFull()
                                     ->disabled(fn(string $operation): bool => $operation === 'view'),
@@ -965,6 +928,24 @@ class WorkReportResource extends Resource
                                         'orderedList',
                                         'bulletList',
                                         'redo',
+                                        'underline',
+                                        'undo',
+                                    ]),
+
+                                Forms\Components\RichEditor::make('suggestions')
+                                    ->label('Recomendaciones')
+                                    ->helperText('Proporciona sugerencias o comentarios adicionales sobre el trabajo realizado.')
+                                    ->maxLength(5000)
+                                    ->toolbarButtons([
+                                        'attachFiles',
+                                        'bold',
+                                        'bulletList',
+                                        'h2',
+                                        'h3',
+                                        'italic',
+                                        'orderedList',
+                                        'redo',
+                                        'strike',
                                         'underline',
                                         'undo',
                                     ]),

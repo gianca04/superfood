@@ -69,6 +69,93 @@ class WorkReportExcelController extends Controller
         return CloudConvertService::downloadResponse($result['content'], $filename . '.pdf');
     }
 
+    //DESCARGA DE PDFS MULTIPLES DE WORK REPORT:
+
+    public function downloadMultiplePdf($projectId)
+    {
+        $workReports = WorkReport::where('project_id', $projectId)
+            ->with(['employee', 'project.subClient.client', 'photos'])
+            ->get();
+
+        if ($workReports->isEmpty()) {
+            return back()->with('error', 'No hay reportes disponibles para descargar');
+        }
+
+        // Generar un PDF con todas las páginas
+        $html = '';
+
+        foreach ($workReports as $report) {
+            // Preparar los datos del reporte usando el método existente
+            $data = $this->prepareDataForBladePdf($report);
+
+            // Renderizar el blade para cada reporte con la vista correcta
+            $html .= view('reports.report-work', $data)->render();
+        }
+
+        // Generar PDF con múltiples páginas
+        $pdf = Pdf::loadHTML($html)
+            ->setPaper('a4', 'portrait')
+            ->setOptions([
+                'defaultFont' => 'DejaVu Sans',
+                'isHtml5ParserEnabled' => true,
+                'isPhpEnabled' => true,
+                'dpi' => 110,
+                'enable_remote' => true,
+            ]);
+
+        Log::info('PDF múltiple de reportes de trabajo generado', [
+            'project_id' => $projectId,
+            'count' => $workReports->count()
+        ]);
+
+        return $pdf->download('reportes_trabajo_' . date('Y-m-d') . '.pdf');
+    }
+    private function parseToolsAndMaterials($toolsJson)
+    {
+        if (!$toolsJson)
+            return [];
+
+        $tools = is_array($toolsJson) ? $toolsJson : json_decode($toolsJson, true);
+        return array_map(function ($tool) {
+            return [
+                'nombre' => $tool['name'] ?? $tool['nombre'] ?? '',
+                'unidad' => $tool['unit'] ?? $tool['unidad'] ?? '',
+                'cantidad' => $tool['quantity'] ?? $tool['cantidad'] ?? '',
+            ];
+        }, $tools ?? []);
+    }
+
+    private function parsePersonnel($personnelData)
+    {
+        if (!$personnelData)
+            return [];
+
+        return array_map(function ($person) {
+            return [
+                'nombre' => $person['name'] ?? $person['nombre'] ?? '',
+                'hh' => $person['hours'] ?? $person['hh'] ?? 0,
+                'cargo' => $person['position'] ?? $person['cargo'] ?? '',
+            ];
+        }, $personnelData);
+    }
+
+    private function calculateTotalHours($personnel)
+    {
+        return collect($personnel)->sum(function ($person) {
+            return (float) ($person['hours'] ?? $person['hh'] ?? 0);
+        });
+    }
+
+    private function getLogoBase64()
+    {
+        // Obtener el logo como base64 si existe
+        $logoPath = public_path('images/logo.png');
+        if (file_exists($logoPath)) {
+            return 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
+        }
+        return '';
+    }
+
     /**
      * Descarga el reporte de trabajo como PDF usando vista Blade
      *
@@ -102,7 +189,7 @@ class WorkReportExcelController extends Controller
                 'defaultFont' => 'DejaVu Sans',
                 'isHtml5ParserEnabled' => true,
                 'isPhpEnabled' => true,
-                'dpi' => 90,
+                'dpi' => 110,
                 'enable_remote' => true,
             ]);
 
@@ -143,7 +230,7 @@ class WorkReportExcelController extends Controller
                 'defaultFont' => 'DejaVu Sans',
                 'isHtml5ParserEnabled' => true,
                 'isPhpEnabled' => true,
-                'dpi' => 100,
+                'dpi' => 110,
                 'enable_remote' => true,
             ]);
 
@@ -199,6 +286,14 @@ class WorkReportExcelController extends Controller
         // Procesar personal con nombres y cargos
         $personnelData = $this->processPersonnelForPdf($workReport->personnel ?? []);
 
+        // Cargar logo como base64 para el PDF
+        $logoPath = public_path('images/logo2.png');
+        $logoBase64 = '';
+        if (file_exists($logoPath)) {
+            $logoData = file_get_contents($logoPath);
+            $logoBase64 = 'data:image/png;base64,' . base64_encode($logoData);
+        }
+
         return [
             'workReport' => $workReport,
             'reportId' => $workReport->id,
@@ -215,6 +310,7 @@ class WorkReportExcelController extends Controller
             'toolsAndMaterials' => $toolsAndMaterials,
             'personnel' => $personnelData['personnel'],
             'totalHours' => $personnelData['totalHours'],
+            'logoBase64' => $logoBase64,
         ];
     }
 
@@ -265,36 +361,38 @@ class WorkReportExcelController extends Controller
             return ['personnel' => [], 'totalHours' => 0];
         }
 
-        // Obtener IDs únicos para consultas eficientes
+        // Obtener IDs únicos para consultas eficientes (fallback para datos antiguos)
         $employeeIds = array_filter(array_column($personnel, 'employee_id'));
         $positionIds = array_filter(array_column($personnel, 'position_id'));
 
-        // Cargar empleados y posiciones en memoria
-        $employees = Employee::whereIn('id', $employeeIds)->get()->keyBy('id');
-        $positions = Position::whereIn('id', $positionIds)->get()->keyBy('id');
+        // Cargar empleados y posiciones en memoria solo si hay IDs
+        $employees = !empty($employeeIds) ? Employee::whereIn('id', $employeeIds)->get()->keyBy('id') : collect();
+        $positions = !empty($positionIds) ? Position::whereIn('id', $positionIds)->get()->keyBy('id') : collect();
 
         foreach ($personnel as $person) {
-            $employeeId = $person['employee_id'] ?? null;
-            $positionId = $person['position_id'] ?? null;
             $hh = $person['hh'] ?? 0;
-
-            // Sumar horas para el total
             $totalHours += (float) $hh;
 
-            // Obtener nombre completo del empleado
-            $employee = $employees->get($employeeId);
-            $employeeName = $employee
-                ? trim($employee->first_name . ' ' . $employee->last_name)
-                : 'N/A';
+            // 1. Prioridad: employee_name del JSON (para texto libre)
+            // 2. Fallback: buscar por employee_id
+            $employeeName = $person['employee_name'] ?? null;
+            if (!$employeeName && isset($person['employee_id'])) {
+                $employee = $employees->get($person['employee_id']);
+                $employeeName = $employee ? trim($employee->first_name . ' ' . $employee->last_name) : null;
+            }
 
-            // Obtener nombre del cargo
-            $position = $positions->get($positionId);
-            $positionName = $position?->name ?? 'N/A';
+            // 3. Prioridad: position_name del JSON (para texto libre)
+            // 4. Fallback: buscar por position_id
+            $positionName = $person['position_name'] ?? null;
+            if (!$positionName && isset($person['position_id'])) {
+                $position = $positions->get($person['position_id']);
+                $positionName = $position?->name ?? null;
+            }
 
             $processedPersonnel[] = [
-                'nombre' => $employeeName,
+                'nombre' => $employeeName ?: 'N/A',
                 'hh' => $hh,
-                'cargo' => $positionName,
+                'cargo' => $positionName ?: 'N/A',
             ];
         }
 
@@ -526,40 +624,40 @@ class WorkReportExcelController extends Controller
         $currentRow = $startRow;
         $totalHours = 0;
 
-        // Obtener todos los IDs de empleados y posiciones para hacer una sola consulta
-        $employeeIds = array_column($personnel, 'employee_id');
-        $positionIds = array_column($personnel, 'position_id');
+        // Obtener todos los IDs de empleados y posiciones para fallbacks
+        $employeeIds = array_filter(array_column($personnel, 'employee_id'));
+        $positionIds = array_filter(array_column($personnel, 'position_id'));
 
-        // Cargar empleados y posiciones en memoria para evitar múltiples consultas
-        $employees = Employee::whereIn('id', $employeeIds)->get()->keyBy('id');
-        $positions = Position::whereIn('id', $positionIds)->get()->keyBy('id');
+        // Cargar empleados y posiciones en memoria solo si hay IDs
+        $employees = !empty($employeeIds) ? Employee::whereIn('id', $employeeIds)->get()->keyBy('id') : collect();
+        $positions = !empty($positionIds) ? Position::whereIn('id', $positionIds)->get()->keyBy('id') : collect();
 
         foreach ($personnel as $person) {
-            $employeeId = $person['employee_id'] ?? null;
-            $positionId = $person['position_id'] ?? null;
             $hh = $person['hh'] ?? 0;
-
-            // Sumar horas para el total
             $totalHours += (float) $hh;
 
-            // Obtener nombre completo del empleado
-            $employee = $employees->get($employeeId);
-            $employeeName = $employee
-                ? trim($employee->first_name . ' ' . $employee->last_name)
-                : 'N/A';
+            // 1. Prioridad: employee_name del JSON
+            $employeeName = $person['employee_name'] ?? null;
+            if (!$employeeName && isset($person['employee_id'])) {
+                $employee = $employees->get($person['employee_id']);
+                $employeeName = $employee ? trim($employee->first_name . ' ' . $employee->last_name) : null;
+            }
 
-            // Obtener nombre del cargo
-            $position = $positions->get($positionId);
-            $positionName = $position?->name ?? 'N/A';
+            // 2. Prioridad: position_name del JSON
+            $positionName = $person['position_name'] ?? null;
+            if (!$positionName && isset($person['position_id'])) {
+                $position = $positions->get($person['position_id']);
+                $positionName = $position?->name ?? null;
+            }
 
             // B - Personal que realizó el trabajo (nombre completo)
-            $sheet->setCellValue('B' . $currentRow, $employeeName);
+            $sheet->setCellValue('B' . $currentRow, $employeeName ?: 'N/A');
 
             // J - H.H (horas hombre)
             $sheet->setCellValue('J' . $currentRow, $hh);
 
             // L - Cargo
-            $sheet->setCellValue('L' . $currentRow, $positionName);
+            $sheet->setCellValue('L' . $currentRow, $positionName ?: 'N/A');
 
             $currentRow++;
         }
