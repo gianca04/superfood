@@ -4,7 +4,7 @@ use App\Http\Controllers\ExcelExportController;
 use App\Http\Controllers\VisitReportPdfController;
 use App\Http\Controllers\WorkReportExcelController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\WorkReportPdfController;
+use App\Http\Controllers\EvidenceReportController;
 use App\Http\Controllers\WorkReportConsolidatedController;
 use Illuminate\Support\Facades\Artisan;
 use Livewire\Livewire;
@@ -15,9 +15,9 @@ use App\Http\Controllers\RequestConsolidatedController;
 // Redirigir la raíz al dashboard de Filament
 Route::redirect('/', '/dashboard');
 
-// Ruta para generar reporte PDF de trabajo
-Route::get('/work-report/{workReport}/pdf', [WorkReportPdfController::class, 'generateReport'])
-    ->name('work-report.pdf')
+// Ruta para generar Informe de Evidencias (PDF con fotos)
+Route::get('/evidence-report/{workReport}/pdf', [EvidenceReportController::class, 'generateReport'])
+    ->name('evidence-report.pdf')
     ->middleware('auth');
 
 // Ruta para generar reporte PDF de trabajo
@@ -69,14 +69,24 @@ Route::get('/storage-link', function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-    // Una sola ruta que descarga el Excel directamente
+    // Actas de Conformidad
     Route::get('/actas/{id}/excel', [ExcelExportController::class, 'downloadActaExcel'])
         ->name('actas.excel');
-    Route::get('/actas/{id}/pdf', [ExcelExportController::class, 'downloadActaPdf'])->name('actas.pdf');
+    Route::get('/actas/{id}/pdf', [ExcelExportController::class, 'downloadActaPdf'])
+        ->name('actas.pdf');
+    Route::get('/actas/{id}/preview', [ExcelExportController::class, 'previewActaPdf'])
+        ->name('actas.preview');
 
-    Route::get('/work-report/{workReport}/xls', [WorkReportExcelController::class, 'generateReport'])
-    ->name('work-report.xls')
-    ->middleware('auth');
+    // Reportes de Trabajo
+    Route::get('/work-report/{id}/xls', [WorkReportExcelController::class, 'downloadExcel'])
+        ->name('work-report.xls');
+    Route::get('/work-report/{id}/pdf-excel', [WorkReportExcelController::class, 'downloadPdf'])
+        ->name('work-report.pdf-excel');
+    Route::get('/work-report/{id}/pdf', [WorkReportExcelController::class, 'downloadBladePdf'])
+        ->name('work-report.pdf');
+    Route::get('/work-report/{id}/preview', [WorkReportExcelController::class, 'previewBladePdf'])
+        ->name('work-report.preview');
+    
 });
 
 Route::get('/crear-symlink', function () {

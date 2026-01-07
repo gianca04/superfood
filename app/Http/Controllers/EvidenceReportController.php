@@ -10,14 +10,21 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
-class WorkReportPdfController extends Controller
+/**
+ * Controlador para generar Informes de Evidencias (PDF con fotos)
+ * 
+ * Este controlador genera un PDF que incluye:
+ * - Información del reporte de trabajo
+ * - Fotografías/evidencias asociadas
+ */
+class EvidenceReportController extends Controller
 {
     public function __construct(
         private WorkReportPdfService $pdfService
     ) {}
 
     /**
-     * Genera un reporte de trabajo en formato PDF
+     * Genera un informe de evidencias en formato PDF
      *
      * @param int $workReportId
      * @param Request $request
@@ -42,14 +49,14 @@ class WorkReportPdfController extends Controller
             return $this->generateSync($workReportId, $request);
             
         } catch (\Exception $e) {
-            Log::error('Error generando PDF de reporte de trabajo', [
+            Log::error('Error generando Informe de Evidencias', [
                 'work_report_id' => $workReportId,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
             
             return response()->json([
-                'error' => 'Error al generar el reporte PDF',
+                'error' => 'Error al generar el Informe de Evidencias',
                 'message' => config('app.debug') ? $e->getMessage() : 'Error interno del servidor'
             ], 500);
         }
@@ -68,7 +75,7 @@ class WorkReportPdfController extends Controller
         // Determinar disposición
         $disposition = $request->boolean('inline') ? 'inline' : 'attachment';
         
-        Log::info('PDF generado sincrónicamente', [
+        Log::info('Informe de Evidencias generado sincrónicamente', [
             'work_report_id' => $workReportId,
             'filename' => $filename,
             'disposition' => $disposition
@@ -91,14 +98,14 @@ class WorkReportPdfController extends Controller
         
         $this->pdfService->generateAsync($workReportId, $userEmail, $shouldEmail);
         
-        Log::info('Generación asíncrona de PDF iniciada', [
+        Log::info('Generación asíncrona de Informe de Evidencias iniciada', [
             'work_report_id' => $workReportId,
             'should_email' => $shouldEmail,
             'email' => $userEmail
         ]);
         
         return response()->json([
-            'message' => 'Generación de PDF iniciada',
+            'message' => 'Generación de Informe de Evidencias iniciada',
             'work_report_id' => $workReportId,
             'async' => true,
             'email_notification' => $shouldEmail
@@ -106,14 +113,7 @@ class WorkReportPdfController extends Controller
     }
 
     /**
-     * Obtiene el estado de un PDF (ya no hay caché, siempre se genera en tiempo real)
-     *
-     * @param int $workReportId
-     * @return Response
-     */
-    
-    /**
-     * Fuerza la regeneración de un PDF (ya no aplica, siempre se regenera)
+     * Fuerza la regeneración de un PDF
      *
      * @param int $workReportId
      * @return JsonResponse
@@ -127,23 +127,21 @@ class WorkReportPdfController extends Controller
             $filename = $this->pdfService->generateFilename($workReport);
 
             return response()->json([
-                'message' => 'PDF generado exitosamente',
+                'message' => 'Informe de Evidencias generado exitosamente',
                 'work_report_id' => $workReportId,
                 'filename' => $filename
             ]);
             
         } catch (\Exception $e) {
-            Log::error('Error generando PDF', [
+            Log::error('Error generando Informe de Evidencias', [
                 'work_report_id' => $workReportId,
                 'error' => $e->getMessage()
             ]);
             
             return response()->json([
-                'error' => 'Error al generar el PDF',
+                'error' => 'Error al generar el Informe de Evidencias',
                 'message' => $e->getMessage()
             ], 500);
         }
     }
-
-
 }

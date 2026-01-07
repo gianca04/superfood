@@ -69,7 +69,7 @@ class WorkReportResource extends Resource
                                                 ->when($get('search'), function ($query, $search) {
                                                     $query->where('first_name', 'like', "%{$search}%")
                                                         ->orWhere('last_name', 'like', "%{$search}%")
-                                                        ->orWhere('document_numbers', 'like', "%{$search}%");
+                                                        ->orWhere('document_number', 'like', "%{$search}%");
                                                 })
                                                 ->get()
                                                 ->mapWithKeys(function ($employee) {
@@ -627,87 +627,6 @@ class WorkReportResource extends Resource
 
                         // FIN DE TAB DE INFORMACIÓN GENERAL
 
-                        // INICIO DE TAB DE ORDEN DE TRABAJO
-                        Tabs\Tab::make('Orden de Trabajo')
-                            ->icon('heroicon-o-document-text')
-                            ->columns(2)
-                            ->schema([
-                                Forms\Components\TextInput::make('orden_trabajo')
-                                    ->label('ORDEN TRABAJO')
-                                    ->maxLength(20)
-                                    ->required(),
-                                Forms\Components\TextInput::make('aviso')
-                                    ->label('AVISO')
-                                    ->maxLength(50),
-                                Forms\Components\TextInput::make('codigo_f_sheet')
-                                    ->label('CÓDIGO F. SHEET')
-                                    ->maxLength(50)
-                                    ->required(),
-                                Forms\Components\TextInput::make('numero_pedido')
-                                    ->label('N° DE PEDIDO')
-                                    ->maxLength(20)
-                                    ->required(),
-                                Forms\Components\TextInput::make('servicio')
-                                    ->label('SERVICIO')
-                                    ->maxLength(100)
-                                    ->required(),
-                                Forms\Components\TextInput::make('seccion')
-                                    ->label('SECCIÓN')
-                                    ->maxLength(50)
-                                    ->required(),
-                                Forms\Components\TextInput::make('equipo')
-                                    ->label('EQUIPO')
-                                    ->maxLength(50)
-                                    ->required(),
-                                Forms\Components\DatePicker::make('fecha_inicio')
-                                    ->label('FECHA INICIO')
-                                    ->required()
-                                    ->displayFormat('d/m/Y'),
-                                Forms\Components\Select::make('tipo_mantenimiento')
-                                    ->label('TIPO MANTTO')
-                                    ->options(['PREVENTIVO' => 'PREVENTIVO', 'CORRECTIVO' => 'CORRECTIVO'])
-                                    ->required(),
-                                Forms\Components\TextInput::make('contratista')
-                                    ->label('CONTRATISTA')
-                                    ->maxLength(100)
-                                    ->required(),
-                                Forms\Components\DatePicker::make('fecha_final')
-                                    ->label('FECHA FINAL')
-                                    ->required()
-                                    ->displayFormat('d/m/Y'),
-                                Forms\Components\TextInput::make('taller')
-                                    ->label('TALLER')
-                                    ->maxLength(50)
-                                    ->required(),
-                                Forms\Components\TextInput::make('supervisor_cpsaa')
-                                    ->label('SUPERV. CPSAA')
-                                    ->maxLength(100)
-                                    ->required(),
-                                Forms\Components\TimePicker::make('hora_inicio')
-                                    ->label('HORA INICIO')
-                                    ->required()
-                                    ->displayFormat('H:i'),
-                                Forms\Components\Toggle::make('bloqueo')
-                                    ->label('BLOQUEO'),
-                                Forms\Components\TextInput::make('supervisor_contratista')
-                                    ->label('SUPERV. CONTRATISTA')
-                                    ->maxLength(100)
-                                    ->required(),
-                                Forms\Components\TimePicker::make('hora_final')
-                                    ->label('HORA FINAL')
-                                    ->required()
-                                    ->displayFormat('H:i'),
-                                Forms\Components\Repeater::make('mantenedores')
-                                    ->label('MANTENEDORES')
-                                    ->schema([
-                                        Forms\Components\TextInput::make('name')
-                                            ->label('Nombre')
-                                            ->required(),
-                                    ])
-                                    ->collapsible()
-                                    ->columnSpanFull(),
-                            ]),
-
                         // FIN DE TAB DE ORDEN DE TRABAJO
 
                         // INICIO TAB DESCRIPCIÓN DEL REPORTE
@@ -751,15 +670,14 @@ class WorkReportResource extends Resource
                             ]),
                         // FIN TAB DESCRIPCIÓN DEL REPORTE
 
-                        // INICIO DEL TAB DE HERRAMIENTAS Y MATERIALES
-                        Tabs\Tab::make('Herramientas y materiales')
-                            ->icon('heroicon-o-wrench')
+                        // INICIO TAB ACTIVIDADES DEL REPORTE
+                        Tabs\Tab::make('Actividades')
+                            ->icon('heroicon-o-clipboard-document-list')
                             ->columns(2)
                             ->schema([
-                                Forms\Components\RichEditor::make('tools')
-                                    ->label('Herramientas')
-                                    ->helperText('Detalla las herramientas utilizadas durante el trabajo.')
-                                    ->maxLength(5000)
+                                Forms\Components\RichEditor::make('work_done')
+                                    ->label('Trabajos realizados')
+                                    ->helperText('Proporciona una descripción detallada del trabajo realizado.')
                                     ->toolbarButtons([
                                         'attachFiles',
                                         'bold',
@@ -773,9 +691,9 @@ class WorkReportResource extends Resource
                                         'underline',
                                         'undo',
                                     ]),
-                                Forms\Components\RichEditor::make('materials')
-                                    ->label('Materiales')
-                                    ->helperText('Detalla los materiales utilizados durante el trabajo.')
+                                Forms\Components\RichEditor::make('work_to_do')
+                                    ->label('Trabajos a realizar')
+                                    ->helperText('Proporciona sugerencias o comentarios adicionales sobre el trabajo realizado.')
                                     ->maxLength(5000)
                                     ->toolbarButtons([
                                         'attachFiles',
@@ -791,6 +709,24 @@ class WorkReportResource extends Resource
                                         'undo',
                                     ]),
                             ]),
+                        // FIN TAB ACTIVIDADES DEL REPORTE
+
+                        // INICIO DEL TAB DE HERRAMIENTAS Y MATERIALES
+                        Tabs\Tab::make('Herramientas y materiales')
+                            ->icon('heroicon-o-wrench')
+                            ->columns(2)
+                            ->schema([
+                                \App\Forms\Components\ToolsTable::make('tools')
+                                    ->label('Herramientas')
+                                    ->helperText('Agrega las herramientas utilizadas durante el trabajo.')
+                                    ->columnSpanFull()
+                                    ->disabled(fn(string $operation): bool => $operation === 'view'),
+                                \App\Forms\Components\MaterialsTable::make('materials')
+                                    ->label('Materiales')
+                                    ->helperText('Agrega los materiales utilizados durante el trabajo.')
+                                    ->columnSpanFull()
+                                    ->disabled(fn(string $operation): bool => $operation === 'view'),
+                            ]),
                         // FIN DEL TAB DE HERRAMIENTAS Y MATERIALES
 
                         // INICIO DEL TAB DE LISTA DE PERSONAL
@@ -798,20 +734,11 @@ class WorkReportResource extends Resource
                             ->icon('heroicon-o-user-group')
                             ->columns(2)
                             ->schema([
-                                Forms\Components\RichEditor::make('personnel')
-                                    ->label('Lista de personal')
+                                \App\Forms\Components\PersonnelTable::make('personnel')
+                                    ->label('Personal que realizó el trabajo')
+                                    ->helperText('Agrega el personal que participó en el trabajo y las horas hombre.')
                                     ->columnSpanFull()
-                                    ->maxLength(5000)
-                                    ->toolbarButtons([
-                                        'bold',
-                                        'h2',
-                                        'h3',
-                                        'orderedList',
-                                        'bulletList',
-                                        'redo',
-                                        'underline',
-                                        'undo',
-                                    ]),
+                                    ->disabled(fn(string $operation): bool => $operation === 'view'),
                             ]),
                         // FIN DL TAB DE LISTA DE PERSONAL
 
@@ -835,7 +762,7 @@ class WorkReportResource extends Resource
                                         'undo',
                                     ]),
                             ]),
-
+                        /*
                         // INICIO DE TAB DE FIRMAS
                         Tabs\Tab::make('Firmas')
                             ->icon('heroicon-o-pencil-square')
@@ -863,8 +790,10 @@ class WorkReportResource extends Resource
                                     ->minDistance(5)
                                     ->velocityFilterWeight(0.7)
                                     ->confirmable(),
+                                
                             ]),
                         // FIN DE TAB DE FIRMAS
+                        */
                     ])
                     ->columnSpan('full'),
             ]);
@@ -953,14 +882,47 @@ class WorkReportResource extends Resource
                         ->slideOver(true)
                         ->relationManager(PhotosRelationManager::make()),
 
-                    Tables\Actions\Action::make('generate_report')
-                        ->label('Generar PDF')
+                    Tables\Actions\Action::make('generate_evidence_report')
+                        ->label('Informe de Evidencias')
                         ->color('danger')
-                        ->icon('heroicon-o-document')
-                        ->url(fn($record) => route('work-report.pdf', $record->id))
+                        ->icon('heroicon-o-camera')
+                        ->url(fn($record) => route('evidence-report.pdf', $record->id))
                         ->openUrlInNewTab()
                         ->visible(fn($record) => $record->photos()->count() > 0)
-                        ->tooltip('Generar reporte PDF'),
+                        ->tooltip('Generar informe PDF con evidencias fotográficas'),
+
+                    /*Tables\Actions\Action::make('preview_work_report')
+                        ->label('Previsualizar PDF')
+                        ->color('info')
+                        ->icon('heroicon-o-eye')
+                        ->url(fn($record) => route('work-report.preview', $record->id))
+                        ->openUrlInNewTab()
+                        ->tooltip('Previsualizar reporte de trabajo en PDF'),
+                    */
+                    Tables\Actions\Action::make('download_work_report_pdf')
+                        ->label('Descargar PDF')
+                        ->color('primary')
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->url(fn($record) => route('work-report.pdf', $record->id))
+                        ->openUrlInNewTab()
+                        ->tooltip('Descargar reporte de trabajo en PDF'),
+
+                    /*Tables\Actions\Action::make('generate_pdf_excel')
+                        ->label('PDF desde Excel')
+                        ->color('warning')
+                        ->icon('heroicon-o-document-text')
+                        ->url(fn($record) => route('work-report.pdf-excel', $record->id))
+                        ->openUrlInNewTab()
+                        ->tooltip('Generar PDF desde plantilla Excel'),
+                    */
+
+                    Tables\Actions\Action::make('generate_excel')
+                        ->label('Generar Excel')
+                        ->color('success')
+                        ->icon('heroicon-o-document-arrow-down')
+                        ->url(fn($record) => route('work-report.xls', $record->id))
+                        ->openUrlInNewTab()
+                        ->tooltip('Generar reporte Excel'),
                 ])
                     ->icon('heroicon-m-ellipsis-vertical') // Aquí defines que sea el icono de 3 puntos
                     ->tooltip('Opciones')

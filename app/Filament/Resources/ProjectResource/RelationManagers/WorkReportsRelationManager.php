@@ -596,14 +596,14 @@ class WorkReportsRelationManager extends RelationManager
                     ->relationManager(PhotosRelationManager::make()),
 
 
-                Tables\Actions\Action::make('generate_report')
-                    ->label('Generar PDF')
+                Tables\Actions\Action::make('generate_evidence_report')
+                    ->label('Informe de Evidencias')
                     ->color('danger')
-                    ->icon('heroicon-o-document')
-                    ->url(fn($action) => route('work-report.pdf', $action->getRecord()->id))
+                    ->icon('heroicon-o-camera')
+                    ->url(fn($action) => route('evidence-report.pdf', $action->getRecord()->id))
                     ->openUrlInNewTab()
                     ->visible(fn($action) => $action->getRecord()->photos()->count() > 0)
-                    ->tooltip('Generar reporte PDF del trabajo realizado'),
+                    ->tooltip('Generar informe PDF con evidencias fotográficas'),
 
                 //Tables\Actions\Action::make('generate_word_report')
                 //    ->label('Generar Word')

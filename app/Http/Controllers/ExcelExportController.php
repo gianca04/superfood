@@ -6,6 +6,8 @@ use App\Models\Compliance;
 use App\Services\CloudConvertService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Mpdf\Mpdf;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\RichText\RichText;
@@ -14,30 +16,6 @@ use PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing;
 
 class ExcelExportController extends Controller
 {
-    protected CloudConvertService $cloudConvertService;
-
-    public function __construct(CloudConvertService $cloudConvertService)
-    {
-        $this->cloudConvertService = $cloudConvertService;
-    }
-
-    public function downloadAsPdf(Spreadsheet $spreadsheet, string $filename)
-    {
-        if (!$this->cloudConvertService->isConfigured()) {
-            return CloudConvertService::errorResponse(
-                'CloudConvert API key no configurada. Agrega CLOUDCONVERT_API_KEY en tu archivo .env'
-            );
-        }
-
-        $result = $this->cloudConvertService->spreadsheetToPdf($spreadsheet, $filename);
-
-        if (!$result['success']) {
-            return CloudConvertService::errorResponse($result['error']);
-        }
-
-        return CloudConvertService::downloadResponse($result['content'], $filename . '.pdf');
-    }
-
     public function downloadAsExcel(Spreadsheet $spreadsheet, string $filename)
     {
         return response()->streamDownload(function () use ($spreadsheet) {
@@ -55,10 +33,84 @@ class ExcelExportController extends Controller
 
     public function downloadActaPdf($id)
     {
-        $spreadsheet = $this->generateActaSpreadsheet($id);
-        $filename = $this->getActaFilename($id);
-        
-        return $this->downloadAsPdf($spreadsheet, $filename);
+        try {
+            Log::info('🔍 Iniciando descarga PDF - ID Compliance: ' . $id);
+            
+            // Paso 1: Obtener datos
+            Log::info('📊 Obteniendo datos de Compliance...');
+            $data = $this->getActaData($id);
+            Log::info('✅ Datos obtenidos correctamente', ['keys' => array_keys($data)]);
+            
+            // Paso 2: Generar HTML desde la vista Blade
+            Log::info('🎨 Renderizando vista Blade: filament.pdf.acta_conformidad');
+            $html = view('filament.pdf.acta_conformidad', $data)->render();
+            Log::info('✅ HTML generado correctamente', ['html_length' => strlen($html)]);
+            
+            // Paso 3: Crear directorio temporal si no existe
+            $tempDir = storage_path('app/temp');
+            if (!is_dir($tempDir)) {
+                Log::info('📁 Creando directorio temporal: ' . $tempDir);
+                mkdir($tempDir, 0755, true);
+            }
+            
+            // Paso 4: Configurar mPDF
+            Log::info('⚙️ Configurando mPDF...');
+            $mpdf = new Mpdf([
+                'mode' => 'utf-8',
+                'format' => 'A4',
+                'margin_left' => 10,
+                'margin_right' => 10,
+                'margin_top' => 10,
+                'margin_bottom' => 10,
+                'default_font' => 'Arial',
+                'tempDir' => $tempDir,
+            ]);
+            Log::info('✅ mPDF configurado correctamente');
+            
+            // Paso 5: Escribir HTML en el PDF
+            Log::info('📝 Escribiendo HTML en PDF...');
+            $mpdf->WriteHTML($html);
+            Log::info('✅ HTML escrito en PDF correctamente');
+            
+            // Paso 6: Obtener nombre del archivo
+            $filename = $this->getActaFilename($id);
+            Log::info('📄 Nombre de archivo generado: ' . $filename);
+            
+            // Paso 7: Generar salida PDF
+            Log::info('🖨️ Generando salida PDF...');
+            $pdfOutput = $mpdf->Output('', 'S');
+            Log::info('✅ PDF generado correctamente', ['size' => strlen($pdfOutput) . ' bytes']);
+            
+            return response($pdfOutput, 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '.pdf"',
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('❌ Error al generar PDF: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'error' => 'Error al generar PDF',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    /**
+     * Previsualiza el Acta de Conformidad en formato HTML
+     */
+    public function previewActaPdf($id)
+    {
+        Log::info('👁️ Iniciando previsualización PDF - ID: ' . $id);
+        $data = $this->getActaData($id);
+        $data['id'] = $id;
+        $data['isPreview'] = true; // Marcar como previsualización para evitar bucles
+        Log::info('✅ Previsualización preparada');
+        return view('filament.pdf.acta_conformidad', $data);
     }
     
     public function downloadActaExcel($id)
@@ -73,6 +125,108 @@ class ExcelExportController extends Controller
         $compliance = Compliance::with('project.quote')->find($id);
         $quote = $compliance?->project?->quote;
         return 'Acta_Conformidad_' . ($quote?->correlative ?? $compliance->id);
+    }
+
+    /**
+     * Obtiene los datos del Acta de Conformidad para la vista PDF
+     */
+    private function getActaData($id): array
+    {
+        try {
+            Log::info('📋 Iniciando getActaData para ID: ' . $id);
+            
+            // Paso 1: Obtener Compliance
+            Log::info('🔍 Buscando Compliance con relaciones...');
+            $compliance = Compliance::with([
+                'project.subClient.client',
+                'project.quote'
+            ])->findOrFail($id);
+            Log::info('✅ Compliance encontrado', ['id' => $compliance->id]);
+
+            // Paso 2: Extraer datos relacionados
+            Log::info('🔗 Extrayendo datos relacionados...');
+            $project = $compliance->project;
+            $subClient = $project?->subClient;
+            $client = $subClient?->client;
+            $quote = $project?->quote;
+            
+            Log::info('✅ Datos relacionados extraídos', [
+                'has_project' => !is_null($project),
+                'has_subClient' => !is_null($subClient),
+                'has_client' => !is_null($client),
+                'has_quote' => !is_null($quote),
+            ]);
+
+            // Paso 3: Obtener usuario autenticado
+            Log::info('👤 Obteniendo usuario autenticado...');
+            $user = Auth::user();
+            $employee = $user?->employee;
+            Log::info('✅ Usuario obtenido', [
+                'has_user' => !is_null($user),
+                'has_employee' => !is_null($employee),
+                'user_id' => $user?->id
+            ]);
+
+            // Paso 4: Preparar activos
+            Log::info('🏗️ Preparando datos de activos...');
+            $rawAssets = $compliance->assets ?? [];
+            Log::info('📦 Assets brutos obtenidos', ['count' => count($rawAssets)]);
+            
+            $assetsConfig = [
+                'tablero_autosoportado' => 'Tablero Autosoportado',
+                'tablero_adosados' => 'Tablero Adosados',
+                'banco_condensadores' => 'Banco de Condensadores',
+                'pozos_baja_tension' => 'Pozos a Tierra Baja Tensión',
+                'pozos_media_tension' => 'Pozos a Tierra Media Tensión',
+            ];
+
+            $assets = [];
+            foreach ($assetsConfig as $key => $name) {
+                $assetData = $rawAssets[$key] ?? [];
+                $assets[] = [
+                    'name' => $name,
+                    'selected' => $assetData['selected'] ?? false,
+                    'quantity' => $assetData['quantity'] ?? '',
+                    'comments' => $assetData['comments'] ?? '',
+                ];
+            }
+            Log::info('✅ Activos preparados', ['total_assets' => count($assets)]);
+
+            // Paso 5: Construir array de datos
+            Log::info('🔨 Construyendo array de datos finales...');
+            $finalData = [
+                'numero' => str_pad($compliance->id, 6, '0', STR_PAD_LEFT),
+                'razon_social' => $client?->business_name ?? '',
+                'ruc' => $client?->document_number ?? '',
+                'tienda' => $subClient?->name ?? '',
+                'direccion' => $subClient?->address ?? '',
+                'numero_ot' => $quote?->correlative ?? 'OT-' . ($project?->id ?? ''),
+                'descripcion_servicio' => $quote?->project_description ?? $project?->name ?? '',
+                'fecha_inicio' => $project?->start_date?->format('d/m/Y') ?? '',
+                'fecha_fin' => $project?->end_date?->format('d/m/Y') ?? '',
+                'assets' => $assets,
+                'observaciones' => $compliance->maintenance_observations ?? '',
+                'firma_cliente' => $compliance->client_signature ?? null,
+                'cliente_nombre' => $compliance->fullname_cliente ?? '',
+                'cliente_tipo_doc' => $compliance->document_type ?? 'DNI',
+                'cliente_documento' => $compliance->document_number ?? '',
+                'firma_empleado' => $compliance->employee_signature ?? null,
+                'empleado_nombre' => $employee ? $employee->first_name . ' ' . $employee->last_name : '',
+                'empleado_tipo_doc' => $employee?->document_type ?? 'DNI',
+                'empleado_documento' => $employee?->document_number ?? '',
+            ];
+            Log::info('✅ Array de datos construido correctamente', ['keys' => array_keys($finalData)]);
+            
+            return $finalData;
+            
+        } catch (\Throwable $e) {
+            Log::error('❌ Error en getActaData: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
+        }
     }
 
     private function generateActaSpreadsheet($id)
@@ -183,6 +337,7 @@ class ExcelExportController extends Controller
 
         return $spreadsheet;
     }
+
 
     private function addBase64ImageToCell($sheet, string $base64Data, string $cell, int $width = 150, int $height = 50): void
     {

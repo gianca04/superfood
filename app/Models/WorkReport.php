@@ -21,9 +21,20 @@ class WorkReport extends Model
         'tools',
         'personnel',
         'materials',
+        'work_to_do',      // Trabajos a realizar
+        'work_done',       // Trabajos realizados
         'start_time',  // Hora de inicio del trabajo
         'end_time',    // Hora de finalizaci��n del trabajo
         'report_date'  // Fecha del reporte (solo fecha)
+    ];
+
+    protected $casts = [
+        'personnel' => 'array',
+        'materials' => 'array',
+        'tools' => 'array',
+        'start_time' => 'datetime',
+        'end_time' => 'datetime',
+        'report_date' => 'date',
     ];
 
     /**
@@ -44,9 +55,5 @@ class WorkReport extends Model
     public function photos()
     {
         return $this->hasMany(Photo::class, 'work_report_id');
-    }
-    public function compliance()
-    {
-        return $this->hasOne(Compliance::class);
     }
 }

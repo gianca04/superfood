@@ -3,11 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\WorkReport;
+use App\Models\Employee;
+use App\Models\Position;
+use App\Services\CloudConvertService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class WorkReportExcelController extends Controller
 {
@@ -15,69 +19,345 @@ class WorkReportExcelController extends Controller
      * Ruta de la plantilla Excel
      */
     private string $templatePath;
+    
+    protected CloudConvertService $cloudConvertService;
 
-    public function __construct()
+    public function __construct(CloudConvertService $cloudConvertService)
     {
         $this->templatePath = app_path('documents/reporte_trabajo.xlsx');
+        $this->cloudConvertService = $cloudConvertService;
+    }
+
+    // ==================== MÉTODOS PÚBLICOS DE DESCARGA ====================
+
+    /**
+     * Descarga el reporte de trabajo como Excel
+     */
+    public function downloadExcel(int $id)
+    {
+        $spreadsheet = $this->generateWorkReportSpreadsheet($id);
+        $filename = $this->getWorkReportFilename($id);
+
+        return response()->streamDownload(function () use ($spreadsheet) {
+            $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
+            $writer->save('php://output');
+        }, $filename . '.xlsx', [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
     }
 
     /**
-     * Genera un reporte de trabajo en formato Excel
+     * Descarga el reporte de trabajo como PDF
+     */
+    public function downloadPdf(int $id)
+    {
+        if (!$this->cloudConvertService->isConfigured()) {
+            return CloudConvertService::errorResponse(
+                'CloudConvert API key no configurada. Agrega CLOUDCONVERT_API_KEY en tu archivo .env'
+            );
+        }
+
+        $spreadsheet = $this->generateWorkReportSpreadsheet($id);
+        $filename = $this->getWorkReportFilename($id);
+
+        $result = $this->cloudConvertService->spreadsheetToPdf($spreadsheet, $filename);
+
+        if (!$result['success']) {
+            return CloudConvertService::errorResponse($result['error']);
+        }
+
+        return CloudConvertService::downloadResponse($result['content'], $filename . '.pdf');
+    }
+
+    /**
+     * Descarga el reporte de trabajo como PDF usando vista Blade
+     * 
+     * Este método genera un PDF directamente desde una vista Blade,
+     * procesando todos los datos del WorkReport incluyendo:
+     * - Información del cliente y tienda
+     * - Trabajos a realizar y realizados
+     * - Herramientas y materiales
+     * - Personal con sus horas y cargos
+     * - Recomendaciones
      *
-     * @param int $workReport
-     * @param Request $request
-     * @return BinaryFileResponse|\Illuminate\Http\JsonResponse
+     * @param int $id ID del WorkReport
+     * @return \Illuminate\Http\Response
+     */
+    public function downloadBladePdf(int $id)
+    {
+        // Cargar el WorkReport con todas sus relaciones necesarias
+        $workReport = WorkReport::with([
+            'project.subClient.client',
+            'employee',
+            'photos'
+        ])->findOrFail($id);
+
+        // Preparar los datos para la vista
+        $data = $this->prepareDataForBladePdf($workReport);
+
+        // Generar el PDF usando la vista Blade
+        $pdf = Pdf::loadView('reports.report-work', $data)
+            ->setPaper('a4', 'portrait')
+            ->setOptions([
+                'defaultFont' => 'DejaVu Sans',
+                'isHtml5ParserEnabled' => true,
+                'isPhpEnabled' => true,
+                'dpi' => 150,
+                'enable_remote' => true,
+            ]);
+
+        $filename = $this->getWorkReportFilename($id);
+
+        Log::info('PDF de reporte de trabajo generado desde Blade', [
+            'work_report_id' => $id
+        ]);
+
+        return $pdf->download($filename . '.pdf');
+    }
+
+    /**
+     * Previsualiza el reporte de trabajo como PDF en el navegador
+     * 
+     * Este método genera un PDF directamente desde una vista Blade
+     * y lo muestra en el navegador (inline) sin descargarlo.
+     *
+     * @param int $id ID del WorkReport
+     * @return \Illuminate\Http\Response
+     */
+    public function previewBladePdf(int $id)
+    {
+        // Cargar el WorkReport con todas sus relaciones necesarias
+        $workReport = WorkReport::with([
+            'project.subClient.client',
+            'employee',
+            'photos'
+        ])->findOrFail($id);
+
+        // Preparar los datos para la vista
+        $data = $this->prepareDataForBladePdf($workReport);
+
+        // Generar el PDF usando la vista Blade
+        $pdf = Pdf::loadView('reports.report-work', $data)
+            ->setPaper('a4', 'portrait')
+            ->setOptions([
+                'defaultFont' => 'DejaVu Sans',
+                'isHtml5ParserEnabled' => true,
+                'isPhpEnabled' => true,
+                'dpi' => 100,
+                'enable_remote' => true,
+            ]);
+
+        $filename = $this->getWorkReportFilename($id);
+
+        Log::info('PDF de reporte de trabajo previsualizado desde Blade', [
+            'work_report_id' => $id
+        ]);
+
+        // Usar stream() para mostrar en el navegador en lugar de descargar
+        return $pdf->stream($filename . '.pdf');
+    }
+
+    /**
+     * Prepara todos los datos necesarios para la vista Blade del PDF
+     * 
+     * Procesa los datos del WorkReport y los transforma en un formato
+     * listo para ser consumido por la vista Blade, incluyendo:
+     * - Datos básicos (fecha, horas, cliente, tienda)
+     * - Herramientas y materiales (combinados y formateados)
+     * - Personal con nombres completos y cargos resueltos
+     * - Total de horas hombre
+     *
+     * @param WorkReport $workReport
+     * @return array
+     */
+    private function prepareDataForBladePdf(WorkReport $workReport): array
+    {
+        // Datos básicos del reporte
+        $reportDate = $workReport->report_date?->format('d/m/Y') ?? 'N/A';
+        $startTime = $workReport->start_time?->format('H:i') ?? 'N/A';
+        $endTime = $workReport->end_time?->format('H:i') ?? 'N/A';
+
+        // Datos del cliente (WorkReport -> Project -> SubClient -> Client)
+        $clientName = $workReport->project?->subClient?->client?->business_name ?? 'N/A';
+        $documentNumber = $workReport->project?->subClient?->client?->document_number ?? 'N/A';
+
+        // Datos de la tienda/sede (WorkReport -> Project -> SubClient)
+        $storeName = $workReport->project?->subClient?->name ?? 'N/A';
+        $storeAddress = $workReport->project?->subClient?->address ?? 'N/A';
+
+        // Trabajos (limpiar HTML)
+        $workDone = $this->cleanHtmlToText($workReport->work_done ?? '');
+        $workToDo = $this->cleanHtmlToText($workReport->work_to_do ?? '');
+        $suggestions = $this->cleanHtmlToText($workReport->suggestions ?? '');
+
+        // Procesar herramientas y materiales
+        $toolsAndMaterials = $this->processToolsAndMaterials(
+            $workReport->tools ?? [],
+            $workReport->materials ?? []
+        );
+
+        // Procesar personal con nombres y cargos
+        $personnelData = $this->processPersonnelForPdf($workReport->personnel ?? []);
+
+        return [
+            'workReport' => $workReport,
+            'reportId' => $workReport->id,
+            'reportDate' => $reportDate,
+            'startTime' => $startTime,
+            'endTime' => $endTime,
+            'clientName' => $clientName,
+            'documentNumber' => $documentNumber,
+            'storeName' => $storeName,
+            'storeAddress' => $storeAddress,
+            'workDone' => $workDone ?: 'N/A',
+            'workToDo' => $workToDo ?: 'N/A',
+            'suggestions' => $suggestions ?: 'N/A',
+            'toolsAndMaterials' => $toolsAndMaterials,
+            'personnel' => $personnelData['personnel'],
+            'totalHours' => $personnelData['totalHours'],
+        ];
+    }
+
+    /**
+     * Procesa y combina herramientas y materiales en un solo array
+     * 
+     * @param array $tools Array de herramientas [{"herramienta":"...","unidad":"...","cantidad":"..."}]
+     * @param array $materials Array de materiales [{"material":"...","unidad":"...","cantidad":"..."}]
+     * @return array Array combinado con estructura uniforme
+     */
+    private function processToolsAndMaterials(array $tools, array $materials): array
+    {
+        $combined = [];
+
+        // Agregar herramientas
+        foreach ($tools as $tool) {
+            $combined[] = [
+                'nombre' => $tool['herramienta'] ?? '',
+                'unidad' => $tool['unidad'] ?? '',
+                'cantidad' => $tool['cantidad'] ?? '',
+            ];
+        }
+
+        // Agregar materiales
+        foreach ($materials as $material) {
+            $combined[] = [
+                'nombre' => $material['material'] ?? '',
+                'unidad' => $material['unidad'] ?? '',
+                'cantidad' => $material['cantidad'] ?? '',
+            ];
+        }
+
+        return $combined;
+    }
+
+    /**
+     * Procesa el array de personal resolviendo nombres de empleados y cargos
+     * 
+     * @param array $personnel Array de personal [{"employee_id":3,"hh":"2","position_id":"3"}]
+     * @return array ['personnel' => array, 'totalHours' => float]
+     */
+    private function processPersonnelForPdf(array $personnel): array
+    {
+        $processedPersonnel = [];
+        $totalHours = 0;
+
+        if (empty($personnel)) {
+            return ['personnel' => [], 'totalHours' => 0];
+        }
+
+        // Obtener IDs únicos para consultas eficientes
+        $employeeIds = array_filter(array_column($personnel, 'employee_id'));
+        $positionIds = array_filter(array_column($personnel, 'position_id'));
+
+        // Cargar empleados y posiciones en memoria
+        $employees = Employee::whereIn('id', $employeeIds)->get()->keyBy('id');
+        $positions = Position::whereIn('id', $positionIds)->get()->keyBy('id');
+
+        foreach ($personnel as $person) {
+            $employeeId = $person['employee_id'] ?? null;
+            $positionId = $person['position_id'] ?? null;
+            $hh = $person['hh'] ?? 0;
+
+            // Sumar horas para el total
+            $totalHours += (float) $hh;
+
+            // Obtener nombre completo del empleado
+            $employee = $employees->get($employeeId);
+            $employeeName = $employee
+                ? trim($employee->first_name . ' ' . $employee->last_name)
+                : 'N/A';
+
+            // Obtener nombre del cargo
+            $position = $positions->get($positionId);
+            $positionName = $position?->name ?? 'N/A';
+
+            $processedPersonnel[] = [
+                'nombre' => $employeeName,
+                'hh' => $hh,
+                'cargo' => $positionName,
+            ];
+        }
+
+        return [
+            'personnel' => $processedPersonnel,
+            'totalHours' => $totalHours,
+        ];
+    }
+
+    /**
+     * Genera el nombre del archivo para el reporte
+     */
+    private function getWorkReportFilename(int $id): string
+    {
+        $workReport = WorkReport::with('project')->find($id);
+        $projectName = $workReport?->project?->name ?? 'sin_proyecto';
+        $date = $workReport?->report_date?->format('Y-m-d') ?? now()->format('Y-m-d');
+        
+        // Limpiar caracteres especiales del nombre
+        $projectName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $projectName);
+        
+        return "reporte_trabajo_{$projectName}_{$date}";
+    }
+
+    /**
+     * Genera el Spreadsheet del reporte de trabajo
+     */
+    private function generateWorkReportSpreadsheet(int $id): Spreadsheet
+    {
+        // Cargar el WorkReport con sus relaciones
+        $workReport = WorkReport::with([
+            'project.subClient.client',
+            'employee',
+            'photos'
+        ])->findOrFail($id);
+
+        // Verificar que la plantilla existe
+        if (!file_exists($this->templatePath)) {
+            abort(404, 'Plantilla no encontrada: ' . $this->templatePath);
+        }
+
+        // Cargar la plantilla Excel
+        $spreadsheet = IOFactory::load($this->templatePath);
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Llenar los datos en las celdas correspondientes
+        $this->fillReportData($sheet, $workReport);
+
+        Log::info('Spreadsheet de reporte de trabajo generado', [
+            'work_report_id' => $id
+        ]);
+
+        return $spreadsheet;
+    }
+
+    // ==================== MÉTODO LEGACY (para compatibilidad) ====================
+
+    /**
+     * @deprecated Usa downloadExcel() en su lugar
      */
     public function generateReport(int $workReport, Request $request)
     {
-        try {
-            // Cargar el WorkReport con sus relaciones
-            // El cliente se obtiene a través de: Project -> SubClient -> Client
-            $workReportModel = WorkReport::with([
-                'project.subClient.client',
-                'employee',
-                'photos'
-            ])->findOrFail($workReport);
-
-            // Cargar la plantilla Excel
-            $spreadsheet = IOFactory::load($this->templatePath);
-            $sheet = $spreadsheet->getActiveSheet();
-
-            // Llenar los datos en las celdas correspondientes
-            $this->fillReportData($sheet, $workReportModel);
-
-            // Generar nombre del archivo
-            $filename = $this->generateFilename($workReportModel);
-
-            // Crear archivo temporal
-            $tempFile = tempnam(sys_get_temp_dir(), 'work_report_') . '.xlsx';
-            
-            // Guardar el archivo
-            $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
-            $writer->save($tempFile);
-
-            Log::info('Excel de reporte de trabajo generado', [
-                'work_report_id' => $workReport,
-                'filename' => $filename
-            ]);
-
-            // Retornar el archivo para descarga
-            return response()->download($tempFile, $filename, [
-                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            ])->deleteFileAfterSend(true);
-
-        } catch (\Exception $e) {
-            Log::error('Error generando Excel de reporte de trabajo', [
-                'work_report_id' => $workReport,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response()->json([
-                'error' => 'Error al generar el reporte Excel',
-                'message' => config('app.debug') ? $e->getMessage() : 'Error interno del servidor'
-            ], 500);
-        }
+        return $this->downloadExcel($workReport);
     }
 
     /**
@@ -91,6 +371,22 @@ class WorkReportExcelController extends Controller
      * - J11: RUC del cliente (document_number)
      * - C13: Nombre de la tienda/sede (SubClient name)
      * - J13: Dirección de la tienda/sede (SubClient address)
+     * - B18: Trabajos realizados (work_done)
+     * - B24: Trabajos a realizar (work_to_do)
+     * - B56: Recomendaciones (suggestions)
+     * 
+     * Tabla de Materiales/Herramientas (desde fila 31):
+     * - B30: Encabezado "Materiales/Herramientas"
+     * - J30: Encabezado "Unidad"
+     * - L30: Encabezado "Cantidad"
+     * - B31+: Datos de tools y materials JSON
+     * 
+     * Tabla de Personal (desde fila 45):
+     * - B44: Encabezado "Personal que realizó el trabajo"
+     * - J44: Encabezado "H.H"
+     * - L44: Encabezado "Cargo"
+     * - B45+: Datos de personnel JSON (employee_id, hh, position_id)
+     * - J53: Total de horas hombre
      *
      * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet
      * @param WorkReport $workReport
@@ -129,22 +425,201 @@ class WorkReportExcelController extends Controller
         // Ruta: WorkReport -> Project -> SubClient -> address
         $storeAddress = $workReport->project?->subClient?->address ?? 'N/A';
         $sheet->setCellValue('J13', $storeAddress);
+
+        // B18 - Trabajos realizados (work_done)
+        // Se limpia el HTML del RichEditor y se convierte a texto plano
+        $workDone = $this->cleanHtmlToText($workReport->work_done ?? '');
+        $sheet->setCellValue('B18', $workDone ?: 'N/A');
+
+        // B24 - Trabajos a realizar (work_to_do)
+        // Se limpia el HTML del RichEditor y se convierte a texto plano
+        $workToDo = $this->cleanHtmlToText($workReport->work_to_do ?? '');
+        $sheet->setCellValue('B24', $workToDo ?: 'N/A');
+
+        // Tabla de Materiales/Herramientas
+        // Encabezados en fila 30, datos desde fila 31
+        // Primero: tools JSON [{"herramienta":"taladro","unidad":"unidad","cantidad":"2"}]
+        // Después: materials JSON [{"material":"Cemento","unidad":"sacos","cantidad":"2"}]
+        $lastRow = $this->fillToolsAndMaterialsTable($sheet, $workReport->tools ?? [], $workReport->materials ?? [], 31);
+
+        // Tabla de Personal
+        // Encabezados en fila 44, datos desde fila 45
+        // JSON: [{"employee_id":3,"hh":"2","position_id":"3"}]
+        $this->fillPersonnelTable($sheet, $workReport->personnel ?? [], 45);
+
+        // B56 - Recomendaciones (suggestions)
+        // Se limpia el HTML del RichEditor y se convierte a texto plano
+        $suggestions = $this->cleanHtmlToText($workReport->suggestions ?? '');
+        $sheet->setCellValue('B56', $suggestions ?: 'N/A');
     }
 
     /**
-     * Genera el nombre del archivo Excel
+     * Llena la tabla de herramientas y materiales en el Excel
+     * 
+     * Primero recorre el array de tools (herramientas) y luego
+     * continúa con el array de materials (materiales) en las siguientes filas.
+     * 
+     * Columnas:
+     * - B: Materiales/Herramientas (herramienta o material)
+     * - J: Unidad (unidad)
+     * - L: Cantidad (cantidad)
      *
-     * @param WorkReport $workReport
-     * @return string
+     * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet
+     * @param array $tools Array de herramientas del JSON [{"herramienta":"...","unidad":"...","cantidad":"..."}]
+     * @param array $materials Array de materiales del JSON [{"material":"...","unidad":"...","cantidad":"..."}]
+     * @param int $startRow Fila inicial para los datos (después de encabezados)
+     * @return int Última fila utilizada
      */
-    private function generateFilename(WorkReport $workReport): string
+    private function fillToolsAndMaterialsTable($sheet, array $tools, array $materials, int $startRow): int
     {
-        $projectName = $workReport->project?->name ?? 'sin_proyecto';
-        $date = $workReport->report_date?->format('Y-m-d') ?? now()->format('Y-m-d');
+        $currentRow = $startRow;
+
+        // Primero: Herramientas (tools)
+        // JSON: [{"herramienta":"taladro","unidad":"unidad","cantidad":"2"}]
+        foreach ($tools as $tool) {
+            // B - Herramienta
+            $sheet->setCellValue('B' . $currentRow, $tool['herramienta'] ?? '');
+            
+            // J - Unidad
+            $sheet->setCellValue('J' . $currentRow, $tool['unidad'] ?? '');
+            
+            // L - Cantidad
+            $sheet->setCellValue('L' . $currentRow, $tool['cantidad'] ?? '');
+
+            $currentRow++;
+        }
+
+        // Después: Materiales (materials)
+        // JSON: [{"material":"Cemento","unidad":"sacos","cantidad":"2"}]
+        foreach ($materials as $material) {
+            // B - Material
+            $sheet->setCellValue('B' . $currentRow, $material['material'] ?? '');
+            
+            // J - Unidad
+            $sheet->setCellValue('J' . $currentRow, $material['unidad'] ?? '');
+            
+            // L - Cantidad
+            $sheet->setCellValue('L' . $currentRow, $material['cantidad'] ?? '');
+
+            $currentRow++;
+        }
+
+        return $currentRow;
+    }
+
+    /**
+     * Llena la tabla de personal en el Excel
+     * 
+     * Columnas:
+     * - B44: Personal que realizó el trabajo (nombre completo del empleado)
+     * - J44: H.H (horas hombre)
+     * - L44: Cargo (nombre del cargo/posición)
+     * - J53: Total de horas hombre
+     *
+     * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet
+     * @param array $personnel Array de personal del JSON [{"employee_id":3,"hh":"2","position_id":"3"}]
+     * @param int $startRow Fila inicial para los datos (después de encabezados)
+     * @return int Última fila utilizada
+     */
+    private function fillPersonnelTable($sheet, array $personnel, int $startRow): int
+    {
+        $currentRow = $startRow;
+        $totalHours = 0;
+
+        // Obtener todos los IDs de empleados y posiciones para hacer una sola consulta
+        $employeeIds = array_column($personnel, 'employee_id');
+        $positionIds = array_column($personnel, 'position_id');
+
+        // Cargar empleados y posiciones en memoria para evitar múltiples consultas
+        $employees = Employee::whereIn('id', $employeeIds)->get()->keyBy('id');
+        $positions = Position::whereIn('id', $positionIds)->get()->keyBy('id');
+
+        foreach ($personnel as $person) {
+            $employeeId = $person['employee_id'] ?? null;
+            $positionId = $person['position_id'] ?? null;
+            $hh = $person['hh'] ?? 0;
+
+            // Sumar horas para el total
+            $totalHours += (float) $hh;
+
+            // Obtener nombre completo del empleado
+            $employee = $employees->get($employeeId);
+            $employeeName = $employee 
+                ? trim($employee->first_name . ' ' . $employee->last_name) 
+                : 'N/A';
+
+            // Obtener nombre del cargo
+            $position = $positions->get($positionId);
+            $positionName = $position?->name ?? 'N/A';
+
+            // B - Personal que realizó el trabajo (nombre completo)
+            $sheet->setCellValue('B' . $currentRow, $employeeName);
+            
+            // J - H.H (horas hombre)
+            $sheet->setCellValue('J' . $currentRow, $hh);
+            
+            // L - Cargo
+            $sheet->setCellValue('L' . $currentRow, $positionName);
+
+            $currentRow++;
+        }
+
+        // J53 - Total de horas hombre
+        $sheet->setCellValue('J53', $totalHours);
+
+        return $currentRow;
+    }
+
+    /**
+     * Limpia el contenido HTML y lo convierte a texto plano
+     * 
+     * Conversiones realizadas:
+     * - <br>, <br/>, </p> → salto de línea
+     * - <li> → "• " (bullet point)
+     * - </li> → salto de línea
+     * - <h2>, <h3> → salto de línea + texto en mayúsculas
+     * - Demás etiquetas HTML → eliminadas
+     * - Entidades HTML → decodificadas
+     *
+     * @param string $html Contenido HTML del RichEditor
+     * @return string Texto plano limpio
+     */
+    private function cleanHtmlToText(string $html): string
+    {
+        if (empty($html)) {
+            return '';
+        }
+
+        // Reemplazar saltos de línea HTML por marcadores temporales
+        $text = preg_replace('/<br\s*\/?>/i', "\n", $html);
+        $text = preg_replace('/<\/p>/i', "\n", $text);
+        $text = preg_replace('/<\/div>/i', "\n", $text);
         
-        // Limpiar caracteres especiales del nombre
-        $projectName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $projectName);
+        // Reemplazar listas
+        $text = preg_replace('/<li>/i', '• ', $text);
+        $text = preg_replace('/<\/li>/i', "\n", $text);
+        $text = preg_replace('/<\/?[uo]l>/i', "\n", $text);
         
-        return "reporte_trabajo_{$projectName}_{$date}.xlsx";
+        // Reemplazar encabezados (agregar salto de línea antes)
+        $text = preg_replace('/<h[2-6][^>]*>/i', "\n", $text);
+        $text = preg_replace('/<\/h[2-6]>/i', "\n", $text);
+        
+        // Eliminar todas las demás etiquetas HTML
+        $text = strip_tags($text);
+        
+        // Decodificar entidades HTML (&nbsp;, &amp;, etc.)
+        $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        
+        // Limpiar espacios múltiples y saltos de línea excesivos
+        $text = preg_replace('/[ \t]+/', ' ', $text); // Múltiples espacios → uno solo
+        $text = preg_replace('/\n\s*\n\s*\n/', "\n\n", $text); // Máximo 2 saltos de línea seguidos
+        
+        // Eliminar espacios al inicio y final de cada línea
+        $lines = explode("\n", $text);
+        $lines = array_map('trim', $lines);
+        $text = implode("\n", $lines);
+        
+        // Eliminar espacios al inicio y final del texto completo
+        return trim($text);
     }
 }

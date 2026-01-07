@@ -32,10 +32,10 @@ class ComplianceResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('General Information')
+                Forms\Components\Section::make('Información General')
                     ->schema([
                         Forms\Components\Select::make('project_id')
-                            ->label('Project')
+                            ->label('Projecto')
                             ->relationship('project', 'name')
                             ->searchable()
                             ->required()
@@ -145,7 +145,7 @@ class ComplianceResource extends Resource
                                     ->numeric()
                                     ->minValue(0)
                                     ->visible(fn(Get $get) => $get('assets.tablero_autosoportado.selected')),
-                                Forms\Components\TextInput::make('assets.tablero_autosoportado.comments')
+                                Forms\Components\TextArea::make('assets.tablero_autosoportado.comments')
                                     ->label('Comentarios')
                                     ->visible(fn(Get $get) => $get('assets.tablero_autosoportado.selected')),
                             ])->columns(3),
@@ -343,19 +343,29 @@ class ComplianceResource extends Resource
                     ->sortable(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('downloadExcel')
-                    ->label('Excel')
-                    ->icon('heroicon-o-document-arrow-down')
-                    ->color('success')
-                    ->url(fn(Compliance $record) => route('actas.excel', $record->id))
-                    ->openUrlInNewTab(),
-                Tables\Actions\Action::make('downloadPdf')
-                    ->label('PDF')
-                    ->icon('heroicon-o-document-text')
-                    ->color('danger')
-                    ->url(fn(Compliance $record) => route('actas.pdf', $record->id))
-                    ->openUrlInNewTab(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\Action::make('downloadExcel')
+                        ->label('Excel')
+                        ->icon('heroicon-o-document-arrow-down')
+                        ->color('success')
+                        ->url(fn(Compliance $record) => route('actas.excel', $record->id))
+                        ->openUrlInNewTab(),
+                    Tables\Actions\Action::make('downloadPdf')
+                        ->label('PDF')
+                        ->icon('heroicon-o-document-text')
+                        ->color('danger')
+                        ->url(fn(Compliance $record) => route('actas.pdf', $record->id))
+                        ->openUrlInNewTab(),
+                    Tables\Actions\Action::make('previewActaPdf')
+                        ->label('PREVISUALIZAR')
+                        ->icon('heroicon-o-document-text')
+                        ->color('primary')
+                        ->url(fn(Compliance $record) => route('actas.preview', $record->id))
+                        ->openUrlInNewTab(),
+                ]),
+
             ])
             ->bulkActions([
                 DeleteBulkAction::make(),
