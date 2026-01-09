@@ -23,6 +23,22 @@ class Client extends Model
         'logo',
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saved(function ($client) {
+            // Convert logo to WebP if exists
+            if ($client->logo) {
+                $convertedPath = \App\Services\ImageConversionService::convertToWebP($client->logo);
+                if ($convertedPath && $convertedPath !== $client->logo) {
+                    // Update without triggering another save event
+                    $client->updateQuietly(['logo' => $convertedPath]);
+                }
+            }
+        });
+    }
+
     protected $casts = [
         'document_type'   => 'string',
         'document_number' => 'string',
@@ -38,7 +54,7 @@ class Client extends Model
         return $this->belongsToMany(Project::class, 'client_project')->withTimestamps();
     }
 
-        public function subClients()
+    public function subClients()
     {
         return $this->hasMany(SubClient::class);
     }

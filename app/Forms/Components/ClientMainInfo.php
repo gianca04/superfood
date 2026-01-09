@@ -103,15 +103,16 @@ class ClientMainInfo
                         ->image()
                         ->imageEditor()
                         ->directory('logos')
+                        ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                         ->columnSpanFull()
-                        ->hint('Sube el logo de la empresa')
+                        ->hint('Sube el logo de la empresa. Se convertirá automáticamente a WebP.')
                         ->panelLayout('integrated')
                         ->directory('uploads/users')
                         ->previewable(true),
                 ])
                 ->columns(2),
         ])
-        ->from('md')
-        ->columnSpanFull();
+            ->from('md')
+            ->columnSpanFull();
     }
 }

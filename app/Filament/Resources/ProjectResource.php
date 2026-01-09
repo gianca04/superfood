@@ -814,7 +814,7 @@ class ProjectResource extends Resource
         return $table
 
             ->columns([
-                TextColumn::make('project_code')
+                TextColumn::make('service_code')
                     ->label('Correlativo')
                     ->alignJustify()
                     ->extraAttributes(['class' => 'font-bold'])

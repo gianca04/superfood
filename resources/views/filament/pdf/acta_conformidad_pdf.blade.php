@@ -484,7 +484,7 @@
                             @endif
                         </div>
 
-                        <div style="text-align: center; font-size: 30px; font-weight: bold; margin-bottom: 20px;">
+                        <div style="text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 20px;">
                             FIRMA</div>
 
                         <table class="signature-field-table">
@@ -509,7 +509,7 @@
                             @endif
                         </div>
 
-                        <div style="text-align: center; font-size: 30px; font-weight: bold; margin-bottom: 20px;">
+                        <div style="text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 20px;">
                             FIRMA</div>
 
                         <table class="signature-field-table">

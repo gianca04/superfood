@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\ImageConversionService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
@@ -25,39 +26,24 @@ class Photo extends Model
     protected static function boot()
     {
         parent::boot();
-        static::saving(function ($photo) {
-            if ($photo->photo_path && Storage::disk('public')->exists($photo->photo_path)) {
-                $fullPath = Storage::disk('public')->path($photo->photo_path);
-                $ext = strtolower(pathinfo($fullPath, PATHINFO_EXTENSION));
-                if ($ext === 'jpg' || $ext === 'jpeg') {
-                    if (function_exists('exif_read_data')) {
-                        $exif = @exif_read_data($fullPath);
-                        if ($exif && isset($exif['Orientation'])) {
-                            $orientation = $exif['Orientation'];
-                            if ($orientation != 1) {
-                                $img = imagecreatefromjpeg($fullPath);
-                                $deg = 0;
-                                switch ($orientation) {
-                                    case 3:
-                                        $deg = 180;
-                                        break;
-                                    case 6:
-                                        $deg = 270;
-                                        break;
-                                    case 8:
-                                        $deg = 90;
-                                        break;
-                                }
-                                if ($deg) {
-                                    $img = imagerotate($img, $deg, 0);
-                                }
-                                imagejpeg($img, $fullPath, 95);
-                                imagedestroy($img);
-                            }
-                        }
-                    }
+
+        static::saved(function ($photo) {
+            // Convert photo_path to WebP if exists
+            if ($photo->photo_path) {
+                $convertedPath = ImageConversionService::convertToWebP($photo->photo_path);
+                if ($convertedPath && $convertedPath !== $photo->photo_path) {
+                    // Update without triggering another save event
+                    $photo->updateQuietly(['photo_path' => $convertedPath]);
                 }
-                // Puedes mantener el procesamiento para PNG y WEBP con Intervention Image si lo necesitas
+            }
+
+            // Convert before_work_photo_path to WebP if exists
+            if ($photo->before_work_photo_path) {
+                $convertedPath = ImageConversionService::convertToWebP($photo->before_work_photo_path);
+                if ($convertedPath && $convertedPath !== $photo->before_work_photo_path) {
+                    // Update without triggering another save event
+                    $photo->updateQuietly(['before_work_photo_path' => $convertedPath]);
+                }
             }
         });
     }

@@ -13,14 +13,14 @@ return new class extends Migration
     {
         Schema::table('compliance', function (Blueprint $table) {
             // Usamos string o enum. 'pendiente' como default es lo común.
-            $table->string('estado')->default('pendiente')->after('id');
+            $table->string('state')->default('pendiente')->after('id');
         });
     }
 
     public function down(): void
     {
         Schema::table('compliance', function (Blueprint $table) {
-            $table->dropColumn('estado');
+            $table->dropColumn('state');
         });
     }
 };

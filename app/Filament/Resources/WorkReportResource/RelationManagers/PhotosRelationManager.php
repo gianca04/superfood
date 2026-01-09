@@ -47,7 +47,7 @@ class PhotosRelationManager extends RelationManager
                         ->maxSize(25600) // 25MB
                         ->extraInputAttributes(['capture' => 'user'])
                         ->columnSpanFull()
-                        ->helperText('Formatos soportados: JPEG, PNG, WebP. Tamaño máximo: 25MB.'),
+                        ->helperText('Formatos soportados: JPEG, PNG, WebP. Se convertirá automáticamente a WebP. Tamaño máximo: 25MB.'),
 
                     Forms\Components\RichEditor::make('before_work_descripcion')
                         ->label('Descripción de la evidencia inicial')
@@ -81,7 +81,7 @@ class PhotosRelationManager extends RelationManager
                         ->acceptedFileTypes(types: ['image/jpeg', 'image/png', 'image/webp'])
                         ->maxSize(25600) // 25MB
                         ->extraInputAttributes(['capture' => 'user'])
-                        ->helperText('Formatos soportados: JPEG, PNG, WebP. Tamaño máximo: 25MB.'),
+                        ->helperText('Formatos soportados: JPEG, PNG, WebP. Se convertirá automáticamente a WebP. Tamaño máximo: 25MB.'),
 
                     Forms\Components\RichEditor::make('descripcion')
                         ->label('Descripción de la evidencia del trabajo realizado')
@@ -181,7 +181,7 @@ class PhotosRelationManager extends RelationManager
                                     ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                                     ->maxSize(25600) // 25MB
                                     ->extraInputAttributes(['capture' => 'environment'])
-                                    ->helperText('Formatos: JPEG, PNG, WebP. Tamaño máx: 25MB.'),
+                                    ->helperText('Formatos: JPEG, PNG, WebP. Se convertirá automáticamente a WebP. Tamaño máx: 25MB.'),
 
                                 Forms\Components\RichEditor::make('before_work_descripcion')
                                     ->label('Descripción de la evidencia inicial')
@@ -215,7 +215,7 @@ class PhotosRelationManager extends RelationManager
                                     ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                                     ->maxSize(25600) // 25MB
                                     ->extraInputAttributes(['capture' => 'environment'])
-                                    ->helperText('Formatos: JPEG, PNG, WebP. Tamaño máx: 25MB.'),
+                                    ->helperText('Formatos: JPEG, PNG, WebP. Se convertirá automáticamente a WebP. Tamaño máx: 25MB.'),
 
                                 Forms\Components\RichEditor::make('descripcion')
                                     ->label('Descripción de la evidencia del trabajo realizado')
@@ -268,7 +268,7 @@ class PhotosRelationManager extends RelationManager
                                     ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                                     ->maxSize(25600) // 25MB
                                     // Sin 'extraInputAttributes' para que abra la galería
-                                    ->helperText('Formatos: JPEG, PNG, WebP. Tamaño máx: 25MB.'),
+                                    ->helperText('Formatos: JPEG, PNG, WebP. Se convertirá automáticamente a WebP. Tamaño máx: 25MB.'),
                                 Forms\Components\RichEditor::make('before_work_descripcion')
                                     ->label('Descripción de la evidencia inicial')
                                     ->maxLength(500)
@@ -299,7 +299,7 @@ class PhotosRelationManager extends RelationManager
                                     ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                                     ->maxSize(25600) // 25MB
                                     // Sin 'extraInputAttributes' para que abra la galería
-                                    ->helperText('Formatos: JPEG, PNG, WebP. Tamaño máx: 25MB.'),
+                                    ->helperText('Formatos: JPEG, PNG, WebP. Se convertirá automáticamente a WebP. Tamaño máx: 25MB.'),
 
                                 Forms\Components\RichEditor::make('descripcion')
                                     ->label('Descripción de la evidencia del trabajo realizado')
@@ -392,7 +392,7 @@ class PhotosRelationManager extends RelationManager
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
                     ->label('Subir primera evidencia')
-                    //->icon('heroicon-o-camera')
+                    ->icon('heroicon-o-camera')
                     ->modalWidth(width: MaxWidth::Full),
             ]);
     }
