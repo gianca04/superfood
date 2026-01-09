@@ -58,7 +58,7 @@
                     </div>
                 </th>
                 <th class="info-table-header-col">
-                    <h3>Reporte Consolidado de Trabajo</h3>
+                    <h3>Informe Consolidado de evidencias</h3>
                 </th>
                 <th class="info-table-header-col">
                     <div class="info-cell-gris">
@@ -232,53 +232,70 @@
             </table>
         @endif
 
-        {{-- HERRAMIENTAS --}}
-        @if ($workReport->tools)
-            <table class="basic-info-text">
-                <thead>
+        {{-- TABLA DE HERRAMIENTAS Y MATERIALES --}}
+        <table class="basic-info-table">
+            <thead>
+                <tr>
+                    <th colspan="3" style="text-align: left;">Herramientas y Materiales</th>
+                </tr>
+                <tr>
+                    <th style="width: 50%;">Descripción</th>
+                    <th style="width: 25%;">Unidad</th>
+                    <th style="width: 25%;">Cantidad</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse ($toolsAndMaterials as $item)
                     <tr>
-                        <th>Herramientas</th>
+                        <td>{{ $item['nombre'] }}</td>
+                        <td>{{ $item['unidad'] }}</td>
+                        <td>{{ $item['cantidad'] }}</td>
                     </tr>
-                </thead>
-                <tbody>
+                @empty
                     <tr>
-                        <td>{!! $workReport->tools !!}</td>
+                        <td colspan="3" style="text-align: center; font-style: italic;">No hay herramientas ni
+                            materiales
+                            registrados</td>
                     </tr>
-                </tbody>
-            </table>
-        @endif
+                @endforelse
+            </tbody>
+        </table>
 
-        {{-- MATERIALES --}}
-        @if ($workReport->materials)
-            <table class="basic-info-text">
-                <thead>
+        <table class="basic-info-table">
+            <thead>
+                <tr>
+                    <th colspan="3" style="text-align: left;">Personal que realizó el trabajo</th>
+                </tr>
+                <tr>
+                    <th style="width: 50%;">Nombre</th>
+                    <th style="width: 25%;">H.H</th>
+                    <th style="width: 25%;">Cargo</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse ($personnelList as $person)
                     <tr>
-                        <th>Materiales</th>
+                        <td>{{ $person['nombre'] }}</td>
+                        <td>{{ $person['hh'] }}</td>
+                        <td>{{ $person['cargo'] }}</td>
                     </tr>
-                </thead>
-                <tbody>
+                @empty
                     <tr>
-                        <td>{!! $workReport->materials !!}</td>
+                        <td colspan="3" style="text-align: center; font-style: italic;">No hay personal
+                            registrado</td>
                     </tr>
-                </tbody>
-            </table>
-        @endif
-
-        {{-- PERSONAL --}}
-        @if ($workReport->personnel)
-            <table class="basic-info-text">
-                <thead>
+                @endforelse
+            </tbody>
+            @if (count($personnelList) > 0)
+                <tfoot>
                     <tr>
-                        <th>Personal</th>
+                        <th style="text-align: right;">Total H.H:</th>
+                        <th>{{ $totalHours }}</th>
+                        <th></th>
                     </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>{!! $workReport->personnel !!}</td>
-                    </tr>
-                </tbody>
-            </table>
-        @endif
+                </tfoot>
+            @endif
+        </table>
 
         {{-- EVIDENCIAS FOTOGRAFICAS DEL REPORTE --}}
         @if ($workReport->photos->count() > 0)

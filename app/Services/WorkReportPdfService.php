@@ -73,7 +73,7 @@ class WorkReportPdfService
     {
         return WorkReport::with([
             'employee:id,first_name,last_name',
-            'project:id,name,start_date,end_date,sub_client_id,quote_id',
+            'project:id,name,end_date,sub_client_id,quote_id',
             'project.subClient:id,name,client_id',
             'project.subClient.client:id,business_name,document_number,logo',
             'project.quote:id,TDR',

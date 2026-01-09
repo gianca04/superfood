@@ -44,7 +44,7 @@
                         class="flex items-center gap-2 p-2 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-900 dark:border-gray-700">
                         <x-heroicon-o-calendar class="w-4 h-4 text-primary-500" />
                         <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                            {{ $project->start_date ? $project->start_date->format('d/m/Y') : 'No definida' }}
+                            {{ $project->service_start_date ? $project->service_start_date->format('d/m/Y') : 'No definida' }}
                         </span>
                     </div>
                 </div>
@@ -55,7 +55,7 @@
                         class="flex items-center gap-2 p-2 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-900 dark:border-gray-700">
                         <x-heroicon-o-calendar-days class="w-4 h-4 text-danger-500" />
                         <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                            {{ $project->end_date ? $project->end_date->format('d/m/Y') : 'No definida' }}
+                            {{ $project->service_end_date ? $project->service_end_date->format('d/m/Y') : 'No definida' }}
                         </span>
                     </div>
                 </div>

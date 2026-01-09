@@ -392,7 +392,7 @@ class PhotosRelationManager extends RelationManager
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
                     ->label('Subir primera evidencia')
-                    ->icon('heroicon-o-camera')
+                    //->icon('heroicon-o-camera')
                     ->modalWidth(width: MaxWidth::Full),
             ]);
     }

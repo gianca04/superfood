@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Compliance;
+use App\Models\Project;
 use App\Services\CloudConvertService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -26,10 +27,124 @@ class ExcelExportController extends Controller
         ]);
     }
 
+    public function downloadAutoActaOrReports($id)
+    {
+        // 1. Buscar si el ID es de un acta o de un proyecto
+        $compliance = Compliance::find($id);
+        $project = Project::find($id);
+
+        if ($compliance) {
+            // Si es un acta, obtener el proyecto relacionado
+            $project = $compliance->project;
+        } elseif ($project) {
+            // Si es un proyecto, buscar el acta relacionada
+            $compliance = $project->compliance;
+        }
+
+        if (!$project) {
+            abort(404, 'Proyecto no encontrado');
+        }
+
+        $workReportsCount = $project->workReports()->count();
+
+        if ($compliance && $workReportsCount > 0) {
+            // Descargar acta + reportes
+            return redirect()->route('actas.pdf-with-reports', $compliance->id);
+        } elseif ($compliance) {
+            // Solo acta
+            return redirect()->route('actas.pdf', $compliance->id);
+        } elseif ($workReportsCount > 0) {
+            // Solo reportes
+            return redirect()->route('work-reports.download-multiple-pdf', $project->id);
+        } else {
+            abort(404, 'No hay acta ni reportes de trabajo para este proyecto.');
+        }
+    }
+
     /**
      * Descarga el Acta de Conformidad como PDF usando CloudConvert
      */
     // ==================== ACTA DE CONFORMIDAD ====================
+
+    public function downloadActaWithReports($id)
+    {
+        try {
+            // --- PASO 1: GENERAR EL ACTA (mPDF) ---
+            $actaData = $this->getActaData($id);
+            $logoPath = public_path('images/Logo2.png');
+            if (file_exists($logoPath)) {
+                $actaData['logo_base64'] = 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
+            }
+            $htmlActa = view('filament.pdf.acta_conformidad_pdf', $actaData)->render();
+
+            $mpdfActa = new \Mpdf\Mpdf(['format' => 'A4', 'margin_left' => 10, 'margin_right' => 10, 'margin_top' => 10, 'margin_bottom' => 10]);
+            $mpdfActa->WriteHTML($htmlActa);
+
+            $actaPath = storage_path('app/temp_acta_' . $id . '_' . time() . '.pdf');
+            $mpdfActa->Output($actaPath, 'F');
+
+            // --- PASO 2: GENERAR LOS REPORTES (DomPDF) ---
+            $compliance = \App\Models\Compliance::findOrFail($id);
+            $workReports = \App\Models\WorkReport::where('project_id', $compliance->project_id)
+                ->with(['employee', 'project.subClient.client', 'photos'])
+                ->get();
+
+            if ($workReports->isEmpty()) {
+                // Si no hay reportes, solo descargamos el Acta para evitar errores de archivo vacío
+                return $this->downloadActaPdf($id);
+            }
+
+            $htmlReports = '';
+            foreach ($workReports as $report) {
+                $dataReport = app(\App\Http\Controllers\WorkReportExcelController::class)->prepareDataForBladePdf($report);
+                $htmlReports .= view('reports.report-work', $dataReport)->render();
+            }
+
+            $dompdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($htmlReports)
+                ->setPaper('a4', 'portrait')
+                ->setOptions(['isRemoteEnabled' => true, 'isHtml5ParserEnabled' => true]);
+
+            $reportsPath = storage_path('app/temp_reports_' . $id . '_' . time() . '.pdf');
+            file_put_contents($reportsPath, $dompdf->output());
+
+            // --- PASO 3: UNIR AMBOS (MERGE usando el mPDF principal) ---
+            // Creamos la instancia que servirá de contenedor final
+            $finalMpdf = new \Mpdf\Mpdf(['format' => 'A4']);
+
+            // Importar Acta
+            $pageCount = $finalMpdf->setSourceFile($actaPath);
+            for ($i = 1; $i <= $pageCount; $i++) {
+                $tplId = $finalMpdf->importPage($i);
+                $finalMpdf->AddPage();
+                $finalMpdf->useTemplate($tplId);
+            }
+
+            // Importar Reportes
+            $pageCount = $finalMpdf->setSourceFile($reportsPath);
+            for ($i = 1; $i <= $pageCount; $i++) {
+                $tplId = $finalMpdf->importPage($i);
+                $finalMpdf->AddPage();
+                $finalMpdf->useTemplate($tplId);
+            }
+
+            // Generar el PDF final en memoria
+            $pdfOutput = $finalMpdf->Output('', 'S');
+
+            // --- PASO 4: LIMPIEZA ---
+            if (file_exists($actaPath)) unlink($actaPath);
+            if (file_exists($reportsPath)) unlink($reportsPath);
+
+            $filename = 'Acta_y_Reportes_' . $id . '_' . now()->format('YmdHis') . '.pdf';
+
+            return response($pdfOutput, 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Error uniendo PDFs: " . $e->getMessage());
+            return back()->with('error', 'Ocurrió un error al generar el documento combinado.');
+        }
+    }
 
     public function downloadActaPdf($id)
     {
@@ -107,8 +222,6 @@ class ExcelExportController extends Controller
             ], 500);
         }
     }
-
-
 
     /**
      * Previsualiza el Acta de Conformidad en formato HTML

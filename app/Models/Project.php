@@ -19,23 +19,98 @@ class Project extends Model
      *
      * @var array<int, string>
      */
+
     protected $fillable = [
-        'name',
-        'start_date',
-        'end_date',
-        'location',
+        // 1. DATOS GENERALES / SOLICITUD
+        'name',             // Descripción de la solicitud
+        'service_code',     // Código de Servicio
+        'request_number',   // N° de Solicitud
+        'service_start_date',       // Fecha solicitud
+        'sub_client_id',    // Cliente (ID)
+        'location',         // Tienda (JSON)
+        'comment',          // Comentario
+
+        // 2. SERVICE (EXECUTION)
+        'work_order_number',    // Antes: ot
+        'service_start_date',   // Antes: fecha_inicio_servicio
+        'service_end_date',     // Antes: fecha_fin_servicio
+        'service_days',         // Antes: dias
+        'task_type',            // Antes: tarea
+        'has_quote',            // Antes: cotizacion
+        'has_report',           // Antes: informe
+
+        //3. BILLING
+        'fracttal_status', // Antes: fracttal
+        'purchase_order', // Antes: orden_compra
+        'migo_code', // Antes: migo
+
+        //4. TRACKING DATA
+        'status',             // estado: Pendiente, Enviada, Aprobado...
+        'quote_sent_at',      // fecha_cot_enviada
+        'quote_approved_at',  // fecha_cot_aprobada
+        'wo_review_at',       // fecha_ot_revision
+        'wo_completed_at',    // fecha_ot_finalizado
+        'days_to_completion', // dias_hasta_finalizacion
+        'final_comments',     // comentario_observación: Observaciones finales
+
+        // Campos legacy para compatibilidad
         'latitude',
         'longitude',
         'quote_id',
-        'sub_client_id', // Permite asignar el subcliente directamente
+        'end_date',
     ];
 
+    protected $casts = [
+        // 1. DATOS GENERALES
+        'start_date' => 'date',
+        'end_date' => 'date',
+        'latitude' => 'decimal:7',
+        'longitude' => 'decimal:7',
+        'location' => 'array',
+        'sub_client_id' => 'integer',
 
+        // 2. SERVICE (EXECUTION)
+        'service_start_date' => 'date',
+        'service_end_date' => 'date',
+        'service_days' => 'integer',
+        'has_quote' => 'string',
+        'has_report' => 'string',
 
-    /**
-     * Relación con la cotización
-     * Un proyecto pertenece a una cotización.
-     */
+        'fracttal_status' => 'string',
+
+        'status' => 'string',
+
+        // 4. TRACKING DATA (Fechas y Números)
+        'quote_sent_at' => 'datetime',
+        'quote_approved_at' => 'datetime',
+        'wo_review_at' => 'datetime',
+        'wo_completed_at' => 'datetime',
+        'days_to_completion' => 'integer',
+        // Otros
+        'quote_id' => 'integer',
+        // Se eliminaron tools, personnel y materials por no estar en fillable
+    ];
+
+    public function visit()
+    {
+        return $this->hasOne(Visit::class);
+    }
+    // Simplificación de relación para evitar duplicidad
+    public function workReports()
+    {
+        // Si es una relación directa de muchos:
+        return $this->hasMany(WorkReport::class, 'project_id');
+
+        // O si es Muchos a Muchos (como sugería tu método Work_reports):
+        // return $this->belongsToMany(WorkReport::class, 'work_report_project')->withTimestamps();
+    }
+    // En tu modelo Project
+    public function compliance()
+    {
+        // Relación 1 a 1: Un proyecto tiene un (o ningún) acta de conformidad
+        return $this->hasOne(Compliance::class, 'project_id');
+    }
+
     public function quote()
     {
         return $this->belongsTo(Quote::class, 'quote_id');
@@ -47,17 +122,8 @@ class Project extends Model
      *
      * @var array<string, string>
      */
-    protected $casts = [
-        'start_date' => 'date',
-        'end_date' => 'date',
-        'latitude' => 'decimal:7',
-        'longitude' => 'decimal:7',
-        'location' => 'array', // Convierte automáticamente entre JSON y array
-        'sub_client_id' => 'integer',
-        'tools' => 'string',
-        'personnel' => 'string',
-        'materials' => 'string',
-    ];
+
+
 
     public function clients()
     {
@@ -68,7 +134,7 @@ class Project extends Model
     {
         return $this->hasManyThrough(Attendance::class, Timesheet::class);
     }
-    
+
     public function timesheets()
     {
         return $this->hasMany(Timesheet::class);
@@ -96,10 +162,7 @@ class Project extends Model
     /**
      * Relación: Un proyecto tiene muchos reportes de trabajo.
      */
-    public function workReports()
-    {
-        return $this->hasMany(WorkReport::class, 'project_id');
-    }
+
 
     /**
      * Relación: Un proyecto tiene muchas fotos a través de los reportes de trabajo.
@@ -126,7 +189,8 @@ class Project extends Model
 
     public function getLocationLatitudeAttribute()
     {
-        if (!$this->location || !is_array($this->location)) return null;
+        if (!$this->location || !is_array($this->location))
+            return null;
         return $this->location['latitude'] ?? null;
     }
 
@@ -135,7 +199,8 @@ class Project extends Model
      */
     public function getLocationLongitudeAttribute()
     {
-        if (!$this->location || !is_array($this->location)) return null;
+        if (!$this->location || !is_array($this->location))
+            return null;
         return $this->location['longitude'] ?? null;
     }
 
@@ -150,7 +215,8 @@ class Project extends Model
      */
     public function getLocationAddressAttribute()
     {
-        if (!$this->location || !is_array($this->location)) return null;
+        if (!$this->location || !is_array($this->location))
+            return null;
         return $this->location['location'] ?? null;
     }
 
@@ -176,24 +242,5 @@ class Project extends Model
     {
         $now = now()->toDateString();
         return $this->start_date <= $now && $this->end_date >= $now;
-    }
-
-    public function getStatusTextAttribute()
-    {
-        $now = now()->toDateString();
-
-        $start = $this->start_date instanceof \Carbon\Carbon ? $this->start_date->toDateString() : $this->start_date;
-        $end = $this->end_date instanceof \Carbon\Carbon ? $this->end_date->toDateString() : $this->end_date;
-
-        if ($start && $now < $start) {
-            return 'No iniciado';
-        }
-        if ($end && $now > $end) {
-            return 'Culminado';
-        }
-        if ($start && $end && $now >= $start && $now <= $end) {
-            return 'En proceso';
-        }
-        return 'Sin definir';
     }
 }

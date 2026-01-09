@@ -13,6 +13,7 @@ class WorkReport extends Model
     protected $fillable = [
         'employee_id',
         'project_id',
+        'compliance_id',
         'name',
         'supervisor_signature',
         'manager_signature',
@@ -50,6 +51,10 @@ class WorkReport extends Model
     public function project()
     {
         return $this->belongsTo(Project::class);
+    }
+    public function compliance()
+    {
+        return $this->belongsTo(Compliance::class);
     }
     public function getSubClientAttribute()
     {

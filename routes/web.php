@@ -84,6 +84,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/actas/{id}/pdf-with-reports', [ExcelExportController::class, 'downloadActaWithReports'])
         ->name('actas.pdf-with-reports');
 
+    //DESCARGAR ACTA O REPORTES DE TRABAJO O ACTAS Y REPORTE DE TRABAJO SEGUN EL ID DEL PROYECTO
+    Route::get('/descargar-acta-o-reportes/{id}', [ExcelExportController::class, 'downloadAutoActaOrReports'])
+        ->name('descargar.acta.o.reportes');
+
     // Reportes de Trabajo
     Route::get('/work-report/{id}/xls', [WorkReportExcelController::class, 'downloadExcel'])
         ->name('work-report.xls');
@@ -93,6 +97,9 @@ Route::middleware(['auth'])->group(function () {
         ->name('work-report.pdf');
     Route::get('/work-report/{id}/preview', [WorkReportExcelController::class, 'previewBladePdf'])
         ->name('work-report.preview');
+
+    //aca estarán la importacion de proyectos en csv
+
 });
 
 Route::get('/crear-symlink', function () {

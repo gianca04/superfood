@@ -38,6 +38,7 @@ class WorkReportsRelationManager extends RelationManager
         }
         return $data;
     }
+
     public function form(Form $form): Form
     {
         return $form
@@ -129,7 +130,13 @@ class WorkReportsRelationManager extends RelationManager
                                     }),
 
                                 // FIN DE SELECT DE EMPLEADO
-
+                                //ACA EL ID DE ACTA : COMPLIANCE_ID
+                                Forms\Components\Hidden::make('compliance_id')
+                                    ->default(function () {
+                                        // Intenta ownerRecord, si no, usa la URL
+                                        return $this->ownerRecord->id ?? request()->route('record');
+                                    })
+                                    ->dehydrated(),
                                 // INICIO DE SELECT DE PROYECTO
                                 Forms\Components\Select::make('project_id')
                                     ->label('Proyecto')
@@ -169,12 +176,14 @@ class WorkReportsRelationManager extends RelationManager
                                             ->visible(fn($get) => filled($get('project_id')))
                                             ->modalContent(function ($get) {
                                                 $projectId = $get('project_id');
-                                                if (!$projectId) return null;
+                                                if (!$projectId)
+                                                    return null;
 
                                                 // Buscamos el proyecto con sus relaciones para la vista Blade
                                                 $project = Project::with(['subClient.client'])->find($projectId);
 
-                                                if (!$project) return null;
+                                                if (!$project)
+                                                    return null;
 
                                                 // Retornamos tu vista de modal
                                                 return view('filament.components.project-info-modal', compact('project'));
@@ -238,10 +247,7 @@ class WorkReportsRelationManager extends RelationManager
                                                     ->minDate(fn(callable $get) => $get('start_date')), // Valida contra start_date
                                                 // ...existing code...
 
-                                                Forms\Components\Placeholder::make('status_text')
-                                                    ->label('Estado del proyecto:')
-                                                    ->extraAttributes(['class' => 'text-2xl font-bold text-primary-600'])
-                                                    ->content(fn($record) => $record?->status_text ?? 'Sin definir'),
+
                                             ]),
 
                                         Split::make([
@@ -678,18 +684,52 @@ class WorkReportsRelationManager extends RelationManager
                             ->icon('heroicon-o-wrench')
                             ->columns(2)
                             ->schema([
-                                \App\Forms\Components\ToolsTable::make('tools')
+                                Forms\Components\Repeater::make('tools')
                                     ->label('Herramientas')
                                     ->helperText('Agrega las herramientas utilizadas durante el trabajo.')
+                                    ->schema([
+                                        Forms\Components\TextInput::make('herramienta')
+                                            ->label('Herramienta')
+                                            ->placeholder('Ej: Taladro')
+                                            ->required(),
+                                        Forms\Components\TextInput::make('unidad')
+                                            ->label('Unidad')
+                                            ->placeholder('Ej: Unidad'),
+                                        Forms\Components\TextInput::make('cantidad')
+                                            ->label('Cantidad')
+                                            ->placeholder('Ej: 2'),
+                                    ])
+                                    ->columns(3)
                                     ->columnSpanFull()
+                                    ->defaultItems(0)
+                                    ->reorderable(false)
+                                    ->addActionLabel('Agregar herramienta')
                                     ->disabled(fn(string $operation): bool => $operation === 'view'),
-                                \App\Forms\Components\MaterialsTable::make('materials')
+
+                                Forms\Components\Repeater::make('materials')
                                     ->label('Materiales')
                                     ->helperText('Agrega los materiales utilizados durante el trabajo.')
+                                    ->schema([
+                                        Forms\Components\TextInput::make('material')
+                                            ->label('Material')
+                                            ->placeholder('Ej: Cemento')
+                                            ->required(),
+                                        Forms\Components\TextInput::make('unidad')
+                                            ->label('Unidad')
+                                            ->placeholder('Ej: Sacos'),
+                                        Forms\Components\TextInput::make('cantidad')
+                                            ->label('Cantidad')
+                                            ->placeholder('Ej: 10'),
+                                    ])
+                                    ->columns(3)
                                     ->columnSpanFull()
+                                    ->defaultItems(0)
+                                    ->reorderable(false)
+                                    ->addActionLabel('Agregar material')
                                     ->disabled(fn(string $operation): bool => $operation === 'view'),
                             ]),
                         // FIN DEL TAB DE HERRAMIENTAS Y MATERIALES
+
 
                         // INICIO DEL TAB DE LISTA DE PERSONAL
                         Tabs\Tab::make('Personal')
@@ -898,13 +938,14 @@ class WorkReportsRelationManager extends RelationManager
                         // FIN DL TAB DE LISTA DE PERSONAL
 
                         // INICIO DE TAB DE CONCLUSIONES
+                        // INICIO DE TAB DE CONCLUSIONES
                         Tabs\Tab::make('Conclusiones')
                             ->icon('heroicon-o-check-badge')
-                            ->columns(2)
+                            ->columns(2) // Esto define que habrá 2 columnas
                             ->schema([
                                 Forms\Components\RichEditor::make('conclusions')
                                     ->label('Conclusiones')
-                                    ->columnSpanFull()
+                                    // Quitamos columnSpanFull() para que use solo 1 de las 2 columnas
                                     ->maxLength(5000)
                                     ->toolbarButtons([
                                         'bold',
@@ -919,7 +960,8 @@ class WorkReportsRelationManager extends RelationManager
 
                                 Forms\Components\RichEditor::make('suggestions')
                                     ->label('Recomendaciones')
-                                    ->helperText('Proporciona sugerencias o comentarios adicionales sobre el trabajo realizado.')
+                                    ->helperText('Proporciona sugerencias o comentarios adicionales.')
+                                    // Quitamos columnSpanFull() para que ocupe la segunda columna
                                     ->maxLength(5000)
                                     ->toolbarButtons([
                                         'attachFiles',
@@ -935,38 +977,6 @@ class WorkReportsRelationManager extends RelationManager
                                         'undo',
                                     ]),
                             ]),
-                        /*
-                        // INICIO DE TAB DE FIRMAS
-                        Tabs\Tab::make('Firmas')
-                            ->icon('heroicon-o-pencil-square')
-                            ->columns(2)
-                            ->schema([
-                                SignaturePad::make('manager_signature')
-                                    ->label('Firma del gerente / subgerente')
-                                    ->dotSize(2.0)
-                                    ->penColor('#000')  // Color negro en modo claro
-                                    ->penColorOnDark('#00f')  // Color azul en modo oscuro para mayor visibilidad
-                                    ->lineMinWidth(0.2)
-                                    ->lineMaxWidth(2.5)
-                                    ->throttle(16)
-                                    ->minDistance(5)
-                                    ->velocityFilterWeight(0.7)
-                                    ->confirmable(),
-                                SignaturePad::make('supervisor_signature')
-                                    ->label('Firma del Validado por supervisor / técnico')
-                                    ->dotSize(2.0)
-                                    ->penColor('#000')  // Color negro en modo claro
-                                    ->penColorOnDark('#00f')  // Color azul en modo oscuro para mayor visibilidad
-                                    ->lineMinWidth(0.2)
-                                    ->lineMaxWidth(2.5)
-                                    ->throttle(16)
-                                    ->minDistance(5)
-                                    ->velocityFilterWeight(0.7)
-                                    ->confirmable(),
-
-                            ]),
-                        // FIN DE TAB DE FIRMAS
-                        */
                     ])
                     ->columnSpan('full'),
             ]);
@@ -1026,6 +1036,8 @@ class WorkReportsRelationManager extends RelationManager
                     ->color('success')
                     ->modalHeading('Nuevo Reporte de Trabajo')
                     ->mutateFormDataUsing(function (array $data): array {
+                        // Forzamos los IDs desde el ownerRecord (el Compliance padre)
+                        $data['compliance_id'] = $this->ownerRecord->id;
                         $data['project_id'] = $this->ownerRecord->project_id;
                         return $data;
                     }),
@@ -1058,7 +1070,13 @@ class WorkReportsRelationManager extends RelationManager
                     Tables\Actions\ViewAction::make()
                         ->color('info'),
                     Tables\Actions\EditAction::make()
-                        ->color('primary'),
+                        ->color('primary')
+                        ->mutateFormDataUsing(function (array $data): array {
+                            // Aseguramos que al editar no pierda la relación
+                            $data['compliance_id'] = $this->ownerRecord->id;
+                            $data['project_id'] = $this->ownerRecord->project_id;
+                            return $data;
+                        }),
                     Tables\Actions\Action::make('preview_report')
                         ->label('Previsualizar')
                         ->icon('heroicon-o-eye')

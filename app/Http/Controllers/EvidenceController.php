@@ -18,41 +18,37 @@ class EvidenceController extends Controller
     {
         // Obtener el query builder con relaciones cargadas
         $query = Evidence::with('photos');
-    
+
         // Filtro por búsqueda de nombre o descripción
         if ($request->has('search')) {
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'LIKE', "%{$search}%")
-                  ->orWhere('description', 'LIKE', "%{$search}%");
+                    ->orWhere('description', 'LIKE', "%{$search}%");
             });
         }
-    
+
         // Filtro por rango de fechas (created_at)
         if ($request->has('start_date') && $request->has('end_date')) {
             $startDate = $request->input('start_date');
             $endDate = $request->input('end_date');
-    
+
             // Validar formato de fecha (YYYY-MM-DD)
             if (strtotime($startDate) && strtotime($endDate)) {
                 $query->whereBetween('created_at', [$startDate, $endDate]);
             }
         }
-    
+
         // Ordenamiento por fecha de creación (asc o desc)
         $sortOrder = $request->input('sort_order', 'asc'); // Valor por defecto 'asc'
         $sortOrder = in_array(strtolower($sortOrder), ['asc', 'desc']) ? $sortOrder : 'asc';
         $query->orderBy('created_at', $sortOrder);
-    
+
         // Paginación estándar con 10 elementos por página
         $evidences = $query->paginate(10);
-    
+
         return response()->json($evidences);
     }
-    
-    
-    
-
     /**
      * Almacenar una nueva evidencia.
      *

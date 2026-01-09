@@ -5,22 +5,34 @@
     <meta charset="UTF-8">
     <title>Acta de Conformidad - SAT Industriales S.A.C.</title>
     <style>
-        /* ===== Estilos Simples para mPDF ===== */
+        /* ===== Reset y Fuentes ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: Arial, Helvetica, sans-serif;
             font-size: 11px;
+            background-color: #f5f5f5;
+            padding: 20px;
             color: #000;
             margin: 0;
-            padding: 10px;
         }
 
+        /* ===== Contenedor Principal ===== */
         .page {
             width: 100%;
+            max-width: 900px;
+            background: white;
+            padding: 10px 15px;
             border: 1px solid #00a99d;
-            padding: 10px;
+            margin: 0 auto;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
-        /* ===== Encabezado ===== */
+        /* ===== Encabezado con Tabla ===== */
         .header-table {
             width: 100%;
             border-collapse: collapse;
@@ -36,6 +48,11 @@
             font-weight: bold;
             font-size: 14px;
             color: #00a99d;
+        }
+
+        .company-subtitle {
+            font-size: 8px;
+            color: #000;
         }
 
         .header-title {
@@ -96,6 +113,7 @@
         .form-label {
             font-weight: bold;
             font-size: 10px;
+            white-space: nowrap;
         }
 
         .form-value {
@@ -103,7 +121,7 @@
             font-size: 10px;
         }
 
-        /* ===== Tabla Compuesta ===== */
+        /* ===== Tabla Compuesta OT/Descripción ===== */
         .composite-table {
             width: 100%;
             border-collapse: collapse;
@@ -148,6 +166,7 @@
         .conformity-note {
             font-size: 10px;
             margin: 10px 0 0 0;
+            line-height: 1.3;
         }
 
         /* ===== Tabla de Activos ===== */
@@ -170,6 +189,7 @@
             text-align: center;
             border: 1px solid #00a99d;
             font-size: 10px;
+            background: transparent;
         }
 
         .assets-table td {
@@ -208,6 +228,7 @@
             border: 1px solid #00a99d;
             padding: 5px;
             font-size: 10px;
+            line-height: 1.4;
         }
 
         /* ===== Sección de Firmas ===== */
@@ -215,6 +236,7 @@
             font-size: 9px;
             text-align: justify;
             margin-bottom: 10px;
+            line-height: 1.3;
         }
 
         .client-acceptance {
@@ -225,256 +247,284 @@
             margin-top: 5px;
         }
 
+        /* ===== Sección de Firmas AMPLIADA ===== */
         .signatures-table {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 20px;
+            /* Más espacio arriba */
         }
 
         .signatures-table td {
             width: 50%;
             vertical-align: top;
-            padding: 0 10px;
+            padding: 0 20px;
+            /* Más espacio entre columnas */
         }
 
         .signature-header {
             background-color: #00a99d;
             color: white;
             text-align: center;
-            padding: 6px 4px;
+            padding: 20px 8px;
+            /* Más grueso */
             font-weight: bold;
-            font-size: 14px;
-            margin-bottom: 12px;
+            font-size: 30px;
+            /* Título más grande */
+            margin-bottom: 0;
+        }
+
+        /* Contenedor visual de la firma */
+        .signature-box {
+            border: 1px solid #00a99d;
+            border-top: none;
+            /* Para que se una al header */
+            padding: 26px;
+            text-align: center;
         }
 
         .signature-area {
-            height: 60px;
-            text-align: center;
-            margin-bottom: 8px;
             width: 100%;
+            height: 180px;
+            /* Aumentado de 120 a 140 para que se vea mucho más grande */
+            display: block;
+            text-align: center;
         }
 
         .signature-area img {
-            width: 100%;
-            height: auto;
-            max-height: 55px;
-            object-fit: contain;
+            height: 180px;
+            width: auto;
+            image-rendering: crisp-edges;
+            /* Mantiene la nitidez en firmas digitales */
         }
 
+        .signature-label-text {
+            text-align: center;
+            font-size: 26px;
+            font-weight: bold;
+            margin-top: 10px;
+            color: #333;
+        }
+
+        /* Tabla de datos del firmante */
         .signature-field-table {
             width: 100%;
-            border-collapse: collapse;
+            margin-top: 15px;
         }
 
         .signature-field-table td {
-            padding: 4px 0;
-            font-size: 11px;
+            padding: 12px 0;
+            /* Más espacio entre filas de datos */
+            vertical-align: middle;
         }
 
         .signature-field-table .label {
             font-weight: bold;
-            width: 70px;
-            padding-right: 8px;
+            width: 25%;
+            /* Ajuste de ancho */
+            font-size: 26px;
+            /* Texto más legible */
         }
 
         .signature-field-table .value {
             border-bottom: 2px solid #00a99d;
-            font-weight: 500;
+            /* Línea más gruesa y visible */
+            width: 75%;
+            font-size: 26px;
+            padding-left: 10px;
         }
     </style>
 </head>
 
 <body>
-    <div class="page">
+    <!-- ===== ENCABEZADO ===== -->
+    <table class="header-table">
+        <tr>
+            <td style="width: 200px;">
+                @if (isset($logo_base64) && $logo_base64)
+                    <img src="{{ $logo_base64 }}" alt="Logo" style="height: 80px;">
+                @endif
+            </td>
+            <td class="header-title">
+                <h1>Acta de conformidad</h1>
+                <h2>Gerencia de ingeniería y Mantenimiento</h2>
+            </td>
+            <td class="header-number" style="width: 150px;">
+                Nº <span style="font-size: 22px;">{{ $numero }}</span>
+            </td>
+        </tr>
+    </table>
 
-        <!-- ===== ENCABEZADO ===== -->
-        <table class="header-table">
-            <tr>
-                <td style="width: 200px;">
-                    @if (isset($logo_base64) && $logo_base64)
-                        <img src="{{ $logo_base64 }}" alt="Logo" style="height: 80px;">
-                    @endif
-                </td>
-                <td class="header-title">
-                    <h1>Acta de conformidad</h1>
-                    <h2>Gerencia de ingeniería y Mantenimiento</h2>
-                </td>
-                <td class="header-number" style="width: 150px;">
-                    Nº <span style="font-size: 22px;">{{ $numero }}</span>
-                </td>
-            </tr>
-        </table>
+    <!-- ===== SECCIÓN A: Información del trabajo realizado ===== -->
+    <div class="section">
+        <div class="section-header">SECCIÓN A: Información del trabajo realizado</div>
+        <div class="section-content">
+            <!-- Fila 1: Razón Social y R.U.C. -->
+            <table class="form-table">
+                <tr>
+                    <td class="form-label" style="width: 100px;">A1) Razón Social:</td>
+                    <td class="form-value">{{ $razon_social }}</td>
+                    <td class="form-label" style="width: 50px;">R.U.C.:</td>
+                    <td class="form-value" style="width: 120px;">{{ $ruc }}</td>
+                </tr>
+            </table>
 
-        <!-- ===== SECCIÓN A: Información del trabajo realizado ===== -->
-        <div class="section">
-            <div class="section-header">SECCIÓN A: Información del trabajo realizado</div>
-            <div class="section-content">
-                <!-- Fila 1: Razón Social y R.U.C. -->
-                <table class="form-table">
-                    <tr>
-                        <td class="form-label" style="width: 100px;">A1) Razón Social:</td>
-                        <td class="form-value">{{ $razon_social }}</td>
-                        <td class="form-label" style="width: 50px;">R.U.C.:</td>
-                        <td class="form-value" style="width: 120px;">{{ $ruc }}</td>
-                    </tr>
-                </table>
+            <!-- Fila 2: Tienda y Dirección -->
+            <table class="form-table">
+                <tr>
+                    <td class="form-label" style="width: 70px;">A2) Tienda:</td>
+                    <td class="form-value">{{ $tienda }}</td>
+                    <td class="form-label" style="width: 70px;">Dirección:</td>
+                    <td class="form-value">{{ $direccion }}</td>
+                </tr>
+            </table>
 
-                <!-- Fila 2: Tienda y Dirección -->
-                <table class="form-table">
-                    <tr>
-                        <td class="form-label" style="width: 70px;">A2) Tienda:</td>
-                        <td class="form-value">{{ $tienda }}</td>
-                        <td class="form-label" style="width: 70px;">Dirección:</td>
-                        <td class="form-value">{{ $direccion }}</td>
-                    </tr>
-                </table>
+            <!-- Fila 3: N° de OT y Descripción del Servicio -->
+            <table class="composite-table">
+                <tr>
+                    <td class="left">
+                        <span class="label">A3) N° de OT:</span><br>
+                        {{ $numero_ot }}
+                    </td>
+                    <td>
+                        <span class="label">A4) Descripción del Servicio:</span><br>
+                        {{ $descripcion_servicio }}
+                    </td>
+                </tr>
+            </table>
 
-                <!-- Fila 3: N° de OT y Descripción del Servicio -->
-                <table class="composite-table">
-                    <tr>
-                        <td class="left">
-                            <span class="label">A3) N° de OT:</span><br>
-                            {{ $numero_ot }}
-                        </td>
-                        <td>
-                            <span class="label">A4) Descripción del Servicio:</span><br>
-                            {{ $descripcion_servicio }}
-                        </td>
-                    </tr>
-                </table>
+            <!-- Fila 4: Fechas -->
+            <table class="dates-table">
+                <tr>
+                    <td class="form-label">A5) Fecha de inicio:</td>
+                    <td><span class="date-box">{{ $fecha_inicio }}</span></td>
+                    <td class="form-label" style="padding-left: 30px;">A6) Fecha de fin:</td>
+                    <td><span class="date-box">{{ $fecha_fin }}</span></td>
+                </tr>
+            </table>
 
-                <!-- Fila 4: Fechas -->
-                <table class="dates-table">
-                    <tr>
-                        <td class="form-label">A5) Fecha de inicio:</td>
-                        <td><span class="date-box">{{ $fecha_inicio }}</span></td>
-                        <td class="form-label" style="padding-left: 30px;">A7) Fecha de fin:</td>
-                        <td><span class="date-box">{{ $fecha_fin }}</span></td>
-                    </tr>
-                </table>
-
-                <!-- Nota de Conformidad -->
-                <div class="conformity-note">
-                    A9) En el presente documento, se consta la <strong>CONFORMIDAD</strong> de los servicios presentados
-                    por la empresa:
-                </div>
+            <!-- Nota de Conformidad -->
+            <div class="conformity-note">
+                A7) En el presente documento, se consta la <strong>CONFORMIDAD</strong> de los servicios presentados
+                por la empresa:
             </div>
         </div>
+    </div>
 
-        <!-- ===== SECCIÓN B: Disposición de los activos intervenidos ===== -->
-        <div class="section">
-            <div class="section-header">SECCIÓN B: Disposición de los activos intervenidos</div>
-            <div class="section-content">
-                <div class="section-subtitle">
-                    B1) En esta sección, <strong>el contratista o proveedor del servicio deberá enlistar todos los
-                        activos intervenidos durante la actividad ejecutada.</strong>
-                </div>
+    <!-- ===== SECCIÓN B: Disposición de los activos intervenidos ===== -->
+    <div class="section">
+        <div class="section-header">SECCIÓN B: Disposición de los activos intervenidos</div>
+        <div class="section-content">
+            <div class="section-subtitle">
+                B1) En esta sección, <strong>el contratista o proveedor del servicio deberá enlistar todos los
+                    activos intervenidos durante la actividad ejecutada.</strong>
+            </div>
 
-                <table class="assets-table">
-                    <thead>
+            <table class="assets-table">
+                <thead>
+                    <tr>
+                        <th style="width: 30px;">N°</th>
+                        <th style="width: 220px;">Tipo de Activos</th>
+                        <th style="width: 80px;">Cantidad</th>
+                        <th>Comentarios</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($assets as $index => $asset)
                         <tr>
-                            <th style="width: 30px;">N°</th>
-                            <th style="width: 220px;">Tipo de Activos</th>
-                            <th style="width: 80px;">Cantidad</th>
-                            <th>Comentarios</th>
+                            <td class="number">{{ $index + 1 }}</td>
+                            <td class="asset-name">{{ $asset['name'] }} ({{ $asset['selected'] ? 'X' : '  ' }})
+                            </td>
+                            <td style="text-align: center;">{{ $asset['quantity'] }}</td>
+                            <td>{{ $asset['comments'] }}</td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($assets as $index => $asset)
-                            <tr>
-                                <td class="number">{{ $index + 1 }}</td>
-                                <td class="asset-name">{{ $asset['name'] }} ({{ $asset['selected'] ? 'X' : '  ' }})
-                                </td>
-                                <td style="text-align: center;">{{ $asset['quantity'] }}</td>
-                                <td>{{ $asset['comments'] }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                    @endforeach
+                </tbody>
+            </table>
 
-                <!-- Área de Observaciones -->
-                <div class="observations-area">
-                    <div class="observations-label">B2) Observaciones Generales del Mantenimiento Preventivo</div>
-                    <div class="observations-box">
-                        {!! $observaciones !!}
-                    </div>
+            <!-- Área de Observaciones -->
+            <div class="observations-area">
+                <div class="observations-label">B2) Observaciones Generales del Mantenimiento Preventivo</div>
+                <div class="observations-box">
+                    {!! $observaciones !!}
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- ===== SECCIÓN C: Responsabilidad de la conformidad y firmas ===== -->
-        <div class="section">
-            <div class="section-header">SECCIÓN C: Responsabilidad de la conformidad y firmas</div>
-            <div class="section-content">
-                <div class="responsibility-text">
-                    Quien suscribe esta Acta, declara que se ha concluido el trabajo y no queda nada pendiente de
-                    culminar, en la medida que se ha dado cumplimiento a todos los requerimientos solicitados en la
-                    incidencia. La firma de esta Acta de Conformidad por quien figura como responsable, es el título que
-                    habilita la procedencia del pago en contraprestación al trabajo realizado, y por tanto genera
-                    responsabilidad directa en quien suscribe esta Acta debido al impacto económico que genera y a las
-                    disposiciones de seguridad que deben tomarse en cuenta, por lo que en caso de incumplimiento la
-                    empresa se encontrará en la facultad de tomar las medidas que correspondan. Sino hubiera conformidad
-                    con el trabajo que debía realizarse, el responsable debe <strong>Incluir observaciones.</strong>
-                </div>
-
-                <div class="client-acceptance">
-                    SEÑOR CLIENTE LA FIRMA DE ESTE DOCUMENTO DA POR ACEPTADO EL TRABAJO REALIZADO POR NUESTRO PERSONAL
-                </div>
-
-                <!-- Área de Firmas -->
-                <table class="signatures-table">
-                    <tr>
-                        <!-- Firma Cliente -->
-                        <td style="width: 50%; padding-right: 20px;">
-                            <div class="signature-header">CLIENTE</div>
-
-                            <div class="signature-area">
-                                @if ($firma_cliente)
-                                    <img src="{{ $firma_cliente }}" alt="Firma Cliente">
-                                @endif
-                            </div>
-
-                            <div style="text-align: center; font-size: 10px; font-weight: bold; margin-bottom: 8px;">
-                                FIRMA</div>
-
-                            <table class="signature-field-table">
-                                <tr>
-                                    <td class="label">NOMBRE:</td>
-                                    <td class="value">{{ $cliente_nombre }}</td>
-                                </tr>
-                                <tr>
-                                    <td class="label">{{ $cliente_tipo_doc }}:</td>
-                                    <td class="value">{{ $cliente_documento }}</td>
-                                </tr>
-                            </table>
-                        </td>
-
-                        <!-- Firma SAT Industriales -->
-                        <td style="width: 50%; padding-left: 10px;">
-                            <div class="signature-header">SAT INDUSTRIALES S.A.C.</div>
-
-                            <div class="signature-area">
-                                @if ($firma_empleado)
-                                    <img src="{{ $firma_empleado }}" alt="Firma Empleado">
-                                @endif
-                            </div>
-
-                            <div style="text-align: center; font-size: 10px; font-weight: bold; margin-bottom: 8px;">
-                                FIRMA</div>
-
-                            <table class="signature-field-table">
-                                <tr>
-                                    <td class="label">NOMBRE:</td>
-                                    <td class="value">{{ $empleado_nombre }}</td>
-                                </tr>
-                                <tr>
-                                    <td class="label">{{ $empleado_tipo_doc }}:</td>
-                                    <td class="value">{{ $empleado_documento }}</td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-                </table>
+    <!-- ===== SECCIÓN C: Responsabilidad de la conformidad y firmas ===== -->
+    <div class="section">
+        <div class="section-header">SECCIÓN C: Responsabilidad de la conformidad y firmas</div>
+        <div class="section-content">
+            <div class="responsibility-text">
+                Quien suscribe esta Acta, declara que se ha concluido el trabajo y no queda nada pendiente de
+                culminar, en la medida que se ha dado cumplimiento a todos los requerimientos solicitados en la
+                incidencia. La firma de esta Acta de Conformidad por quien figura como responsable, es el título que
+                habilita la procedencia del pago en contraprestación al trabajo realizado, y por tanto genera
+                responsabilidad directa en quien suscribe esta Acta debido al impacto económico que genera y a las
+                disposiciones de seguridad que deben tomarse en cuenta, por lo que en caso de incumplimiento la
+                empresa se encontrará en la facultad de tomar las medidas que correspondan. Sino hubiera conformidad
+                con el trabajo que debía realizarse, el responsable debe <strong>Incluir observaciones.</strong>
             </div>
+
+            <div class="client-acceptance">
+                SEÑOR CLIENTE LA FIRMA DE ESTE DOCUMENTO DA POR ACEPTADO EL TRABAJO REALIZADO POR NUESTRO PERSONAL
+            </div>
+
+            <!-- Área de Firmas -->
+            <table class="signatures-table">
+                <tr>
+                    <!-- Firma Cliente -->
+                    <td style="width: 50%; padding-right: 10px;">
+                        <div class="signature-header">CLIENTE</div>
+
+                        <div class="signature-area">
+                            @if ($firma_cliente)
+                                <img src="{{ $firma_cliente }}" alt="Firma Cliente">
+                            @endif
+                        </div>
+
+                        <div style="text-align: center; font-size: 30px; font-weight: bold; margin-bottom: 20px;">
+                            FIRMA</div>
+
+                        <table class="signature-field-table">
+                            <tr>
+                                <td class="label">NOMBRE:</td>
+                                <td class="value">{{ $cliente_nombre }}</td>
+                            </tr>
+                            <tr>
+                                <td class="label">{{ $cliente_tipo_doc }}:</td>
+                                <td class="value">{{ $cliente_documento }}</td>
+                            </tr>
+                        </table>
+                    </td>
+
+                    <!-- Firma SAT Industriales -->
+                    <td style="width: 50%; padding-left: 30px;">
+                        <div class="signature-header">SAT INDUSTRIALES S.A.C.</div>
+
+                        <div class="signature-area">
+                            @if ($firma_empleado)
+                                <img src="{{ $firma_empleado }}" alt="Firma Empleado">
+                            @endif
+                        </div>
+
+                        <div style="text-align: center; font-size: 30px; font-weight: bold; margin-bottom: 20px;">
+                            FIRMA</div>
+
+                        <table class="signature-field-table">
+                            <tr>
+                                <td class="label">NOMBRE:</td>
+                                <td class="value">{{ $empleado_nombre }}</td>
+                            </tr>
+                            <tr>
+                                <td class="label">{{ $empleado_tipo_doc }}:</td>
+                                <td class="value">{{ $empleado_documento }}</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
         </div>
     </div>
 </body>

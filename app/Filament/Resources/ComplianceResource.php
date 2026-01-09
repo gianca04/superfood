@@ -77,18 +77,28 @@ class ComplianceResource extends Resource
                         Forms\Components\Select::make('project_id')
                             ->label('Proyecto')
                             ->required()
+                            ->helperText('Solo se listan proyectos que están en estado "Aprobado".')
                             ->prefixIcon('heroicon-m-briefcase')
                             ->searchable()
                             ->preload()
-                            ->live() // Fundamental para que el botón aparezca dinámicamente
+                            ->live()
                             ->options(
                                 fn() => Project::query()
+                                    ->where('status', 'Aprobado')
+                                    ->limit(10) // Limita a 10 proyectos
                                     ->get()
                                     ->mapWithKeys(fn($p) => [$p->id => "{$p->name} - {$p->quote_id}"])
                             )
                             ->afterStateUpdated(fn($state, $set) => self::updateProjectDetails($state, $set))
-                            ->afterStateHydrated(fn($state, $set) => self::updateProjectDetails($state, $set))
-
+                            ->afterStateHydrated(function ($state, $set) {
+                                if ($state) {
+                                    // Mantener el nombre del proyecto al editar
+                                    $project = Project::find($state);
+                                    if ($project) {
+                                        $set('project_name', $project->name);
+                                    }
+                                }
+                            })
                             // ACCIÓN DEL SUFIJO
                             ->suffixAction(
                                 Forms\Components\Actions\Action::make('view_project')
@@ -109,7 +119,18 @@ class ComplianceResource extends Resource
                                         return view('filament.components.project-info', ['project' => $record]);
                                     })
                             )
-                            ->columnSpanFull()
+                            ->columnSpanFull(),
+                        // ACA EL ESTADO DEL PROYECTO
+                        Forms\Components\Select::make('state')
+                            ->label('Estado')
+                            ->required()
+                            ->default('En Ejecución')
+                            ->options([
+                                'En Ejecución' => 'En Ejecución',
+                                'Completado'   => 'Completado',
+                            ])
+                            ->native(false)
+                            ->columnSpanFull(),
                     ]),
 
                 // ═══════════════════════════════════════════════════════════════
@@ -414,8 +435,8 @@ class ComplianceResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('id')
-                    ->label('N°')
+                TextColumn::make('project.service_code')
+                    ->label('Código de Servicio')
                     ->sortable()
                     ->badge()
                     ->color('gray'),
@@ -429,14 +450,14 @@ class ComplianceResource extends Resource
                     ->limit(30)
                     ->tooltip(fn($record) => $record->project?->name),
 
-                TextColumn::make('project.subClient.client.business_name')
-                    ->label('Cliente')
+                TextColumn::make('project.subClient.name')
+                    ->label('Tienda')
                     ->searchable()
                     ->icon('heroicon-o-building-office')
                     ->toggleable()
                     ->limit(25),
 
-                TextColumn::make('project.start_date')
+                TextColumn::make('project.service_start_date')
                     ->label('Inicio')
                     ->date('d/m/Y')
                     ->icon('heroicon-o-calendar')
@@ -455,10 +476,20 @@ class ComplianceResource extends Resource
                     ->searchable()
                     ->icon('heroicon-o-user')
                     ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('state')
+                    ->label('Estado')
+                    ->sortable()
+                    ->badge()
+                    ->color(fn($state) => match ($state) {
+                        'En Ejecución' => 'primary',
+                        'Completado'   => 'gray',
+                        default        => 'secondary',
+                    }),
 
                 Tables\Columns\TextColumn::make('assets')
                     ->label('Activos Seleccionados')
                     ->html()
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->formatStateUsing(function ($record) {
                         // 1. Obtenemos el dato crudo (la lógica que te funcionó)
                         $rawAttribute = $record->getAttributes()['assets'] ?? null;
@@ -528,6 +559,12 @@ class ComplianceResource extends Resource
                     ->relationship('project', 'name')
                     ->searchable()
                     ->preload(),
+                SelectFilter::make('state')
+                    ->label('Estado')
+                    ->options([
+                        'En ejecución'    => 'En ejecución',
+                        'Completado'      => 'Completado',
+                    ]),
 
                 Filter::make('has_signatures')
                     ->label('Con firmas completas')
@@ -608,6 +645,24 @@ class ComplianceResource extends Resource
                         ->url(fn(Compliance $record) => route('actas.pdf', $record->id))
                         ->openUrlInNewTab(),
 
+                    //DESCARGAR EL ACTA CON SUS REPORTES DE TRABAJO
+                    Tables\Actions\Action::make('downloadActaWithReports')
+                        ->label('Acta + Reportes PDF')
+                        ->icon('heroicon-m-document-arrow-down')
+                        ->color('primary')
+                        ->requiresConfirmation()
+                        ->modalHeading('Descargar Acta y Reportes')
+                        ->modalDescription('¿Deseas descargar el acta de conformidad junto con todos los reportes de trabajo del proyecto?')
+                        ->modalSubmitActionLabel('Descargar')
+                        ->action(function (Compliance $record) {
+                            Notification::make()
+                                ->title('Generando PDF combinado...')
+                                ->body('El archivo se abrirá en una nueva pestaña.')
+                                ->success()
+                                ->send();
+                        })
+                        ->url(fn(Compliance $record) => route('actas.pdf-with-reports', $record->id))
+                        ->openUrlInNewTab(),
                     // Acción Vista Previa
                     Tables\Actions\Action::make('previewActaPdf')
                         ->label('Vista Rápida')

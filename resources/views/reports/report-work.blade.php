@@ -328,7 +328,7 @@
                     <div class="date-section">
                         <table class="date-table">
                             <tr>
-                                <td class="date-header" colspan="2">FECHA</td>
+                                <td class="date-header" colspan="2">FECHA {{ $reportDate }}</td>
                             </tr>
                             <tr class="date-row">
                                 <td class="date-label">Inicio :</td>
@@ -489,6 +489,7 @@
             @endif
         </div>
 
+        {{--
         <!-- SIGNATURES -->
         <div class="signatures-section">
             <table class="signatures-table">
@@ -529,8 +530,8 @@
                     </td>
                 </tr>
             </table>
-
         </div>
+         --}}
 </body>
 
 </html>

@@ -17,32 +17,58 @@ class WorkReportConsolidatedService
      * @param int $projectId
      * @return \Barryvdh\DomPDF\PDF
      */
+
     public function generateConsolidatedPdf(int $projectId): \Barryvdh\DomPDF\PDF
     {
-        // Obtener el proyecto con sus relaciones
+        // 1. Obtener datos base
         $project = $this->getProjectWithRelations($projectId);
-        
-        // Obtener todos los reportes de trabajo del proyecto ordenados por fecha
         $workReports = $this->getProjectWorkReports($projectId);
-        
-        // Obtener todas las fotos de todos los reportes
         $allPhotos = $this->getAllPhotosFromReports($workReports);
-        
+
+        // 2. Instanciar el controlador para usar sus métodos
+        $excelController = app(\App\Http\Controllers\WorkReportExcelController::class);
+
+        // 3. Inicializar contenedores para el consolidado
+        $allToolsAndMaterials = [];
+        $allPersonnel = [];
+        $totalHoursConsolidated = 0;
+
+        foreach ($workReports as $report) {
+            // Procesar Herramientas y Materiales
+            // Se asume que $report->tools y $report->materials son arrays (o json casted)
+            $processedTools = $excelController->processToolsAndMaterials(
+                $report->tools ?? [],
+                $report->materials ?? []
+            );
+            $allToolsAndMaterials = array_merge($allToolsAndMaterials, $processedTools);
+
+            // Procesar Personal
+            $processedPersonnelData = $excelController->processPersonnelForPdf(
+                $report->personnel ?? []
+            );
+
+            $allPersonnel = array_merge($allPersonnel, $processedPersonnelData['personnel']);
+            $totalHoursConsolidated += $processedPersonnelData['totalHours'];
+        }
+
         Log::info('Generando PDF consolidado', [
             'project_id' => $projectId,
             'work_reports_count' => $workReports->count(),
             'total_photos' => $allPhotos->count()
         ]);
-        
-        // Generar el PDF usando la vista consolidada
+
+        // 4. Generar el PDF con los nombres de variables CORRECTOS
         $pdf = Pdf::loadView('reports.work-report-consolidated-pdf', [
             'project' => $project,
             'workReports' => $workReports,
             'allPhotos' => $allPhotos,
-            'generatedAt' => now()
+            'generatedAt' => now(),
+            'toolsAndMaterials' => $allToolsAndMaterials, // Variable corregida
+            'personnelList' => $allPersonnel,             // Variable corregida
+            'totalHours' => $totalHoursConsolidated        // Dato extra útil
         ]);
-        
-        // Configuración del PDF igual que en WorkReportPdfService
+
+        // 5. Configuración (Se mantiene igual)
         $pdf->setPaper('a4', 'portrait');
         $pdf->setOptions([
             'defaultFont' => 'DejaVu Sans',
@@ -52,18 +78,18 @@ class WorkReportConsolidatedService
             'defaultPaperSize' => 'a4',
             'enable_php' => true,
             'enable_javascript' => false,
-            'enable_remote' => false,
+            'enable_remote' => true, // Cambiado a true por si las fotos son URLs
             'enable_html5_parser' => true,
             'chroot' => [
-                public_path('storage'), 
+                public_path('storage'),
                 public_path('images'),
                 storage_path('app/public')
             ]
         ]);
-        
+
         return $pdf;
     }
-    
+
     /**
      * Obtiene el proyecto con todas sus relaciones necesarias
      *
@@ -79,7 +105,7 @@ class WorkReportConsolidatedService
             'workReports.photos'
         ])->findOrFail($projectId);
     }
-    
+
     /**
      * Obtiene todos los reportes de trabajo del proyecto ordenados por fecha
      *
@@ -94,7 +120,7 @@ class WorkReportConsolidatedService
             ->orderBy('start_time', 'asc')
             ->get();
     }
-    
+
     /**
      * Obtiene todas las fotos de todos los reportes
      *
@@ -105,7 +131,7 @@ class WorkReportConsolidatedService
     {
         return $workReports->pluck('photos')->flatten();
     }
-    
+
     /**
      * Genera el nombre del archivo para el PDF consolidado
      *
@@ -117,14 +143,14 @@ class WorkReportConsolidatedService
         $clientName = $project->subClient->client->business_name ?? 'Cliente';
         $projectName = $project->name ?? 'Proyecto';
         $date = now()->format('Y-m-d');
-        
+
         // Limpiar caracteres especiales para el nombre del archivo
         $clientName = $this->sanitizeFilename($clientName);
         $projectName = $this->sanitizeFilename($projectName);
-        
+
         return "reporte-consolidado-{$clientName}-{$projectName}-{$date}.pdf";
     }
-    
+
     /**
      * Limpia el nombre del archivo de caracteres especiales
      *
@@ -140,7 +166,7 @@ class WorkReportConsolidatedService
         // Eliminar guiones al inicio y final
         return trim($filename, '-');
     }
-    
+
     /**
      * Obtiene estadísticas del reporte consolidado
      *
@@ -151,16 +177,16 @@ class WorkReportConsolidatedService
     {
         $workReports = $this->getProjectWorkReports($projectId);
         $project = $this->getProjectWithRelations($projectId);
-        
+
         $totalPhotos = $workReports->sum(function ($report) {
             return $report->photos->count();
         });
-        
+
         $dateRange = [
             'start' => $workReports->min('report_date'),
             'end' => $workReports->max('report_date')
         ];
-        
+
         $totalWorkingHours = $workReports->sum(function ($report) {
             if ($report->start_time && $report->end_time) {
                 $start = \Carbon\Carbon::parse($report->start_time);
@@ -169,7 +195,7 @@ class WorkReportConsolidatedService
             }
             return 0;
         });
-        
+
         return [
             'project_name' => $project->name,
             'client_name' => $project->subClient->client->business_name ?? 'N/A',

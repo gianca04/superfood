@@ -224,17 +224,16 @@ class WorkReportsRelationManager extends RelationManager
 
 
                                                 // ...existing code...
-                                                Forms\Components\DatePicker::make('start_date')
+                                                Forms\Components\DatePicker::make('service_start_date')
                                                     ->label('Fecha de inicio')
                                                     ->default(now())
                                                     ->required()
-                                                    ->maxDate(fn(callable $get) => $get('end_date')), // Valida contra end_date
-
-                                                Forms\Components\DatePicker::make('end_date')
+                                                    ->maxDate(fn(callable $get) => $get('service_end_date')), // Valida contra service_end_date
+                                                Forms\Components\DatePicker::make('service_end_date')
                                                     ->label('Fecha de finalización')
                                                     ->default(now()->addDays(30))
                                                     ->required()
-                                                    ->minDate(fn(callable $get) => $get('start_date')), // Valida contra start_date
+                                                    ->minDate(fn(callable $get) => $get('service_start_date')), // Valida contra start_date
                                                 // ...existing code...
 
                                             ]),

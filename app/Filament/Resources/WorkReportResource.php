@@ -253,10 +253,7 @@ class WorkReportResource extends Resource
                                                     ->minDate(fn(callable $get) => $get('start_date')), // Valida contra start_date
                                                 // ...existing code...
 
-                                                Forms\Components\Placeholder::make('status_text')
-                                                    ->label('Estado del proyecto:')
-                                                    ->extraAttributes(['class' => 'text-2xl font-bold text-primary-600'])
-                                                    ->content(fn($record) => $record?->status_text ?? 'Sin definir'),
+
                                             ]),
 
                                         Split::make([
@@ -693,18 +690,52 @@ class WorkReportResource extends Resource
                             ->icon('heroicon-o-wrench')
                             ->columns(2)
                             ->schema([
-                                \App\Forms\Components\ToolsTable::make('tools')
+                                Forms\Components\Repeater::make('tools')
                                     ->label('Herramientas')
                                     ->helperText('Agrega las herramientas utilizadas durante el trabajo.')
+                                    ->schema([
+                                        Forms\Components\TextInput::make('herramienta')
+                                            ->label('Herramienta')
+                                            ->placeholder('Ej: Taladro')
+                                            ->required(),
+                                        Forms\Components\TextInput::make('unidad')
+                                            ->label('Unidad')
+                                            ->placeholder('Ej: Unidad'),
+                                        Forms\Components\TextInput::make('cantidad')
+                                            ->label('Cantidad')
+                                            ->placeholder('Ej: 2'),
+                                    ])
+                                    ->columns(3)
                                     ->columnSpanFull()
+                                    ->defaultItems(0)
+                                    ->reorderable(false)
+                                    ->addActionLabel('Agregar herramienta')
                                     ->disabled(fn(string $operation): bool => $operation === 'view'),
-                                \App\Forms\Components\MaterialsTable::make('materials')
+
+                                Forms\Components\Repeater::make('materials')
                                     ->label('Materiales')
                                     ->helperText('Agrega los materiales utilizados durante el trabajo.')
+                                    ->schema([
+                                        Forms\Components\TextInput::make('material')
+                                            ->label('Material')
+                                            ->placeholder('Ej: Cemento')
+                                            ->required(),
+                                        Forms\Components\TextInput::make('unidad')
+                                            ->label('Unidad')
+                                            ->placeholder('Ej: Sacos'),
+                                        Forms\Components\TextInput::make('cantidad')
+                                            ->label('Cantidad')
+                                            ->placeholder('Ej: 10'),
+                                    ])
+                                    ->columns(3)
                                     ->columnSpanFull()
+                                    ->defaultItems(0)
+                                    ->reorderable(false)
+                                    ->addActionLabel('Agregar material')
                                     ->disabled(fn(string $operation): bool => $operation === 'view'),
                             ]),
                         // FIN DEL TAB DE HERRAMIENTAS Y MATERIALES
+
 
                         // INICIO DEL TAB DE LISTA DE PERSONAL
                         Tabs\Tab::make('Personal')

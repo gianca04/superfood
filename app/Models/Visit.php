@@ -8,24 +8,42 @@ class Visit extends Model
 {
     //
     protected $fillable = [
-        'employee_id',
+
+        'project_id',      // ID del Proyecto (Vínculo principal)
+        'inspector_id',      // Inspector (Nuevo)
+        'quoted_by_id',      // Cotizador (Nuevo)
+        'visit_date',        // Fecha visita
+        'entry_time',        // Hora ingreso
+        'exit_time',         // Hora salida
+        'amount',            // Monto SOL
+        'description',       // Usado como "Comentario2"
+        'suggestions',       // Se mantiene como legacy/soporte
+
+        // CAMPOS LEGACY
         'name',
-        'description',
         'employee_signature',
         'manager_signature',
-        'suggestions',
         'tools',
         'materials',
-        'start_time',  // Hora de inicio del trabajo
-        'end_time',    // Hora de finalizaci��n del trabajo
-        'report_date'  // Fecha del reporte (solo fecha)
     ];
 
-
-    public function employee()
+    public function project()
     {
-        return $this->belongsTo(Employee::class);
+        return $this->belongsTo(Project::class);
     }
+
+    // Relación con el Inspector
+    public function inspector()
+    {
+        return $this->belongsTo(Employee::class, 'inspector_id');
+    }
+
+    // Relación con el Cotizador
+    public function quotedBy()
+    {
+        return $this->belongsTo(Employee::class, 'quoted_by_id');
+    }
+
     public function visitPhotos()
     {
         return $this->hasMany(VisitPhoto::class, 'visit_id');

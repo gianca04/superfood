@@ -93,14 +93,14 @@ class WorkReportExcelController extends Controller
         }
 
         // Generar PDF con múltiples páginas
-        $pdf = Pdf::loadHTML($html)
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html)
             ->setPaper('a4', 'portrait')
             ->setOptions([
                 'defaultFont' => 'DejaVu Sans',
                 'isHtml5ParserEnabled' => true,
                 'isPhpEnabled' => true,
-                'dpi' => 110,
-                'enable_remote' => true,
+                'enable_remote' => true, // Permite cargar imágenes y fuentes externas
+                'dpi' => 110, // Ajusta la resolución del PDF
             ]);
 
         Log::info('PDF múltiple de reportes de trabajo generado', [
@@ -257,7 +257,7 @@ class WorkReportExcelController extends Controller
      * @param WorkReport $workReport
      * @return array
      */
-    private function prepareDataForBladePdf(WorkReport $workReport): array
+    public function prepareDataForBladePdf(WorkReport $workReport): array
     {
         // Datos básicos del reporte
         $reportDate = $workReport->report_date?->format('d/m/Y') ?? 'N/A';
@@ -321,7 +321,7 @@ class WorkReportExcelController extends Controller
      * @param array $materials Array de materiales [{"material":"...","unidad":"...","cantidad":"..."}]
      * @return array Array combinado con estructura uniforme
      */
-    private function processToolsAndMaterials(array $tools, array $materials): array
+    public function processToolsAndMaterials(array $tools, array $materials): array
     {
         $combined = [];
 
@@ -352,7 +352,7 @@ class WorkReportExcelController extends Controller
      * @param array $personnel Array de personal [{"employee_id":3,"hh":"2","position_id":"3"}]
      * @return array ['personnel' => array, 'totalHours' => float]
      */
-    private function processPersonnelForPdf(array $personnel): array
+    public function processPersonnelForPdf(array $personnel): array
     {
         $processedPersonnel = [];
         $totalHours = 0;

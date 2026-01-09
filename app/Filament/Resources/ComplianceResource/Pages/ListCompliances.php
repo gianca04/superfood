@@ -16,65 +16,34 @@ class ListCompliances extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            // Exportar Excel individual
-            Actions\Action::make('exportExcel')
-                ->label('Excel')
-                ->icon('heroicon-o-document-arrow-down')
-                ->color('success')
-                ->form([
-                    Select::make('compliance_id')
-                        ->label('Seleccionar Acta')
-                        ->options(Compliance::with('project')->get()->pluck('project.name', 'id'))
-                        ->searchable()
-                        ->required()
-                        ->helperText('Seleccione el acta que desea exportar'),
-                ])
-                ->action(function (array $data) {
-                    return redirect()->to(route('actas.excel', $data['compliance_id']));
-                })
-                ->modalHeading('Exportar Acta a Excel')
-                ->modalSubmitActionLabel('Descargar Excel')
-                ->modalIcon('heroicon-o-document-arrow-down'),
-
-            // Exportar PDF individual
-            Actions\Action::make('exportPdf')
-                ->label('PDF')
-                ->icon('heroicon-o-document-text')
-                ->color('danger')
-                ->form([
-                    Select::make('compliance_id')
-                        ->label('Seleccionar Acta')
-                        ->options(Compliance::with('project')->get()->pluck('project.name', 'id'))
-                        ->searchable()
-                        ->required()
-                        ->helperText('Seleccione el acta que desea exportar'),
-                ])
-                ->action(function (array $data) {
-                    return redirect()->to(route('actas.pdf', $data['compliance_id']));
-                })
-                ->modalHeading('Exportar Acta a PDF')
-                ->modalSubmitActionLabel('Descargar PDF')
-                ->modalIcon('heroicon-o-document-text'),
-
-            // Vista Previa
-            Actions\Action::make('preview')
-                ->label('Vista Previa')
-                ->icon('heroicon-o-eye')
+            Actions\Action::make('selectAndDownloadActaWithReports')
+                ->label('Descargar Acta + Reportes')
+                ->icon('heroicon-m-document-arrow-down')
                 ->color('info')
                 ->form([
                     Select::make('compliance_id')
-                        ->label('Seleccionar Acta')
-                        ->options(Compliance::with('project')->get()->pluck('project.name', 'id'))
+                        ->label('Seleccionar Acta de Conformidad')
+                        ->options(
+                            Compliance::with('project')
+                                ->latest('id')
+                                ->limit(10)
+                                ->get()
+                                ->mapWithKeys(fn($c) => [
+                                    $c->id => "Acta #{$c->id} - {$c->project?->name}"
+                                ])
+                        )
                         ->searchable()
                         ->required()
-                        ->helperText('Seleccione el acta que desea previsualizar'),
+                        ->placeholder('Buscar acta por ID o proyecto...')
+                        ->helperText('Mostrando las últimas 10 actas. Usa búsqueda para filtrar.'),
                 ])
                 ->action(function (array $data) {
-                    return redirect()->to(route('actas.preview', $data['compliance_id']));
+                    return redirect()->route('actas.pdf-with-reports', $data['compliance_id']);
                 })
-                ->modalHeading('Vista Previa de Acta')
-                ->modalSubmitActionLabel('Ver Vista Previa')
-                ->modalIcon('heroicon-o-eye'),
+                ->modalHeading('Descargar Acta con Reportes')
+                ->modalDescription('Selecciona una acta de conformidad para descargar junto con sus reportes de trabajo')
+                ->modalSubmitActionLabel('Descargar')
+                ->modalWidth('md'),
 
             Actions\CreateAction::make()
                 ->label('Nueva Acta')

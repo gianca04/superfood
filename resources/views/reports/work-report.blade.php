@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 
-<head></head>
+<head>
+    <meta name="flatnates" content="work-report, project, SAT-industriales, evidencias, PDF">
+</head>
 
 <body>
     <!-- Header -->
@@ -26,7 +28,8 @@
         <div class="stat-item">
             <div class="stat-number">
                 {{ $photos->groupBy(function ($item) {
-    return $item->created_at->format('Y-m-d'); })->count() }}
+                        return $item->created_at->format('Y-m-d');
+                    })->count() }}
             </div>
             <div class="stat-label">Días de Trabajo</div>
         </div>
@@ -71,7 +74,7 @@
             <span class="info-label">Documento:</span>
             <span class="info-value">{{ $employee->document_type }} {{ $employee->document_number }}</span>
         </div>
-        @if($employee->user)
+        @if ($employee->user)
             <div class="info-row">
                 <span class="info-label">Email:</span>
                 <span class="info-value">{{ $employee->user->email }}</span>
@@ -94,7 +97,7 @@
             <span class="info-label">Estado:</span>
             <span class="info-value">{{ $project->status ?? 'Activo' }}</span>
         </div>
-        @if($project->start_date)
+        @if ($project->start_date)
             <div class="info-row">
                 <span class="info-label">Fecha inicio:</span>
                 <span class="info-value">{{ \Carbon\Carbon::parse($project->start_date)->format('d/m/Y') }}</span>
@@ -102,7 +105,7 @@
         @endif
     </div>
 
-    <div class="signature-container">
+    {{--  <div class="signature-container">
         <!-- Firma del supervisor -->
         <div class="signature-item">
             <img src="{{ $workReport->supervisor_signature }}" alt="Firma del Supervisor" class="photo-image" />
@@ -121,14 +124,15 @@
             </div>
         </div>
     </div>
+    --}}
 
 
     <!-- Fotos del Reporte -->
     <div class="photos-section">
         <h2 class="section-title">Evidencias Fotográficas</h2>
 
-        @foreach($photos as $index => $photo)
-            @if($index > 0 && $index % 2 == 0)
+        @foreach ($photos as $index => $photo)
+            @if ($index > 0 && $index % 2 == 0)
                 <div class="page-break"></div>
             @endif
 
@@ -143,12 +147,13 @@
                 @php
                     $imgPath = public_path('storage/' . $photo->photo_path);
                 @endphp
-                @if(file_exists($imgPath))
+                @if (file_exists($imgPath))
                     <div style="width:100%;text-align:center;padding:18px 0;background:#fff;">
                         <img src="{{ $imgPath }}" alt="Evidencia {{ $loop->iteration }}" class="photo-image">
                     </div>
                 @else
-                    <div style="padding:18px 0;text-align:center;background:#fff;">Imagen no disponible<br>{{ $imgPath }}</div>
+                    <div style="padding:18px 0;text-align:center;background:#fff;">Imagen no
+                        disponible<br>{{ $imgPath }}</div>
                 @endif
 
                 <div class="photo-description">

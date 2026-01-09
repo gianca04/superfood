@@ -103,7 +103,7 @@
             </tr>
             <tr>
                 <th style="width: 150px;">Fecha de inicio</th>
-                <td style="width: 350px;">{{ $workReport->project->start_date->format('d/m/Y') ?? 'N/A' }}</td>
+                {{-- <td style="width: 350px;">{{ $workReport->project->start_date->format('d/m/Y') ?? 'N/A' }}</td> --}}
                 <th style="width: 150px;">Fecha de fin</th>
                 <td>{{ $project->end_date->format('d/m/Y') ?? 'N/A' }}</td>
             </tr>

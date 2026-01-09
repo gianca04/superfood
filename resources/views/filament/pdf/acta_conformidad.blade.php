@@ -44,17 +44,6 @@
             padding: 5px;
         }
 
-        .company-name {
-            font-weight: bold;
-            font-size: 14px;
-            color: #00a99d;
-        }
-
-        .company-subtitle {
-            font-size: 8px;
-            color: #000;
-        }
-
         .header-title {
             text-align: center;
         }
@@ -98,7 +87,6 @@
             background: #fff;
         }
 
-        /* ===== Tabla de Formulario ===== */
         .form-table {
             width: 100%;
             border-collapse: collapse;
@@ -121,7 +109,6 @@
             font-size: 10px;
         }
 
-        /* ===== Tabla Compuesta OT/Descripción ===== */
         .composite-table {
             width: 100%;
             border-collapse: collapse;
@@ -144,7 +131,6 @@
             border-right: 1px solid #00a99d;
         }
 
-        /* ===== Fechas ===== */
         .dates-table {
             width: 100%;
             border-collapse: collapse;
@@ -159,20 +145,20 @@
 
         .date-box {
             border: 1px solid #00a99d;
-            padding: 3px 8px;
+            padding: 6px 12px;
+            font-size: 11px;
+            font-weight: 500;
+            color: #000;
+            display: inline-block;
+            min-width: 120px;
+            text-align: center;
+            background-color: #fff;
         }
 
-        /* ===== Nota de conformidad ===== */
         .conformity-note {
             font-size: 10px;
             margin: 10px 0 0 0;
             line-height: 1.3;
-        }
-
-        /* ===== Tabla de Activos ===== */
-        .section-subtitle {
-            font-size: 10px;
-            margin-bottom: 8px;
         }
 
         .assets-table {
@@ -189,7 +175,6 @@
             text-align: center;
             border: 1px solid #00a99d;
             font-size: 10px;
-            background: transparent;
         }
 
         .assets-table td {
@@ -199,29 +184,6 @@
             height: 18px;
         }
 
-        .assets-table td.number {
-            text-align: center;
-            color: #00a99d;
-            font-weight: bold;
-            font-style: italic;
-        }
-
-        .assets-table td.asset-name {
-            font-style: italic;
-            font-weight: bold;
-        }
-
-        /* ===== Área de Observaciones ===== */
-        .observations-area {
-            margin-top: 5px;
-        }
-
-        .observations-label {
-            font-weight: bold;
-            font-size: 10px;
-            margin-bottom: 2px;
-        }
-
         .observations-box {
             width: 100%;
             min-height: 100px;
@@ -229,22 +191,6 @@
             padding: 5px;
             font-size: 10px;
             line-height: 1.4;
-        }
-
-        /* ===== Sección de Firmas ===== */
-        .responsibility-text {
-            font-size: 9px;
-            text-align: justify;
-            margin-bottom: 10px;
-            line-height: 1.3;
-        }
-
-        .client-acceptance {
-            font-size: 8px;
-            text-transform: uppercase;
-            margin-bottom: 15px;
-            font-weight: bold;
-            margin-top: 5px;
         }
 
         .signatures-table {
@@ -257,15 +203,6 @@
             width: 50%;
             vertical-align: top;
             padding: 0 10px;
-            display: table-cell;
-        }
-
-        @media screen and (max-width: 768px) {
-            .signatures-table>tbody>tr>td {
-                width: 100%;
-                padding: 10px 0;
-                display: block;
-            }
         }
 
         .signature-header {
@@ -276,21 +213,17 @@
             font-weight: bold;
             font-size: 16px;
             margin-bottom: 12px;
-            letter-spacing: 0.5px;
         }
 
         .signature-area {
             height: 60px;
             text-align: center;
             margin-bottom: 8px;
-            width: 100%;
         }
 
         .signature-area img {
-            width: 100%;
-            height: auto;
             max-height: 55px;
-            object-fit: contain;
+            width: auto;
         }
 
         .signature-field-table {
@@ -301,18 +234,15 @@
         .signature-field-table td {
             padding: 4px 0;
             font-size: 12px;
-            line-height: 1.5;
         }
 
         .signature-field-table .label {
             font-weight: bold;
             width: 70px;
-            padding-right: 8px;
         }
 
         .signature-field-table .value {
             border-bottom: 2px solid #00a99d;
-            font-weight: 500;
         }
 
         /* ===== Botones de Acción ===== */
@@ -322,104 +252,95 @@
             align-items: center;
             margin-bottom: 20px;
             padding: 15px 20px;
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            background: #eee;
             border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .btn-back {
             background-color: #6c757d;
             color: white;
             padding: 10px 20px;
-            font-size: 14px;
-            font-weight: bold;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-        }
-
-        .btn-back:hover {
-            background-color: #5a6268;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
-        }
-
-        .button-group {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .action-buttons button {
-            padding: 10px 20px;
-            font-size: 14px;
             font-weight: bold;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
 
         .btn-pdf {
             background-color: #dc3545;
             color: white;
-        }
-
-        .btn-pdf:hover {
-            background-color: #c82333;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
         }
 
         .btn-excel {
             background-color: #28a745;
             color: white;
-        }
-
-        .btn-excel:hover {
-            background-color: #218838;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
         }
 
         .btn-print {
             background-color: #007bff;
             color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
         }
 
-        .btn-print:hover {
-            background-color: #0056b3;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
-        }
-
+        /* ===== CORRECCIÓN DE IMPRESIÓN ===== */
         @media print {
+
+            html,
             body {
-                padding: 0 !important;
+                width: 100%;
+                height: 99.5% !important;
+                /* Evita que el navegador pida una 2da hoja */
                 margin: 0 !important;
-                background: white !important;
-                font-size: 12px !important;
+                padding: 0 !important;
+                background-color: white !important;
+                overflow: hidden !important;
+                /* Mata el scroll y la hoja extra */
             }
 
+            .page {
+                width: 100% !important;
+                max-width: 100% !important;
+                height: 100% !important;
+                margin: 0 !important;
+                padding: 10mm 15mm !important;
+                /* Márgenes internos de la hoja */
+                border: none !important;
+                box-shadow: none !important;
+                display: block !important;
+                overflow: hidden !important;
+            }
 
-            .action-buttons {
+            .action-buttons,
+            script,
+            .swal2-container {
                 display: none !important;
             }
 
-
             @page {
-                size: A4 portrait !important;
-                margin: 3mm !important;
+                size: A4 portrait;
+                margin: 0;
+            }
+
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
         }
+    </style>
     </style>
 </head>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -509,15 +430,19 @@
                 <table class="dates-table">
                     <tr>
                         <td class="form-label">A5) Fecha de inicio:</td>
-                        <td><span class="date-box">{{ $fecha_inicio }}</span></td>
-                        <td class="form-label" style="padding-left: 30px;">A7) Fecha de fin:</td>
-                        <td><span class="date-box">{{ $fecha_fin }}</span></td>
+                        <td style="flex-grow: 1;">
+                            <span class="date-box">
+                                {{ !empty($fecha_inicio) ? $fecha_inicio : 'N/A' }}
+                            </span>
+                        </td>
+                        <td class="form-label" style="padding-left: 30px;">A6) Fecha de fin:</td>
+                        <td style="flex-grow: 1;"><span class="date-box">{{ $fecha_fin ?? 'N/A' }}</span></td>
                     </tr>
                 </table>
 
                 <!-- Nota de Conformidad -->
                 <div class="conformity-note">
-                    A9) En el presente documento, se consta la <strong>CONFORMIDAD</strong> de los servicios presentados
+                    A7) En el presente documento, se consta la <strong>CONFORMIDAD</strong> de los servicios presentados
                     por la empresa:
                 </div>
             </div>
