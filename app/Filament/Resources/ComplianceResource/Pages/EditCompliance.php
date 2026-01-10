@@ -15,16 +15,4 @@ class EditCompliance extends EditRecord
     {
         return [];
     }
-    protected function mutateFormDataBeforeFill(array $data): array
-    {
-        // Reemplazar el ID del proyecto con su nombre
-        if (isset($data['project_id'])) {
-            $project = Project::find($data['project_id']);
-            if ($project) {
-                $data['project_id'] = $project->name; // Cambiar el ID por el nombre
-            }
-        }
-
-        return $data;
-    }
 }

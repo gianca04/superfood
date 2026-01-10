@@ -36,6 +36,7 @@ use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Split;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use FontLib\Table\Type\name;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -867,6 +868,23 @@ class ProjectResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
 
+
+                TextColumn::make('fracttal_status')
+                    ->label('Estado Fracttal')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->sortable(),
+
+                TextColumn::make('purchase_order')
+                    ->label('OC')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->sortable(),
+
+                TextColumn::make('migo_code')
+                    ->label('MIGO')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->sortable(),
+
+
                 TextColumn::make('coordinates')
                     ->label('Coordenadas')
                     ->formatStateUsing(function ($record) {
@@ -888,6 +906,14 @@ class ProjectResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                SelectFilter::make('fracttal_status')
+                    ->label('Estado Fracttal')
+                    ->options([
+                        'Pendiente' => 'Pendiente',
+                        'Completado' => 'Completado',
+                        'En Proceso' => 'En Proceso',
+                    ]),
+
                 Tables\Filters\Filter::make('date_range')
                     ->form([
                         Forms\Components\DatePicker::make('service_start_date')
@@ -975,7 +1001,7 @@ class ProjectResource extends Resource
                     Tables\Actions\Action::make('descargar_documentos')
                         ->label(fn($record) => match (true) {
                             $record->compliance && $record->workReports()->exists() => 'Acta + Reportes (PDF)',
-                            (bool)$record->compliance => 'Acta de conformidad',
+                            (bool) $record->compliance => 'Acta de conformidad',
                             $record->workReports()->exists() => 'Reportes de trabajo',
                             default => 'Sin documentos',
                         })
@@ -985,7 +1011,7 @@ class ProjectResource extends Resource
                         ->modalHeading(fn($record) => $record->compliance && $record->workReports()->exists() ? 'Descargar Acta y Reportes' : 'Confirmar descarga')
                         ->modalDescription(fn($record) => match (true) {
                             $record->compliance && $record->workReports()->exists() => 'Estás a punto de descargar el Acta junto con los Reportes en un solo PDF.',
-                            (bool)$record->compliance => 'Vas a descargar solo el Acta de Conformidad.',
+                            (bool) $record->compliance => 'Vas a descargar solo el Acta de Conformidad.',
                             $record->workReports()->exists() => 'Vas a descargar solo los Reportes de Trabajo.',
                             default => 'No hay archivos disponibles.',
                         })

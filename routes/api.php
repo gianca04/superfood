@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ComplianceController;
 use App\Http\Controllers\PhotoController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProjectController;
@@ -32,15 +33,16 @@ Route::middleware(['auth:sanctum', 'CheckTokenExpiration'])->group(function () {
         // Endpoint principal para proyectos vigentes y búsqueda por nombre, cliente y subcliente
         Route::get('/', [ProjectController::class, 'index']);
         Route::get('/quick-search', [ProjectController::class, 'quickSearch']); // Búsqueda rápida
-        
-        
         Route::get('/sync', [ProjectController::class, 'syncProjects']);
 
         Route::get('/{id}', [ProjectController::class, 'show']);
     });
-    
-    
 
+    //Actas de conformidad
+    Route::prefix('compliances')->group(function () {
+        Route::get('/', [ComplianceController::class, 'index']);
+        Route::get('/quick-search', [ComplianceController::class, 'quickSearch']); // Búsqueda rápida
+    });
 
     // Empleados
     Route::prefix('employees')->group(function () {
@@ -62,7 +64,7 @@ Route::middleware(['auth:sanctum', 'CheckTokenExpiration'])->group(function () {
     // Clientes
     Route::prefix('clients')->group(function () {
         // Endpoints para transferencia masiva/por lotes de datos de clientes
-        Route::get('/data', [ClientDataController::class, 'index']); 
+        Route::get('/data', [ClientDataController::class, 'index']);
     });
 
     // SubClientes

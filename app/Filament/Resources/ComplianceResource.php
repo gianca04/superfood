@@ -77,6 +77,7 @@ class ComplianceResource extends Resource
                         Forms\Components\Select::make('project_id')
                             ->label('Proyecto')
                             ->required()
+                            ->relationship('project', 'name')
                             ->helperText('Solo se listan proyectos que están en estado "Aprobado".')
                             ->prefixIcon('heroicon-m-briefcase')
                             ->searchable()
@@ -87,7 +88,7 @@ class ComplianceResource extends Resource
                                     ->where('status', 'Aprobado')
                                     ->limit(10) // Limita a 10 proyectos
                                     ->get()
-                                    ->mapWithKeys(fn($p) => [$p->id => "{$p->name} - {$p->quote_id}"])
+                                    ->pluck('name', 'id')
                             )
                             ->afterStateUpdated(fn($state, $set) => self::updateProjectDetails($state, $set))
                             ->afterStateHydrated(function ($state, $set) {
@@ -325,7 +326,6 @@ class ComplianceResource extends Resource
                                         Forms\Components\TextInput::make('fullname_cliente')
                                             ->label('Nombre Completo')
                                             ->prefixIcon('heroicon-o-user-circle')
-                                            ->required()
                                             ->placeholder('Ingrese nombre completo')
                                             ->maxLength(255),
 
@@ -339,13 +339,11 @@ class ComplianceResource extends Resource
                                                         'PASAPORTE' => 'Pasaporte',
                                                     ])
                                                     ->default('DNI')
-                                                    ->required()
                                                     ->native(false)
                                                     ->live(),
 
                                                 Forms\Components\TextInput::make('document_number')
                                                     ->label('Número de Documento')
-                                                    ->required()
                                                     ->numeric()
                                                     ->minLength(fn(Get $get) => $get('document_type') === 'DNI' ? 8 : 9)
                                                     ->maxLength(fn(Get $get) => $get('document_type') === 'DNI' ? 8 : 12)

@@ -12,7 +12,6 @@ class ProjectStatsWidget extends BaseWidget
     protected function getStats(): array
     {
         $totalProjects = Project::count();
-        $activeProjects = Project::whereNotNull('start_date')->whereNull('end_date')->count();
         $completedProjects = Project::whereNotNull('end_date')->count();
 
         return [
@@ -21,10 +20,7 @@ class ProjectStatsWidget extends BaseWidget
                 ->descriptionIcon('heroicon-m-briefcase')
                 ->color('primary'),
 
-            Stat::make('En Progreso', $activeProjects)
-                ->description('Sin fecha fin')
-                ->descriptionIcon('heroicon-m-play-circle')
-                ->color('success'),
+
 
             Stat::make('Completados', $completedProjects)
                 ->description('Con fecha fin')

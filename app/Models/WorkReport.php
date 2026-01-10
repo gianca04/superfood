@@ -15,8 +15,8 @@ class WorkReport extends Model
         'project_id',
         'compliance_id',
         'name',
-        'supervisor_signature',
-        'manager_signature',
+        'supervisor_signature', //NO LOS NECESITO PERO NO LOS BORARRE
+        'manager_signature', //NO LOS NECESITO PERO NO LOS BORARRE
         'suggestions',
         'tools',
         'personnel',

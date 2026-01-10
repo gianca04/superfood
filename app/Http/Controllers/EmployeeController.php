@@ -114,8 +114,6 @@ class EmployeeController extends Controller
         }
     }
 
-
-
     /**
      * Obtener un empleado específico
      */

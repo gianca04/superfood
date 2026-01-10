@@ -27,6 +27,7 @@ class Compliance extends Model
         'assets' => 'array',
         'start_date' => 'date',
         'end_date' => 'date',
+        'project_id' => 'integer',
     ];
 
     public function project()

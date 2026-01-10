@@ -157,7 +157,7 @@ class ListProjects extends ListRecords
             $header
         );
 
-        $required = ['name', 'client_id', 'sub_client_id'];
+        $required = ['name',  'sub_client_id'];
         $visualColumns = [
             'service_code',
             'request_number',
@@ -232,7 +232,7 @@ class ListProjects extends ListRecords
 </thead>
 <tbody>';
 
-        $limit = 30;
+        $limit = 300;
         $count = 0;
 
         while (($row = fgetcsv($handle, 1000, $delimiter)) !== false && $count < $limit) {
@@ -278,41 +278,28 @@ class ListProjects extends ListRecords
             $subName    = $subValue;
 
             /* ========= VALIDACIÓN ========= */
-            if ($name && $clientValue && $subValue) {
+            if ($name && $subValue) {
 
-                /* CLIENT */
-                $client = is_numeric($clientValue)
-                    ? Client::find($clientValue)
-                    : Client::where('business_name', $clientValue)->first();
+                $subClient = is_numeric($subValue)
+                    ? \App\Models\SubClient::find($subValue)
+                    : \App\Models\SubClient::where('name', $subValue)->first();
 
-                if ($client) {
-                    $clientName = $client->business_name;
+                if ($subClient) {
+                    $subName = $subClient->name;
 
-                    /* SUBCLIENT SOLO DEL CLIENTE */
-                    $subClient = $client->subClients()
-                        ->where(is_numeric($subValue) ? 'id' : 'name', $subValue)
+                    $project = Project::where('name', $name)
+                        ->where('sub_client_id', $subClient->id)
                         ->first();
 
-                    if ($subClient) {
-                        $subName = $subClient->name;
-
-                        /* PROJECT */
-                        $project = Project::where('name', $name)
-                            ->where('sub_client_id', $subClient->id)
-                            ->first();
-
-                        if ($project) {
-                            $estado = 'Actualizar';
-                            $color  = 'yellow';
-                        } else {
-                            $estado = 'Crear';
-                            $color  = 'green';
-                        }
+                    if ($project) {
+                        $estado = 'Actualizar';
+                        $color  = 'yellow';
                     } else {
-                        $estado = 'Omitir (Subcliente no pertenece al cliente)';
+                        $estado = 'Crear';
+                        $color  = 'green';
                     }
                 } else {
-                    $estado = 'Omitir (Cliente no existe)';
+                    $estado = 'Omitir (Subcliente no existe)';
                 }
             }
 
@@ -448,7 +435,7 @@ class ListProjects extends ListRecords
                 $clientValue = trim($row[$idx['client_id']] ?? '');
                 $subValue    = trim($row[$idx['sub_client_id']] ?? '');
 
-                if (!$name || !$clientValue || !$subValue) {
+                if (!$name || !$subValue) {
                     $omitted++;
                     continue;
                 }
@@ -511,7 +498,7 @@ class ListProjects extends ListRecords
                 $acta = \App\Models\Compliance::firstOrCreate(
                     ['project_id' => $project->id],
                     [
-                        'state' => 'Pendiente',
+                        'state' => 'En ejecución',
                         'assets' => [],
                         'maintenance_observations' => $payload['final_comments'] ?? null,
                     ]
@@ -544,25 +531,13 @@ class ListProjects extends ListRecords
         string $clientValue,
         string $subValue
     ): array {
-
-        /* ===== CLIENTE ===== */
-        $client = is_numeric($clientValue)
-            ? Client::find($clientValue)
-            : Client::where('business_name', $clientValue)->first();
-
-        if (!$client) {
-            return ['action' => 'omit', 'reason' => 'Cliente no existe'];
-        }
-
-        /* ===== SUBCLIENTE SOLO DEL CLIENTE ===== */
-        $subClientQuery = $client->subClients();
-
+        // Buscar subcliente por ID o nombre, sin importar el cliente
         $subClient = is_numeric($subValue)
-            ? $subClientQuery->where('id', $subValue)->first()
-            : $subClientQuery->where('name', $subValue)->first();
+            ? \App\Models\SubClient::find($subValue)
+            : \App\Models\SubClient::where('name', $subValue)->first();
 
         if (!$subClient) {
-            return ['action' => 'omit', 'reason' => 'Subcliente no pertenece al cliente'];
+            return ['action' => 'omit', 'reason' => 'Subcliente no existe'];
         }
 
         /* ===== PROYECTO ===== */
@@ -573,7 +548,6 @@ class ListProjects extends ListRecords
         if ($project) {
             return [
                 'action'   => 'update',
-                'client'   => $client,
                 'sub'      => $subClient,
                 'project'  => $project,
             ];
@@ -581,7 +555,6 @@ class ListProjects extends ListRecords
 
         return [
             'action'  => 'create',
-            'client'  => $client,
             'sub'     => $subClient,
         ];
     }
