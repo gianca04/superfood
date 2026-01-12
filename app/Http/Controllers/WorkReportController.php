@@ -23,6 +23,70 @@ class WorkReportController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        // Eager loading optimizado
+        $query = WorkReport::with([
+            'employee.position',
+            'project.subClient',
+            'project.client',
+            'photos'
+        ]);
+
+        // 1. Búsqueda Global (Incluyendo los nuevos campos de texto enriquecido)
+        if ($request->filled('search')) {
+            $searchTerm = '%' . $request->search . '%';
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('name', 'like', $searchTerm)
+                    ->orWhere('work_to_do', 'like', $searchTerm) // Nuevo campo con HTML
+                    ->orWhere('work_done', 'like', $searchTerm)  // Nuevo campo con HTML
+                    ->orWhere('suggestions', 'like', $searchTerm) // Nuevo campo con HTML
+                    ->orWhereHas('employee', function ($q) use ($searchTerm) {
+                        $q->where('first_name', 'like', $searchTerm)
+                            ->orWhere('last_name', 'like', $searchTerm);
+                    })
+                    ->orWhereHas('project', function ($q) use ($searchTerm) {
+                        $q->where('name', 'like', $searchTerm)
+                            ->orWhere('service_code', 'like', $searchTerm);
+                    });
+            });
+        }
+
+        // 2. Filtros de ID y Fechas (Igual que antes pero con validación de existencia)
+        $query->when($request->project_id, fn($q) => $q->where('project_id', $request->project_id))
+            ->when($request->employee_id, fn($q) => $q->where('employee_id', $request->employee_id))
+            ->when($request->compliance_id, fn($q) => $q->where('compliance_id', $request->compliance_id));
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('report_date', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('report_date', '<=', $request->date_to);
+        }
+
+        // Ordenamiento
+        $workReports = $query->latest('report_date')->latest('created_at')->paginate($request->per_page ?? 15);
+
+        // Formatear los datos usando el helper
+        $workReportsData = $workReports->map(fn($report) => $this->formatWorkReport($report));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Work reports obtenidos exitosamente',
+            'data' => $workReportsData,
+            'pagination' => [
+                'total' => $workReports->total(),
+                'perPage' => $workReports->perPage(),
+                'currentPage' => $workReports->currentPage(),
+                'lastPage' => $workReports->lastPage(),
+            ],
+            'meta' => [
+                'apiVersion' => '1.0',
+                'timestamp' => now()->utc()->toIso8601String(),
+            ],
+        ], 200);
+    }
+    /*
+    public function index(Request $request): JsonResponse
+    {
         $query = WorkReport::with([
             'employee.position',
             'project.subClient',
@@ -109,6 +173,7 @@ class WorkReportController extends Controller
             ],
         ], 200);
     }
+        */
 
     /**
      * Guardar un nuevo work report.
@@ -239,7 +304,7 @@ class WorkReportController extends Controller
         if (!$workReport) {
             return response()->json([
                 'success' => false,
-                'message' => 'Work report no encontrado',
+                'message' => 'Reporte de trabajo no encontrado',
                 'data' => null,
                 'meta' => ['timestamp' => now()->utc()->toIso8601String()],
             ], 404);
@@ -260,7 +325,7 @@ class WorkReportController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Work report eliminado exitosamente',
+                'message' => 'Reporte de trabajo eliminado exitosamente',
                 'data' => ['id' => (int)$id],
                 'meta' => [
                     'apiVersion' => '1.0',
@@ -270,14 +335,12 @@ class WorkReportController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al eliminar el work report: ' . $e->getMessage(),
+                'message' => 'Error al eliminar el reporte de trabajo: ' . $e->getMessage(),
                 'data' => null,
                 'meta' => ['timestamp' => now()->utc()->toIso8601String()],
             ], 500);
         }
     }
-
-
 
     /**
      * Obtener work reports por proyecto
@@ -383,10 +446,12 @@ class WorkReportController extends Controller
             'description' => $report->description ?? '',
             'supervisor_signature' => $report->supervisor_signature ? url(Storage::url($report->supervisor_signature)) : null,
             'manager_signature' => $report->manager_signature ? url(Storage::url($report->manager_signature)) : null,
+            'work_to_do' => $report->work_to_do ?? '',
+            'work_done' => $report->work_done ?? '',
             'suggestions' => $report->suggestions ?? '',
-            'tools' => $report->tools ?? '',
-            'personnel' => $report->personnel ?? '',
-            'materials' => $report->materials ?? '',
+            'tools' => $report->tools ?? [],
+            'personnel' => $report->personnel ?? [],
+            'materials' => $report->materials ?? [],
             'start_time' => $report->start_time ?? null,
             'end_time' => $report->end_time ?? null,
             'report_date' => $report->report_date ?? null,

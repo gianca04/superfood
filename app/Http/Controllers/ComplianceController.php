@@ -130,4 +130,44 @@ class ComplianceController extends Controller
             ], 500);
         }
     }
+    /**
+     * Mostrar el detalle de una acta de conformidad con sus reportes.
+     */
+    public function show($id): JsonResponse
+    {
+        try {
+            $compliance = Compliance::with([
+                'project',
+                'workReports.employee'
+            ])->findOrFail($id);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Detalle del acta obtenido correctamente',
+                'data' => $compliance,
+                'meta' => [
+                    'apiVersion' => '1.0',
+                    'timestamp' => now()->utc()->toIso8601String(),
+                ],
+            ], 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'El acta de conformidad con ID ' . $id . ' no existe.',
+                'meta' => [
+                    'apiVersion' => '1.0',
+                    'timestamp' => now()->utc()->toIso8601String(),
+                ],
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener el detalle del acta: ' . $e->getMessage(),
+                'meta' => [
+                    'apiVersion' => '1.0',
+                    'timestamp' => now()->utc()->toIso8601String(),
+                ],
+            ], 500);
+        }
+    }
 }

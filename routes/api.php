@@ -42,6 +42,7 @@ Route::middleware(['auth:sanctum', 'CheckTokenExpiration'])->group(function () {
     Route::prefix('compliances')->group(function () {
         Route::get('/', [ComplianceController::class, 'index']);
         Route::get('/quick-search', [ComplianceController::class, 'quickSearch']); // Búsqueda rápida
+        Route::get('/{id}', [ComplianceController::class, 'show']);
     });
 
     // Empleados
