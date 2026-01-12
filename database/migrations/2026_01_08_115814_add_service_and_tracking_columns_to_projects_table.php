@@ -20,8 +20,8 @@ return new class extends Migration
             $table->string('task_type')->nullable()->comment('OPEX / CAPEX');
 
             // Document Flags (SI/NO)
-            $table->string('has_quote')->default('NO');        // cotizacion
-            $table->string('has_report')->default('NO');       // informe
+            $table->string('has_quote')->nullable();        // cotizacion
+            $table->string('has_report')->nullable();       // informe
         });
     }
 

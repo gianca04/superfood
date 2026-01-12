@@ -85,7 +85,7 @@ class ProjectResource extends Resource
                                             ->label('Descripción de la solicitud')
                                             ->required()
                                             ->columnSpan(2),
-                                        Forms\Components\TextInput::make('correlativo')
+                                        Forms\Components\TextInput::make('service_code')
                                             ->label('Codigo de Servicio')
                                             ->default('COT-' . (Project::max('id') + 1))
                                             // ->helperText('Correlativo generado automáticamente y no editable')
@@ -98,12 +98,10 @@ class ProjectResource extends Resource
                                     ->schema([
                                         Forms\Components\TextInput::make('request_number')
                                             ->label('N° de Solicitud')
-                                            ->required()
                                             ->columnSpan(2)
                                             ->maxLength(255),
                                         Forms\Components\DatePicker::make('requested_at')
                                             ->label('Fecha de Solicitud')
-                                            ->required()
                                             ->columnSpan(2)
                                             ->default(now()),
 
@@ -114,7 +112,7 @@ class ProjectResource extends Resource
                                             ->label('Cliente') // Título para el campo 'Cliente'
                                             ->options(
                                                 function (callable $get) {
-                                                    return Client::query()
+                                                    return Client::whereIn('id', [127, 164])  // Filtra solo los IDs especificados
                                                         ->select('id', 'business_name', 'document_number')
                                                         ->when($get('search'), function ($query, $search) {
                                                             $query->where('business_name', 'like', "%{$search}%")
@@ -130,7 +128,7 @@ class ProjectResource extends Resource
                                             ->searchable() // Activa la búsqueda asincrónica
                                             ->reactive() // Hace el campo reactivo
                                             ->afterStateUpdated(fn($state, callable $set) => $set('sub_client_id', null))
-                                            ->helperText('Selecciona el cliente para esta cotización.') // Ayuda para el campo de cliente
+                                            ->helperText('Selecciona el cliente para esta cotización.')
 
                                             // Botón para ver información del cliente
                                             ->suffixAction(
@@ -202,10 +200,10 @@ class ProjectResource extends Resource
                                             }),
 
                                         Forms\Components\Select::make('sub_client_id')
-                                            ->required()
                                             ->columnSpan(2)
                                             ->prefixIcon('heroicon-m-home-modern')
                                             ->label('Tienda') // Título para el campo 'Tienda'
+                                            ->required()
                                             ->options(
                                                 function (callable $get) {
                                                     $clientId = $get('client_id');
@@ -602,7 +600,6 @@ class ProjectResource extends Resource
                                     // 1. FECHA INICIO
                                     Forms\Components\DatePicker::make('service_start_date')
                                         ->label('Fecha de inicio del servicio')
-                                        ->required()
                                         ->live() // ⚡ IMPORTANTE: Escucha cambios
                                         ->afterStateUpdated(function (Get $get, Set $set) {
                                             // Recalcular cuando cambia la fecha de inicio
@@ -627,7 +624,6 @@ class ProjectResource extends Resource
                                     // 2. FECHA FIN
                                     DatePicker::make('service_end_date')
                                         ->label('Fecha de fin del servicio')
-                                        ->required()
                                         ->live()
                                         ->afterStateUpdated(fn(Get $get, Set $set) => self::calculateDays($get, $set)),
                                     // 3. DÍAS (AUTOMÁTICO)
