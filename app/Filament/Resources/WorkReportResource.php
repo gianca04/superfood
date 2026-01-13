@@ -136,32 +136,25 @@ class WorkReportResource extends Resource
 
                                 // FIN DE SELECT DE EMPLEADO
 
-                                // INICIO DE SELECT DE PROYECTO
                                 Forms\Components\Select::make('project_id')
                                     ->required()
                                     ->prefixIcon('heroicon-m-briefcase')
                                     ->default(fn() => session('project_id'))
-                                    ->label('Proyecto') // Título para el campo 'Proyecto'
+                                    ->label('Proyecto')
                                     ->options(
-                                        function (callable $get) {
-                                            return Project::query()
-                                                ->select('id', 'name', 'quote_id')
-                                                ->when($get('search'), function ($query, $search) {
-                                                    $query->where('name', 'like', "%{$search}%")
-                                                        ->orWhere('quote_id', 'like', "%{$search}%");
-                                                })
-                                                ->get()
-                                                ->mapWithKeys(function ($project) {
-                                                    return [$project->id => $project->name . ' - ' . $project->quote_id];
-                                                })
-                                                ->toArray();
-                                        }
+                                        fn() => Project::query()
+                                            // 1. Filtramos por los dos estados requeridos
+                                            ->whereIn('status', ['Aprobado', 'En Ejecución'])
+                                            // 2. Ordenamos por fecha de creación (descendente) para obtener los recientes primero
+                                            ->latest()
+                                            // 3. Formateamos para el select
+                                            ->pluck('name', 'id')
                                     )
-                                    ->searchable() // Activa la búsqueda asincrónica
-                                    ->reactive() // Hace el campo reactivo
+                                    ->searchable()
+                                    ->reactive()
                                     ->afterStateUpdated(fn($state, callable $set) => $set('sub_client_id', null))
-                                    ->helperText('Selecciona un proyecto.') // Ayuda para el campo de cliente
-
+                                    ->helperText('Selecciona un proyecto.')
+                                    
                                     // Botón para ver información del proyecto
                                     ->suffixAction(
                                         Forms\Components\Actions\Action::make('view_client')

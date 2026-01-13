@@ -880,15 +880,6 @@ class ProjectResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
 
-
-                TextColumn::make('coordinates')
-                    ->label('Coordenadas')
-                    ->formatStateUsing(function ($record) {
-                        return $record->coordinates ?? 'Sin coordenadas';
-                    })
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->toggleable(),
-
                 TextColumn::make('created_at')
                     ->label('Creado')
                     ->dateTime('d/m/Y H:i')
@@ -904,6 +895,7 @@ class ProjectResource extends Resource
             ->filters([
                 SelectFilter::make('fracttal_status')
                     ->label('Estado Fracttal')
+                    ->native(false)
                     ->options([
                         'Pendiente' => 'Pendiente',
                         'Completado' => 'Completado',
