@@ -23,7 +23,7 @@ class Project extends Model
     protected $fillable = [
         // 1. DATOS GENERALES / SOLICITUD
         'name',             // Descripción de la solicitud
-        'service_code',     // Código de Servicio
+        'service_code',     // Código de Servicio Correlativo
         'request_number',   // N° de Solicitud
         'service_start_date',       // Fecha solicitud
         'sub_client_id',    // Cliente (ID)

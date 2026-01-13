@@ -7,6 +7,8 @@ use App\Filament\Resources\ComplianceResource\RelationManagers\WorkReportsRelati
 use App\Models\Compliance;
 use App\Models\Project;
 use Filament\Forms;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
@@ -317,15 +319,19 @@ class ComplianceResource extends Resource
                     ->schema([
                         Forms\Components\Grid::make(2)
                             ->schema([
-                                // Columna 1: Cliente
+
+                                // ---------------------------------------------------------
+                                // COLUMNA 1: DATOS DEL CLIENTE
+                                // ---------------------------------------------------------
                                 Forms\Components\Section::make('Datos del Cliente')
                                     ->icon('heroicon-o-user')
-                                    ->compact()
+                                    ->columnSpan(1)
                                     ->schema([
                                         Forms\Components\TextInput::make('fullname_cliente')
                                             ->label('Nombre Completo')
                                             ->prefixIcon('heroicon-o-user-circle')
                                             ->placeholder('Ingrese nombre completo')
+                                            // Se eliminó ->required()
                                             ->maxLength(255),
 
                                         Forms\Components\Grid::make(2)
@@ -342,14 +348,14 @@ class ComplianceResource extends Resource
                                                     ->live(),
 
                                                 Forms\Components\TextInput::make('document_number')
-                                                    ->label('Número de Documento')
+                                                    ->label('N° de documento')
                                                     ->numeric()
                                                     ->minLength(fn(Get $get) => $get('document_type') === 'DNI' ? 8 : 9)
                                                     ->maxLength(fn(Get $get) => $get('document_type') === 'DNI' ? 8 : 12)
                                                     ->hint(fn(Get $get) => match ($get('document_type')) {
                                                         'DNI' => '8 dígitos',
                                                         'CARNET DE EXTRANJERIA' => '9-12 dígitos',
-                                                        'PASAPORTE' => '9-12 caracteres',
+                                                        'PASAPORTE' => '9-12 dígitos',
                                                         default => ''
                                                     })
                                                     ->hintColor('primary'),
@@ -358,9 +364,7 @@ class ComplianceResource extends Resource
                                         SignaturePad::make('client_signature')
                                             ->label('Firma del Cliente')
                                             ->dotSize(2.0)
-                                            ->penColor('#000')
-                                            ->penColorOnDark('#00f')
-                                            ->lineMinWidth(0.2)
+                                            ->lineMinWidth(0.5)
                                             ->lineMaxWidth(2.5)
                                             ->throttle(16)
                                             ->minDistance(5)
@@ -368,55 +372,56 @@ class ComplianceResource extends Resource
                                             ->confirmable(),
                                     ]),
 
-                                // Columna 2: Empleado
+                                // ---------------------------------------------------------
+                                // COLUMNA 2: DATOS DEL EMPLEADO
+                                // ---------------------------------------------------------
                                 Forms\Components\Section::make('Datos del Empleado')
                                     ->icon('heroicon-o-identification')
-                                    ->compact()
+                                    ->columnSpan(1)
                                     ->schema([
                                         Forms\Components\Placeholder::make('employee_info')
-                                            ->label('')
+                                            ->label('Responsable Técnico')
                                             ->content(function () {
                                                 $employee = Auth::user()?->employee;
+
                                                 if (!$employee) {
                                                     return new \Illuminate\Support\HtmlString("
-                                                        <div class='p-4 border rounded-lg bg-warning-50 dark:bg-warning-900/20 border-warning-200 dark:border-warning-800'>
-                                                            <div class='flex items-center gap-2 text-warning-600 dark:text-warning-400'>
-                                                                <svg class='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                                                                    <path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z'/>
-                                                                </svg>
-                                                                <span class='font-medium'>Empleado no identificado</span>
-                                                            </div>
-                                                        </div>
-                                                    ");
+                                        <div class='p-4 border rounded-lg bg-warning-50 dark:bg-warning-900/20 border-warning-200 dark:border-warning-800'>
+                                            <div class='flex items-center gap-2 text-warning-600 dark:text-warning-400'>
+                                                <svg class='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                                    <path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z'/>
+                                                </svg>
+                                                <span class='font-medium'>Empleado no identificado</span>
+                                            </div>
+                                        </div>
+                                    ");
                                                 }
 
                                                 return new \Illuminate\Support\HtmlString("
-                                                    <div class='p-4 border rounded-lg bg-primary-50 dark:bg-primary-900/20 border-primary-200 dark:border-primary-800'>
-                                                        <div class='flex items-center gap-3'>
-                                                            <div class='flex items-center justify-center flex-shrink-0 w-12 h-12 rounded-full bg-primary-100 dark:bg-primary-800'>
-                                                                <svg class='w-6 h-6 text-primary-600 dark:text-primary-400' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                                                                    <path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'/>
-                                                                </svg>
-                                                            </div>
-                                                            <div>
-                                                                <p class='font-semibold text-gray-900 dark:text-white'>{$employee->first_name} {$employee->last_name}</p>
-                                                                <p class='text-sm text-gray-500 dark:text-gray-400'>
-                                                                    <span class='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'>
-                                                                        {$employee->document_type}: {$employee->document_number}
-                                                                    </span>
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                ");
+                                    <div class='p-4 border rounded-lg bg-primary-50 dark:bg-primary-900/20 border-primary-200 dark:border-primary-800'>
+                                        <div class='flex items-center gap-3'>
+                                            <div class='flex items-center justify-center flex-shrink-0 w-12 h-12 rounded-full bg-primary-100 dark:bg-primary-800'>
+                                                <svg class='w-6 h-6 text-primary-600 dark:text-primary-400' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                                    <path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'/>
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <p class='font-semibold text-gray-900 dark:text-white'>{$employee->first_name} {$employee->last_name}</p>
+                                                <p class='text-sm text-gray-500 dark:text-gray-400'>
+                                                    <span class='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'>
+                                                        {$employee->document_type}: {$employee->document_number}
+                                                    </span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ");
                                             }),
 
                                         SignaturePad::make('employee_signature')
                                             ->label('Firma del Supervisor / Técnico')
                                             ->dotSize(2.0)
-                                            ->penColor('#000')
-                                            ->penColorOnDark('#00f')
-                                            ->lineMinWidth(0.2)
+                                            ->lineMinWidth(0.5)
                                             ->lineMaxWidth(2.5)
                                             ->throttle(16)
                                             ->minDistance(5)

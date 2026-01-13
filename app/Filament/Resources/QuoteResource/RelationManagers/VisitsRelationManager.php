@@ -139,7 +139,7 @@ class VisitsRelationManager extends RelationManager
                                 // INICIO DE INPUT DE HORA DE INICIO
                                 Forms\Components\TimePicker::make('start_time')
                                     ->label('Hora de inicio')
-                                    ->default(now()->format('H:i'))
+                                    //->default(now()->format('H:i'))
                                     ->native(false)
                                     ->seconds(false)
                                     ->displayFormat(format: 'H:i')

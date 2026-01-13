@@ -5,7 +5,6 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\VisitResource\Pages;
 use App\Filament\Resources\VisitResource\RelationManagers;
 use App\Filament\Resources\VisitResource\RelationManagers\VisitPhotosRelationManager;
-use App\Forms\Components\ProjectClientSelect;
 use App\Models\Employee;
 use App\Models\Visit;
 use Filament\Forms;
@@ -39,167 +38,165 @@ class VisitResource extends Resource
             ->schema([
                 Tabs::make('MainTabs')
                     ->tabs([
-                        // INICIO DE TAB DE INFORMACIÓN GENERAL
+                        // TAB DE INFORMACIÓN GENERAL
                         Tab::make('Información general')
                             ->icon('heroicon-o-information-circle')
                             ->columns(2)
                             ->schema([
+                                // Proyecto
+                                Forms\Components\Select::make('project_id')
+                                    ->required()
+                                    ->label('Proyecto')
+                                    ->prefixIcon('heroicon-m-building-office-2')
+                                    ->relationship('project', 'name')
+                                    ->searchable(['name', 'code'])
+                                    ->preload()
+                                    ->helperText('Selecciona el proyecto al que pertenece esta visita')
+                                    ->columnSpanFull(),
 
-
-                                // INICIO DE SELECT DE EMPLEADO
-                                Forms\Components\Select::make('employee_id')
-                                    ->default(fn() => Auth::user()?->employee_id)->required()
-                                    ->columns(2)
-                                    ->reactive()
-                                    ->prefixIcon('heroicon-m-user')
-                                    ->label('Supervisor / Técnico') // Título para el campo 'Empleado'
+                                // Inspector
+                                Forms\Components\Select::make('inspector_id')
+                                    ->label('Inspector')
+                                    ->prefixIcon('heroicon-m-user-circle')
                                     ->options(
-                                        function (callable $get) {
-                                            return Employee::query()
-                                                ->select('id', 'first_name', 'last_name', 'document_number')
-                                                ->when($get('search'), function ($query, $search) {
-                                                    $query->where('first_name', 'like', "%{$search}%")
-                                                        ->orWhere('last_name', 'like', "%{$search}%")
-                                                        ->orWhere('document_number', 'like', "%{$search}%");
-                                                })
-                                                ->get()
-                                                ->mapWithKeys(function ($employee) {
-                                                    return [$employee->id => $employee->full_name];
-                                                })
-                                                ->toArray();
-                                        }
-                                    )
-                                    ->searchable() // Activa la búsqueda asincrónica
-                                    ->placeholder('Seleccionar un empleado') // Placeholder
-                                    ->helperText('Selecciona el empleado responsable.') // Ayuda para el campo de empleado
-
-                                    // Botón para ver información del empleado
-                                    ->suffixAction(
-                                        Forms\Components\Actions\Action::make('view_employee')
-                                            ->icon('heroicon-o-eye')
-                                            ->tooltip('Ver información del supervisor')
-                                            ->color('info')
-                                            ->action(function (callable $get) {
-                                                $employeeId = $get('employee_id');
-                                                if (!$employeeId) {
-                                                    Notification::make()
-                                                        ->title('Selecciona un supervisor primero')
-                                                        ->warning()
-                                                        ->send();
-                                                    return;
-                                                }
+                                        Employee::query()
+                                            ->select('id', 'first_name', 'last_name', 'document_number')
+                                            ->get()
+                                            ->mapWithKeys(function ($employee) {
+                                                return [$employee->id => $employee->full_name . ' (' . $employee->document_number . ')'];
                                             })
+                                            ->toArray()
+                                    )
+                                    ->searchable()
+                                    ->placeholder('Seleccionar inspector')
+                                    ->helperText('Inspector responsable de la visita')
+                                    ->suffixAction(
+                                        Forms\Components\Actions\Action::make('view_inspector')
+                                            ->icon('heroicon-o-eye')
+                                            ->tooltip('Ver información del inspector')
+                                            ->color('info')
                                             ->modalContent(function (callable $get) {
-                                                $employeeId = $get('employee_id');
-                                                if (!$employeeId) return null;
+                                                $inspectorId = $get('inspector_id');
+                                                if (!$inspectorId) return null;
 
-                                                $employee = Employee::with('user')->find($employeeId);
+                                                $employee = Employee::with('user')->find($inspectorId);
                                                 if (!$employee) return null;
 
                                                 return view('filament.components.employee-info-modal', compact('employee'));
                                             })
-                                            ->modalHeading('Información del Supervisor')
+                                            ->modalHeading('Información del Inspector')
                                             ->modalSubmitAction(false)
                                             ->modalCancelActionLabel('Cerrar')
                                             ->modalWidth('2xl')
-                                            ->visible(fn(callable $get) => !empty($get('employee_id')))
+                                            ->visible(fn(callable $get) => !empty($get('inspector_id')))
+                                    ),
+
+                                // Cotizador
+                                Forms\Components\Select::make('quoted_by_id')
+                                    ->label('Cotizador')
+                                    ->prefixIcon('heroicon-m-calculator')
+                                    ->options(
+                                        Employee::query()
+                                            ->select('id', 'first_name', 'last_name', 'document_number')
+                                            ->get()
+                                            ->mapWithKeys(function ($employee) {
+                                                return [$employee->id => $employee->full_name . ' (' . $employee->document_number . ')'];
+                                            })
+                                            ->toArray()
                                     )
-                                    ->afterStateHydrated(function (callable $get, callable $set) {
-                                        $employeeId = $get('employee_id');
-                                        if ($employeeId) {
-                                            $employee = Employee::with('user')->find($employeeId);
-                                            if ($employee) {
-                                                $set('document_type', $employee->document_type);
-                                                $set('document_number', $employee->document_number);
-                                                $set('address', $employee->address);
-                                                $set('date_contract', $employee->date_contract);
-                                                $set('user_email', $employee->user?->email);
-                                                $set('user_is_active', $employee->user?->is_active ? 'Activo' : 'Inactivo');
-                                            } else {
-                                                $set('user_email', null);
-                                                $set('user_is_active', null);
-                                            }
-                                        }
-                                    }),
+                                    ->searchable()
+                                    ->placeholder('Seleccionar cotizador')
+                                    ->helperText('Persona que realizó la cotización')
+                                    ->suffixAction(
+                                        Forms\Components\Actions\Action::make('view_quoter')
+                                            ->icon('heroicon-o-eye')
+                                            ->tooltip('Ver información del cotizador')
+                                            ->color('info')
+                                            ->modalContent(function (callable $get) {
+                                                $quoterId = $get('quoted_by_id');
+                                                if (!$quoterId) return null;
 
-                                // FIN DE SELECT DE EMPLEADO
+                                                $employee = Employee::with('user')->find($quoterId);
+                                                if (!$employee) return null;
 
-                                // INICIO DE INPUT DE NOMBRE DEL REPORTE
-                                Forms\Components\TextInput::make('name')
-                                    ->required()
-                                    ->maxLength(255)
-                                    ->label('Nombre del reporte'),
-                                // FIN DE INPUT DE NOMBRE DEL REPORTE
+                                                return view('filament.components.employee-info-modal', compact('employee'));
+                                            })
+                                            ->modalHeading('Información del Cotizador')
+                                            ->modalSubmitAction(false)
+                                            ->modalCancelActionLabel('Cerrar')
+                                            ->modalWidth('2xl')
+                                            ->visible(fn(callable $get) => !empty($get('quoted_by_id')))
+                                    ),
 
-                                // INICIO DE INPUT DE FECHA
-                                Forms\Components\DatePicker::make('report_date')
-                                    ->label('Fecha')
-                                    ->native(false) // Desactiva el selector nativo para usar el de Filament
+                                // Fecha de visita
+                                Forms\Components\DatePicker::make('visit_date')
+                                    ->label('Fecha de visita')
+                                    ->native(false)
                                     ->default(now())
                                     ->displayFormat('d/m/Y')
                                     ->required()
-                                    ->helperText('Selecciona la fecha y hora del trabajo'),
-                                // FIN DE INPUT DE FECHA
+                                    ->prefixIcon('heroicon-m-calendar')
+                                    ->helperText('Fecha en que se realizó la visita'),
 
-                                // INICIO DE INPUT DE HORA DE INICIO
-                                Forms\Components\TimePicker::make('start_time')
-                                    ->label('Hora de inicio')
-                                    ->default(now()->format('H:i'))
+                                // Hora de ingreso
+                                Forms\Components\TimePicker::make('entry_time')
+                                    ->label('Hora de ingreso')
                                     ->seconds(false)
-                                    ->displayFormat(format: 'H:i')
-                                    ->helperText('Selecciona la hora de inicio del trabajo'),
-                                // FIN DE INPUT DE HORA DE INICIO
+                                    ->displayFormat('H:i')
+                                    ->prefixIcon('heroicon-m-clock')
+                                    ->helperText('Hora de ingreso a la visita')
+                                    ->reactive(),
 
-                                // INICIO DE INPUT DE HORA DE FINALIZACIÓN
-                                Forms\Components\TimePicker::make('end_time')
-                                    ->label('Hora de finalización')
-                                    ->default(now()->format('H:i'))
+                                // Hora de salida
+                                Forms\Components\TimePicker::make('exit_time')
+                                    ->label('Hora de salida')
                                     ->seconds(false)
-                                    ->displayFormat(format: 'H:i')
-                                    ->helperText('Selecciona la hora de finalización del trabajo')
-                                    // Usamos afterStateUpdated para validar y limpiar el campo
-                                    ->afterStateUpdated(function ($state, $get, $livewire) {
-                                        $startTime = $get('start_time');
-                                        $endTime = $state;
+                                    ->displayFormat('H:i')
+                                    ->prefixIcon('heroicon-m-clock')
+                                    ->helperText('Hora de salida de la visita')
+                                    ->afterStateUpdated(function ($state, $get) {
+                                        $entryTime = $get('entry_time');
+                                        $exitTime = $state;
 
-                                        // Si no hay hora de inicio, no validamos
-                                        if (!$startTime || !$endTime) {
+                                        if (!$entryTime || !$exitTime) {
                                             return;
                                         }
 
-                                        $startCarbon = \Carbon\Carbon::parse($startTime);
-                                        $endCarbon = \Carbon\Carbon::parse($endTime);
+                                        $entryCarbon = \Carbon\Carbon::parse($entryTime);
+                                        $exitCarbon = \Carbon\Carbon::parse($exitTime);
 
-                                        if ($endCarbon->lessThan($startCarbon)) {
-                                            // Envía una notificación de error
+                                        if ($exitCarbon->lessThan($entryCarbon)) {
                                             Notification::make()
                                                 ->title('Error de validación')
-                                                ->body('La hora de finalización no puede ser anterior a la hora de inicio.')
+                                                ->body('La hora de salida no puede ser anterior a la hora de ingreso.')
                                                 ->danger()
                                                 ->duration(5000)
                                                 ->send();
-
-                                            // Limpiamos el campo 'end_time'
-                                            $livewire->form->fill(['end_time' => null]);
                                         }
                                     }),
-                                // FIN DE INPUT DE HORA DE FINALIZACIÓN
 
+                                // Monto
+                                Forms\Components\TextInput::make('amount')
+                                    ->label('Monto (S/.)')
+                                    ->numeric()
+                                    ->prefix('S/.')
+                                    ->prefixIcon('heroicon-m-banknotes')
+                                    ->inputMode('decimal')
+                                    ->step('0.01')
+                                    ->minValue(0)
+                                    ->helperText('Monto en soles')
+                                    ->columnSpanFull(),
                             ]),
 
-                        // FIN DE TAB DE INFORMACIÓN GENERAL
-
-                        // INICIO TAB DESCRIPCIÓN DEL REPORTE
+                        // TAB DE DESCRIPCIÓN Y SUGERENCIAS
                         Tab::make('Descripción')
                             ->icon('heroicon-o-clipboard-document-check')
-                            ->columns(2)
+                            ->columns(1)
                             ->schema([
                                 Forms\Components\RichEditor::make('description')
-                                    ->label('Descripción del reporte')
-                                    ->required()
-                                    ->helperText('Proporciona una descripción detallada del trabajo realizado.')
+                                    ->label('Comentarios / Descripción')
+                                    ->helperText('Proporciona una descripción detallada de la visita realizada.')
                                     ->toolbarButtons([
-                                        'attachFiles',
                                         'bold',
                                         'bulletList',
                                         'h2',
@@ -210,13 +207,14 @@ class VisitResource extends Resource
                                         'strike',
                                         'underline',
                                         'undo',
-                                    ]),
+                                    ])
+                                    ->columnSpanFull(),
+
                                 Forms\Components\RichEditor::make('suggestions')
                                     ->label('Sugerencias')
-                                    ->helperText('Proporciona sugerencias o comentarios adicionales sobre el trabajo realizado.')
+                                    ->helperText('Proporciona sugerencias o recomendaciones adicionales.')
                                     ->maxLength(5000)
                                     ->toolbarButtons([
-                                        'attachFiles',
                                         'bold',
                                         'bulletList',
                                         'h2',
@@ -227,53 +225,11 @@ class VisitResource extends Resource
                                         'strike',
                                         'underline',
                                         'undo',
-                                    ]),
+                                    ])
+                                    ->columnSpanFull(),
                             ]),
-                        // FIN TAB DESCRIPCIÓN DEL REPORTE
 
-                        // INICIO DEL TAB DE HERRAMIENTAS Y MATERIALES
-                        Tab::make('Herramientas y materiales')
-                            ->icon('heroicon-o-wrench')
-                            ->columns(2)
-                            ->schema([
-                                Forms\Components\RichEditor::make('tools')
-                                    ->label('Herramientas')
-                                    ->helperText('Detalla las herramientas utilizadas durante el trabajo.')
-                                    ->maxLength(5000)
-                                    ->toolbarButtons([
-                                        'attachFiles',
-                                        'bold',
-                                        'bulletList',
-                                        'h2',
-                                        'h3',
-                                        'italic',
-                                        'orderedList',
-                                        'redo',
-                                        'strike',
-                                        'underline',
-                                        'undo',
-                                    ]),
-                                Forms\Components\RichEditor::make('materials')
-                                    ->label('Materiales')
-                                    ->helperText('Detalla los materiales utilizados durante el trabajo.')
-                                    ->maxLength(5000)
-                                    ->toolbarButtons([
-                                        'attachFiles',
-                                        'bold',
-                                        'bulletList',
-                                        'h2',
-                                        'h3',
-                                        'italic',
-                                        'orderedList',
-                                        'redo',
-                                        'strike',
-                                        'underline',
-                                        'undo',
-                                    ]),
-                            ]),
-                        // FIN DEL TAB DE HERRAMIENTAS Y MATERIALES
-
-                        // INICIO DE TAB DE FIRMAS
+                        // TAB DE FIRMAS (CAMPOS LEGACY - Mantener por compatibilidad)
                         Tab::make('Firmas')
                             ->icon('heroicon-o-pencil-square')
                             ->columns(2)
@@ -281,28 +237,30 @@ class VisitResource extends Resource
                                 SignaturePad::make('manager_signature')
                                     ->label('Firma del gerente / subgerente')
                                     ->dotSize(2.0)
-                                    ->penColor('#000')  // Color negro en modo claro
-                                    ->penColorOnDark('#00f')  // Color azul en modo oscuro para mayor visibilidad
+                                    ->penColor('#000')
+                                    ->penColorOnDark('#00f')
                                     ->lineMinWidth(0.2)
                                     ->lineMaxWidth(2.5)
                                     ->throttle(16)
                                     ->minDistance(5)
                                     ->velocityFilterWeight(0.7)
                                     ->confirmable(),
+
                                 SignaturePad::make('employee_signature')
-                                    ->label('Firma del Validado por supervisor / técnico')
+                                    ->label('Firma del supervisor / técnico')
                                     ->dotSize(2.0)
-                                    ->penColor('#000')  // Color negro en modo claro
-                                    ->penColorOnDark('#00f')  // Color azul en modo oscuro para mayor visibilidad
+                                    ->penColor('#000')
+                                    ->penColorOnDark('#00f')
                                     ->lineMinWidth(0.2)
                                     ->lineMaxWidth(2.5)
                                     ->throttle(16)
                                     ->minDistance(5)
                                     ->velocityFilterWeight(0.7)
                                     ->confirmable(),
-                            ]),
-                        // FIN DE TAB DE FIRMAS
-                    ])->columnSpanFull()
+                            ])
+                            ->hidden(fn($record) => $record === null), // Ocultar en creación si no se necesitan firmas
+                    ])
+                    ->columnSpanFull()
             ]);
     }
 
@@ -310,39 +268,64 @@ class VisitResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
-                    ->label('Nombre de visita')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('employee.full_name')
-                    ->label('Encargado de visita')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Creado el')
-                    ->dateTime()
-                    ->date('d/m/Y')
+                Tables\Columns\TextColumn::make('id')
+                    ->label('#')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Actualizado el')
-                    ->dateTime()
-                    ->date('d/m/Y')
+
+                Tables\Columns\TextColumn::make('project.name')
+                    ->label('Proyecto')
+                    ->searchable()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('start_time')
-                    ->label('Hora de inicio')
-                    ->dateTime()
+                    ->limit(30)
+                    ->tooltip(fn($record) => $record->project?->name),
+
+                Tables\Columns\TextColumn::make('inspector.full_name')
+                    ->label('Inspector')
+                    ->searchable()
+                    ->sortable()
+                    ->placeholder('Sin asignar'),
+
+                Tables\Columns\TextColumn::make('quotedBy.full_name')
+                    ->label('Cotizador')
+                    ->searchable()
+                    ->sortable()
+                    ->placeholder('Sin asignar'),
+
+                Tables\Columns\TextColumn::make('visit_date')
+                    ->label('Fecha de visita')
                     ->date('d/m/Y')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('end_time')
-                    ->label('Hora de fin')
-                    ->date('d/m/Y')
-                    ->dateTime()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('report_date')
-                    ->label('Fecha de reporte')
-                    ->date('d/m/Y')
-                    ->sortable(),
+                Tables\Columns\TextColumn::make('entry_time')
+                    ->label('Hora ingreso')
+                    ->time('H:i')
+                    ->sortable()
+                    ->toggleable(),
+
+                Tables\Columns\TextColumn::make('exit_time')
+                    ->label('Hora salida')
+                    ->time('H:i')
+                    ->sortable()
+                    ->toggleable(),
+
+                Tables\Columns\TextColumn::make('amount')
+                    ->label('Monto (S/.)')
+                    ->money('PEN', divideBy: 1)
+                    ->sortable()
+                    ->toggleable(),
+
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Creado el')
+                    ->dateTime('d/m/Y H:i')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Actualizado el')
+                    ->dateTime('d/m/Y H:i')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //

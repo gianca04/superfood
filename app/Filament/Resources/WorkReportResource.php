@@ -144,17 +144,18 @@ class WorkReportResource extends Resource
                                     ->options(
                                         fn() => Project::query()
                                             // 1. Filtramos por los dos estados requeridos
-                                            ->whereIn('status', ['Aprobado', 'En Ejecución'])
+                                            ->whereIn('status', ['En Ejecución'])
                                             // 2. Ordenamos por fecha de creación (descendente) para obtener los recientes primero
                                             ->latest()
                                             // 3. Formateamos para el select
                                             ->pluck('name', 'id')
                                     )
+
                                     ->searchable()
                                     ->reactive()
                                     ->afterStateUpdated(fn($state, callable $set) => $set('sub_client_id', null))
                                     ->helperText('Selecciona un proyecto.')
-                                    
+                                    ->relationship('project', 'name')
                                     // Botón para ver información del proyecto
                                     ->suffixAction(
                                         Forms\Components\Actions\Action::make('view_client')
@@ -613,7 +614,7 @@ class WorkReportResource extends Resource
                                 // INICIO DE INPUT DE HORA DE INICIO
                                 Forms\Components\TimePicker::make('start_time')
                                     ->label('Hora de inicio')
-                                    ->default(now()->format('H:i'))
+                                    //->default(now()->format('H:i'))
                                     ->native(false)
                                     ->seconds(false)
                                     ->displayFormat(format: 'H:i')
@@ -696,7 +697,10 @@ class WorkReportResource extends Resource
                                             ->placeholder('Ej: Unidad'),
                                         Forms\Components\TextInput::make('cantidad')
                                             ->label('Cantidad')
-                                            ->placeholder('Ej: 2'),
+                                            ->placeholder('Ej: 2')
+                                            ->numeric()
+                                            ->minValue(0)
+                                            ->default(0),
                                     ])
                                     ->columns(3)
                                     ->columnSpanFull()
@@ -718,7 +722,10 @@ class WorkReportResource extends Resource
                                             ->placeholder('Ej: Sacos'),
                                         Forms\Components\TextInput::make('cantidad')
                                             ->label('Cantidad')
-                                            ->placeholder('Ej: 10'),
+                                            ->placeholder('Ej: 2')
+                                            ->numeric()
+                                            ->minValue(0)
+                                            ->default(0),
                                     ])
                                     ->columns(3)
                                     ->columnSpanFull()
@@ -960,6 +967,7 @@ class WorkReportResource extends Resource
                                     ->label('Recomendaciones')
                                     ->helperText('Proporciona sugerencias o comentarios adicionales sobre el trabajo realizado.')
                                     ->maxLength(5000)
+                                    ->columnSpanFull()
                                     ->toolbarButtons([
                                         'attachFiles',
                                         'bold',

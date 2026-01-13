@@ -19,6 +19,7 @@ class WorkReport extends Model
         'manager_signature', //NO LOS NECESITO PERO NO LOS BORARRE
         'suggestions',
         'tools',
+        'conclusions',
         'personnel',
         'materials',
         'work_to_do',      // Trabajos a realizar

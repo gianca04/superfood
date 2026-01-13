@@ -814,6 +814,7 @@ class ProjectResource extends Resource
                 TextColumn::make('service_code')
                     ->label('Correlativo')
                     ->alignJustify()
+                    ->badge()
                     ->extraAttributes(['class' => 'font-bold'])
                     ->sortable(),
 
@@ -822,6 +823,8 @@ class ProjectResource extends Resource
                     ->searchable()
                     ->alignJustify()
                     ->extraAttributes(['class' => 'font-bold'])
+                    ->limit(30)
+                    ->tooltip(fn($record) => $record->name)
                     ->sortable(),
 
                 TextColumn::make('subClient.client.business_name')

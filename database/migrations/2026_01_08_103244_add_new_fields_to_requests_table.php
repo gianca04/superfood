@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('projects', function (Blueprint $table) {
-            $table->string('service_code')->nullable();      // Código de Servicio
+            $table->string('service_code')->nullable();      // Código de Servicio correlativo
             $table->string('request_number')->nullable();    // N° de Solicitud
             $table->text('comment')->nullable();            // Comentario
             $table->renameColumn('start_date', 'requested_at'); // Renombrar columna a Fecha de Solicitud

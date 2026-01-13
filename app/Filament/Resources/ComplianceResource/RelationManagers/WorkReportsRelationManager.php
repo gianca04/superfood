@@ -1042,7 +1042,7 @@ class WorkReportsRelationManager extends RelationManager
                         return $data;
                     }),
                 Tables\Actions\Action::make('download_all_reports')
-                    ->label('Descargar Todos los Reportes')
+                    ->label('Descargar Todos los Reportes de esta acta')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('info')
                     ->visible(fn() => $this->ownerRecord && $this->ownerRecord->project_id)

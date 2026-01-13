@@ -16,10 +16,10 @@ class Visit extends Model
         'entry_time',        // Hora ingreso
         'exit_time',         // Hora salida
         'amount',            // Monto SOL
-        'description',       // Usado como "Comentario2"
-        'suggestions',       // Se mantiene como legacy/soporte
+        'description',       // "
 
         // CAMPOS LEGACY
+        'suggestions',       // Se mantiene como legacy/soporte
         'name',
         'employee_signature',
         'manager_signature',

@@ -41,10 +41,10 @@ class Compliance extends Model
         return $this->hasManyThrough(
             WorkReport::class,
             Project::class,
-            'id',           // Foreign key on projects table (project.id)
-            'project_id',   // Foreign key on work_reports table
-            'project_id',   // Local key on compliance table
-            'id'            // Local key on projects table
+            'id',
+            'project_id',
+            'project_id',
+            'id'
         );
     }
 }
