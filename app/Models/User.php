@@ -59,4 +59,9 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Employee::class);
     }
+    //PARA PRUEBAS:
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return true;
+    }
 }
