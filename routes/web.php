@@ -60,7 +60,7 @@ Route::prefix('request/{request}')->middleware('auth')->group(function () {
 //Route::get('/work-report/{workReport}/word', [WorkReportWordController::class, 'generateReport'])
 //    ->name('work-report.word')
 //    ->middleware('auth');
-
+/*
 Livewire::setScriptRoute(function ($handle) {
     return Route::get('/monitor.sat-industriales.pe/public/livewire/livewire.js', $handle);
 });
@@ -72,6 +72,7 @@ Livewire::setUpdateRoute(function ($handle) {
 Route::get('/storage-link', function () {
     Artisan::call('storage:link');
 });
+*/
 
 Route::middleware(['auth'])->group(function () {
     // Actas de Conformidad
