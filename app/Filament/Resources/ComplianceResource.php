@@ -86,7 +86,6 @@ class ComplianceResource extends Resource
                             ->options(
                                 fn() => Project::query()
                                     ->where('status', 'Aprobado')
-                                    ->limit(10) // Limita a 10 proyectos
                                     ->get()
                                     ->pluck('name', 'id')
                             )

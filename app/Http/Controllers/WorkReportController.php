@@ -263,21 +263,6 @@ class WorkReportController extends Controller
 
         $data = $request->validated();
 
-        // Manejo de firmas (reemplazo)
-        if ($request->hasFile('supervisor_signature')) {
-            if ($workReport->supervisor_signature && Storage::disk('public')->exists($workReport->supervisor_signature)) {
-                Storage::disk('public')->delete($workReport->supervisor_signature);
-            }
-            $data['supervisor_signature'] = $request->file('supervisor_signature')->store('signatures', 'public');
-        }
-
-        if ($request->hasFile('manager_signature')) {
-            if ($workReport->manager_signature && Storage::disk('public')->exists($workReport->manager_signature)) {
-                Storage::disk('public')->delete($workReport->manager_signature);
-            }
-            $data['manager_signature'] = $request->file('manager_signature')->store('signatures', 'public');
-        }
-
         $workReport->update($data);
 
         // Recargamos relaciones
@@ -311,16 +296,6 @@ class WorkReportController extends Controller
         }
 
         try {
-            // Eliminar firmas asociadas
-            if ($workReport->supervisor_signature && Storage::disk('public')->exists($workReport->supervisor_signature)) {
-                Storage::disk('public')->delete($workReport->supervisor_signature);
-            }
-            if ($workReport->manager_signature && Storage::disk('public')->exists($workReport->manager_signature)) {
-                Storage::disk('public')->delete($workReport->manager_signature);
-            }
-
-            // NOTA: La eliminación de fotos asociada se debe manejar en otro controlador o en la BD.
-
             $workReport->delete();
 
             return response()->json([
@@ -444,8 +419,6 @@ class WorkReportController extends Controller
             'project_id' => $report->project_id,
             'name' => $report->name ?? '',
             'description' => $report->description ?? '',
-            'supervisor_signature' => $report->supervisor_signature ? url(Storage::url($report->supervisor_signature)) : null,
-            'manager_signature' => $report->manager_signature ? url(Storage::url($report->manager_signature)) : null,
             'work_to_do' => $report->work_to_do ?? '',
             'work_done' => $report->work_done ?? '',
             'suggestions' => $report->suggestions ?? '',
@@ -460,7 +433,6 @@ class WorkReportController extends Controller
             'summary' => [
                 'hasPhotos' => $report->photos->isNotEmpty(),
                 'photosCount' => $report->photos->count(),
-                'hasSignatures' => !is_null($report->supervisor_signature) || !is_null($report->manager_signature),
             ],
             'employee' => $report->employee ? [
                 'id' => $report->employee->id,
