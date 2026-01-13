@@ -49,21 +49,11 @@ class PhotosRelationManager extends RelationManager
                         ->columnSpanFull()
                         ->helperText('Formatos soportados: JPEG, PNG, WebP. Se convertirá automáticamente a WebP. Tamaño máximo: 25MB.'),
 
-                    Forms\Components\RichEditor::make('before_work_descripcion')
+                    Forms\Components\Textarea::make('before_work_descripcion')
                         ->label('Descripción de la evidencia inicial')
                         ->maxLength(500)
                         ->placeholder('Describe brevemente lo que se muestra...')
                         ->helperText('Máximo 500 caracteres')
-                        ->toolbarButtons([
-                            'bold',
-                            'h2',
-                            'h3',
-                            'orderedList',
-                            'bulletList',
-                            'redo',
-                            'underline',
-                            'undo',
-                        ]),
 
                 ])->from('md')
                     ->columnSpanFull()
@@ -183,21 +173,11 @@ class PhotosRelationManager extends RelationManager
                                     ->extraInputAttributes(['capture' => 'environment'])
                                     ->helperText('Formatos: JPEG, PNG, WebP. Se convertirá automáticamente a WebP. Tamaño máx: 25MB.'),
 
-                                Forms\Components\RichEditor::make('before_work_descripcion')
+                                Forms\Components\Textarea::make('before_work_descripcion')
                                     ->label('Descripción de la evidencia inicial')
                                     ->maxLength(500)
                                     ->placeholder('Describe brevemente lo que se muestra...')
                                     ->helperText('Máximo 500 caracteres')
-                                    ->toolbarButtons([
-                                        'bold',
-                                        'h2',
-                                        'h3',
-                                        'orderedList',
-                                        'bulletList',
-                                        'redo',
-                                        'underline',
-                                        'undo',
-                                    ]),
 
                             ])->from('md')
                                 ->columnSpanFull()
@@ -269,21 +249,11 @@ class PhotosRelationManager extends RelationManager
                                     ->maxSize(25600) // 25MB
                                     // Sin 'extraInputAttributes' para que abra la galería
                                     ->helperText('Formatos: JPEG, PNG, WebP. Se convertirá automáticamente a WebP. Tamaño máx: 25MB.'),
-                                Forms\Components\RichEditor::make('before_work_descripcion')
+                                Forms\Components\Textarea::make('before_work_descripcion')
                                     ->label('Descripción de la evidencia inicial')
                                     ->maxLength(500)
                                     ->placeholder('Describe brevemente lo que se muestra...')
                                     ->helperText('Máximo 500 caracteres')
-                                    ->toolbarButtons([
-                                        'bold',
-                                        'h2',
-                                        'h3',
-                                        'orderedList',
-                                        'bulletList',
-                                        'redo',
-                                        'underline',
-                                        'undo',
-                                    ]),
                             ])->from('md')
                                 ->columnSpanFull()
                                 ->columns(2),
