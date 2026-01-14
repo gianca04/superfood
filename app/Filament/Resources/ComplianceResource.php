@@ -30,9 +30,9 @@ class ComplianceResource extends Resource
 {
     protected static ?string $model = Compliance::class;
     protected static ?string $navigationIcon = 'heroicon-o-document-check';
-    protected static ?string $navigationLabel = 'Actas de Conformidad';
-    protected static ?string $pluralModelLabel = 'Actas de Conformidad';
-    protected static ?string $modelLabel = 'Acta de Conformidad';
+    protected static ?string $navigationLabel = 'Orden de trabajo';
+    protected static ?string $pluralModelLabel = 'Órdenes de trabajo';
+    protected static ?string $modelLabel = 'Orden de trabajo';
     protected static ?string $navigationGroup = 'Documentos';
     protected static ?int $navigationSort = 1;
 

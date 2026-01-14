@@ -36,7 +36,7 @@ class DashboardPanelProvider extends PanelProvider
                 Pages\Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
-            
+            ->darkMode(false)
             ->databaseNotifications()
             ->databaseNotificationsPolling('30s') // Actualizar cada 30 segundos
             ->middleware([

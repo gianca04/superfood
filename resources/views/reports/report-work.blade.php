@@ -384,6 +384,25 @@
             @endfor
         @endif
 
+        <!-- TRABAJOS A REALIZAR -->
+        <div class="section-title">Conclusiones:</div>
+        @php
+            $conclusionsDoLines = $conclusions !== 'N/A' ? explode("\n", $conclusions) : [];
+            $minLines = 2;
+        @endphp
+        @if (count($conclusionsDoLines) > 0)
+            @foreach ($conclusionsDoLines as $line)
+                <div class="cyan-underline">{{ $line }}</div>
+            @endforeach
+            @for ($i = count($conclusionsDoLines); $i < $minLines; $i++)
+                <div class="cyan-underline">&nbsp;</div>
+            @endfor
+        @else
+            @for ($i = 0; $i < $minLines; $i++)
+                <div class="cyan-underline">&nbsp;</div>
+            @endfor
+        @endif
+
 
         <!-- MATERIALES/HERRAMIENTAS TABLE -->
         <table class="data-table">

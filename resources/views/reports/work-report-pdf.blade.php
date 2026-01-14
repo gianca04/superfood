@@ -204,7 +204,7 @@
             <table class="basic-info-table">
                 <thead>
                     <tr>
-                        <th colspan="3" style="text-align: left;">Personal que realizó el trabajo</th>
+                        <th colspan="3" style="text-align: left;">Personal que realizó el </th>
                     </tr>
                     <tr>
                         <th style="width: 50%;">Nombre</th>

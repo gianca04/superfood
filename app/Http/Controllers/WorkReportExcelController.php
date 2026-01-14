@@ -525,7 +525,14 @@ class WorkReportExcelController extends Controller
         // B24 - Trabajos a realizar (work_to_do)
         // Se limpia el HTML del RichEditor y se convierte a texto plano
         $workToDo = $this->cleanHtmlToText($workReport->work_to_do ?? '');
-        $sheet->setCellValue('B24', $workToDo ?: 'N/A');
+        $sheet->setCellValue('B18', $workToDo ?: 'N/A');
+
+        $conclusions = $this->cleanHtmlToText($workReport->conclusions ?? '');
+        $sheet->setCellValue('B25', $conclusions ?: 'N/A');
+
+        $id = $this->cleanHtmlToText($workReport->id ?? '');
+        $sheet->setCellValue('L2', 'N° ' . str_pad($workReport->id, 6, '0', STR_PAD_LEFT));
+
 
         // Tabla de Materiales/Herramientas
         // Encabezados en fila 30, datos desde fila 31
