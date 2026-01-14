@@ -33,6 +33,7 @@ use Filament\Tables\Table;
 use Filament\Forms\Components\Actions\Action as FormAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Split;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
@@ -69,7 +70,31 @@ class ProjectResource extends Resource
         // Optimiza la consulta, asegurando que solo cargue lo necesario
         return parent::getGlobalSearchEloquentQuery(); // Selecciona solo las columnas necesarias del modelo Employee
     }
+    public static function getEloquentQuery(): Builder
+    {
+        // 1. Obtenemos la consulta base
+        $query = parent::getEloquentQuery();
 
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $isSuperUser = $user->roles()->whereIn('id', [1, 3])->exists();
+
+        if ($isSuperUser) {
+            return $query; // Ellos ven TODO
+        }
+
+        $employeeId = $user->employee_id;
+
+        if (!$employeeId) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query->where(function (Builder $q) use ($employeeId) {
+            $q->whereHas('inspectors', function (Builder $pivotQuery) use ($employeeId) {
+                $pivotQuery->where('employee_id', $employeeId);
+            });
+        });
+    }
     public static function form(Form $form): Form
     {
         return $form
@@ -317,13 +342,14 @@ class ProjectResource extends Resource
                             ]),
 
                         Forms\Components\Tabs\Tab::make('Datos de la Visita')
-
                             ->schema([
-                                Forms\Components\Group::make()
-                                    ->relationship('visit')
+                                Repeater::make('inspectors')
+                                    ->relationship()
+                                    ->label('Inspectores asignados')
+                                    ->minItems(1)
                                     ->schema([
-                                        // INICIO DE SELECT DE EMPLEADO
-                                        Forms\Components\Select::make('inspector_id')
+
+                                        Forms\Components\Select::make('employee_id')
                                             //->default(fn() => Auth::user()?->employee_id)->required()
                                             ->columns(2)
                                             ->reactive()
@@ -445,6 +471,13 @@ class ProjectResource extends Resource
 
                                         // FIN DE SELECT DE EMPLEADO
 
+                                    ])
+                                    ->createItemButtonLabel('Agregar Empleado')
+                                    ->columnSpanFull(),
+
+                                Forms\Components\Group::make()
+                                    ->relationship('visit')
+                                    ->schema([
                                         // INICIO DE SELECT DE EMPLEADO
                                         Forms\Components\Select::make('quoted_by_id')
                                             //->default(fn() => Auth::user()?->employee_id)->required()
@@ -765,8 +798,6 @@ class ProjectResource extends Resource
                     ->columnSpanFull(),
             ]);
     }
-
-
     public static function calculateDays(Get $get, Set $set)
     {
         $start = $get('service_start_date');
@@ -805,7 +836,6 @@ class ProjectResource extends Resource
             $set('days_to_completion', null);
         }
     }
-
     public static function table(Table $table): Table
     {
         return $table
@@ -855,6 +885,11 @@ class ProjectResource extends Resource
                     })
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('employees.full_name')
+                    ->label('Inspectores')
+                    ->limit(30)
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('service_start_date')
                     ->label('Fecha Inicio')
                     ->date('d/m/Y')

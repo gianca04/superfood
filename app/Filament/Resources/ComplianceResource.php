@@ -35,6 +35,19 @@ class ComplianceResource extends Resource
     protected static ?string $modelLabel = 'Acta de Conformidad';
     protected static ?string $navigationGroup = 'Documentos';
     protected static ?int $navigationSort = 1;
+
+    public static function getEloquentQuery(): Builder
+    {
+        // 1. Obtenemos la consulta base de Compliance
+        $query = parent::getEloquentQuery();
+
+        // 2. Filtramos usando una subconsulta en la relación 'project'
+        // Esto significa: "Traeme las actas DONDE el proyecto asociado
+        // cumpla con las reglas de 'AllowedForUser'".
+        return $query->whereHas('project', function (Builder $projectQuery) {
+            $projectQuery->allowedForUser(Auth::user());
+        });
+    }
     public static function updateProjectDetails($state, \Filament\Forms\Set $set)
     {
         if (!$state) {
@@ -81,7 +94,7 @@ class ComplianceResource extends Resource
                             ->label('Proyecto')
                             ->required()
                             ->prefixIcon('heroicon-m-briefcase')
-                            ->helperText('Solo se listan proyectos que están en estado "Aprobado".')
+                            ->helperText('Solo se listan proyectos asignados y en estado "Aprobado".')
                             ->searchable()
                             ->preload()
                             ->live()
@@ -91,6 +104,7 @@ class ComplianceResource extends Resource
                                 $isNumeric = is_numeric($search);
 
                                 return Project::query()
+                                    ->allowedForUser(Auth::user())
                                     ->where('status', 'Aprobado')
                                     ->where(function ($query) use ($search, $isNumeric) {
                                         // Busca por nombre
@@ -112,7 +126,7 @@ class ComplianceResource extends Resource
                             })
                             // 2. LÓGICA PARA MOSTRAR LA OPCIÓN SELECCIONADA
                             ->getOptionLabelUsing(function ($value): ?string {
-                                $project = Project::find($value);
+                                $project = Project::allowedForUser(Auth::user())->find($value);
                                 return $project
                                     ? "{$project->service_code} - {$project->name}"
                                     : null;
@@ -406,7 +420,7 @@ class ComplianceResource extends Resource
                                     ->columnSpan(1)
                                     ->schema([
                                         Forms\Components\Placeholder::make('employee_info')
-                                            ->label('Responsable Técnico')
+                                            ->label('Responsable del contratista')
                                             ->content(function () {
                                                 $employee = Auth::user()?->employee;
 

@@ -15,7 +15,8 @@ class ProjectController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $projects = Project::with(['quote.client', 'quote.sub_client'])
+            $projects = Project::allowedForUser()
+                ->with(['quote.client', 'quote.sub_client'])
                 ->where('start_date', '<=', now())
                 ->where('end_date', '>=', now())
                 ->when($request->query('name'), function ($q, $name) {
@@ -97,7 +98,7 @@ class ProjectController extends Controller
             $queryStr = $request->input('query');
             Log::info('quickSearch: Validación pasada, queryStr: ' . $queryStr);
 
-            $query = Project::query();
+            $query = Project::allowedForUser()->query();
 
             if ($queryStr) {
                 $query->where('name', 'like', "%{$queryStr}%");
@@ -166,7 +167,8 @@ class ProjectController extends Controller
             $batchSize = 100;
 
             // QUITAMOS withTrashed()
-            $projects = Project::with(['client', 'subClient'])
+            $projects = Project::allowedForUser()
+                ->with(['client', 'subClient'])
                 ->where('updated_at', '>', $lastSync)
                 ->orderBy('updated_at', 'asc')
                 ->limit($batchSize)

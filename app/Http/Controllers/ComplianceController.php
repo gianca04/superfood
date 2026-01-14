@@ -12,7 +12,10 @@ class ComplianceController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $query = Compliance::with('project');
+            $query = Compliance::with('project')
+                ->whereHas('project', function ($q) {
+                    $q->allowedForUser();
+                });
             if ($request->has('project_id')) {
                 $query->where('project_id', $request->project_id);
             }
@@ -75,6 +78,9 @@ class ComplianceController extends Controller
             $queryStr = $request->query('query');
             // Consultar actas cargando la relación project
             $compliances = Compliance::with('project')
+                ->whereHas('project', function ($q) {
+                    $q->allowedForUser();
+                })
                 ->where(function ($q) use ($queryStr) {
                     // Buscar en datos del cliente (Acta)
                     $q->where('fullname_cliente', 'like', "%{$queryStr}%")

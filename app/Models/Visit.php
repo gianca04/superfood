@@ -10,7 +10,7 @@ class Visit extends Model
     protected $fillable = [
 
         'project_id',      // ID del Proyecto (Vínculo principal)
-        'inspector_id',      // Inspector (Nuevo)
+        'inspector_id',      // Inspector (Nuevo) (por ahora oculto)
         'quoted_by_id',      // Cotizador (Nuevo)
         'visit_date',        // Fecha visita
         'entry_time',        // Hora ingreso
@@ -30,12 +30,6 @@ class Visit extends Model
     public function project()
     {
         return $this->belongsTo(Project::class);
-    }
-
-    // Relación con el Inspector
-    public function inspector()
-    {
-        return $this->belongsTo(Employee::class, 'inspector_id');
     }
 
     // Relación con el Cotizador

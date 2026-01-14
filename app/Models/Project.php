@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Model Project
@@ -124,7 +126,35 @@ class Project extends Model
      */
 
 
+    public function scopeAllowedForUser(Builder $query, ?User $user = null): Builder
+    {
+        /** @var \App\Models\User $user */
+        $user = $user ?? Auth::user();
 
+        // 1. Seguridad base: Si no hay usuario, nadie ve nada.
+        if (!$user) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        // 2. SUPER USUARIOS (Usando Spatie hasRole)
+        // Pasa un array con los NOMBRES de los roles que ven todo.
+        // 'super_admin' es el defecto de Shield, agrega tu rol de gerencia aquí.
+        if ($user->hasRole(['Administrador', 'Gerencial'])) {
+            return $query;
+        }
+
+        // 3. RESTO DE USUARIOS (Inspectores, etc.)
+        $employeeId = $user->employee_id;
+
+        if (!$employeeId) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        // Filtramos por la asignación en la tabla pivote
+        return $query->whereHas('inspectors', function (Builder $q) use ($employeeId) {
+            $q->where('employee_id', $employeeId);
+        });
+    }
     public function clients()
     {
         return $this->belongsToMany(Client::class, 'client_project');
@@ -175,11 +205,24 @@ class Project extends Model
     /**
      * Relación: Un proyecto tiene muchos empleados a través de timesheets.
      */
-    public function employees()
+    public function timesheetEmployees()
     {
         return $this->belongsToMany(Employee::class, 'timesheets');
     }
 
+    public function employees()
+    {
+        return $this->belongsToMany(Employee::class, 'employee_project')
+            ->withTimestamps();
+        // Si usas el modelo pivote personalizado:
+        // ->using(EmployeeProject::class);
+    }
+
+    public function inspectors()
+    {
+        // Esto apunta al modelo intermedio EmployeeProject
+        return $this->hasMany(EmployeeProject::class, 'project_id');
+    }
     public function supervisors()
     {
         return $this->belongsToMany(Employee::class, 'employee_project');

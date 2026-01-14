@@ -14,7 +14,6 @@ class EmployeeProject extends Model
     protected $fillable = [
         'employee_id',
         'project_id',
-        // Agrega aquí otros campos si los agregas en la tabla pivote
     ];
 
     // Relación con Employee
