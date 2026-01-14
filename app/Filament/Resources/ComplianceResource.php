@@ -9,6 +9,7 @@ use App\Models\Project;
 use Filament\Forms;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
@@ -47,7 +48,7 @@ class ComplianceResource extends Resource
         }
 
         // Buscamos el proyecto con sus relaciones
-        $project = \App\Models\Project::with(['subClient.client'])->find($state);
+        $project = Project::with(['subClient.client'])->find($state);
 
         if ($project) {
             $subClient = $project->subClient;
@@ -79,22 +80,47 @@ class ComplianceResource extends Resource
                         Forms\Components\Select::make('project_id')
                             ->label('Proyecto')
                             ->required()
-                            ->relationship('project', 'name')
-                            ->helperText('Solo se listan proyectos que están en estado "Aprobado".')
                             ->prefixIcon('heroicon-m-briefcase')
+                            ->helperText('Solo se listan proyectos que están en estado "Aprobado".')
                             ->searchable()
                             ->preload()
                             ->live()
-                            ->options(
-                                fn() => Project::query()
+                            // 1. LÓGICA DE BÚSQUEDA PERSONALIZADA
+                            ->getSearchResultsUsing(function (string $search) {
+                                // Detectamos si lo que escribe el usuario es puramente numérico
+                                $isNumeric = is_numeric($search);
+
+                                return Project::query()
                                     ->where('status', 'Aprobado')
+                                    ->where(function ($query) use ($search, $isNumeric) {
+                                        // Busca por nombre
+                                        $query->where('name', 'like', "%{$search}%")
+                                            // Busca por código tal cual escribe el usuario
+                                            ->orWhere('service_code', 'like', "%{$search}%");
+
+                                        // Si es numérico (ej: 138), busca también como "COT-138"
+                                        if ($isNumeric) {
+                                            $query->orWhere('service_code', 'like', "%COT-{$search}%");
+                                        }
+                                    })
+                                    ->limit(50)
                                     ->get()
-                                    ->pluck('name', 'id')
-                            )
+                                    // Formato visual en la lista: "COT-138 - Nombre del Proyecto"
+                                    ->mapWithKeys(fn($project) => [
+                                        $project->id => "{$project->service_code} - {$project->name}"
+                                    ]);
+                            })
+                            // 2. LÓGICA PARA MOSTRAR LA OPCIÓN SELECCIONADA
+                            ->getOptionLabelUsing(function ($value): ?string {
+                                $project = Project::find($value);
+                                return $project
+                                    ? "{$project->service_code} - {$project->name}"
+                                    : null;
+                            })
+                            // 3. EVENTOS (Tus eventos originales)
                             ->afterStateUpdated(fn($state, $set) => self::updateProjectDetails($state, $set))
                             ->afterStateHydrated(function ($state, $set) {
                                 if ($state) {
-                                    // Mantener el nombre del proyecto al editar
                                     $project = Project::find($state);
                                     if ($project) {
                                         $set('project_name', $project->name);
@@ -123,7 +149,7 @@ class ComplianceResource extends Resource
                             )
                             ->columnSpanFull(),
                         // ACA EL ESTADO DEL PROYECTO
-                        Forms\Components\Select::make('state')
+                        Select::make('state')
                             ->label('Estado')
                             ->required()
                             ->default('En Ejecución')
