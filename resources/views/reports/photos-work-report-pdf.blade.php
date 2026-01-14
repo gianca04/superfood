@@ -125,7 +125,7 @@
         @endif
     @endforeach
 
-    {{-- TABLA DE FIRMAS --}}
+    {{-- 
     <div class="divider"></div>
     <table class="signature-table">
         <tr>
@@ -159,6 +159,8 @@
             </td>
         </tr>
     </table>
+
+     --}}
 
     <div>
         <p class="footer">SAT INDUSTRIALES - Monitor</p>

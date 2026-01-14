@@ -51,15 +51,16 @@ class WorkReportsRelationManager extends RelationManager
                             ->columns(2)
                             ->schema([
 
-                                // INICIO DE SELECT DE EMPLEADO
-                                Forms\Components\Select::make('employee_id')
-                                    ->default(fn() => Auth::user()?->employee_id)->required()
+                                Forms\Components\Hidden::make('employee_id')
+                                    ->default(fn() => Auth::user()?->employee_id)
+                                    ->required()
+                                    ->label('Supervisor / Técnico'),
+
+                                Forms\Components\Select::make('project_id')
                                     ->hidden()
-                                    ->prefixIcon('heroicon-m-user')
-                                    ->label('Supervisor / Técnico'), // Título para el campo 'Empleado'
-
-
-                                // FIN DE SELECT DE EMPLEADO
+                                    ->dehydrated() // También añadir aquí
+                                    ->default(fn() => $this->ownerRecord->project_id)
+                                    ->helperText('Proyecto asociado a este reporte.'), // FIN DE SELECT DE EMPLEADO
                                 //ACA EL ID DE ACTA : COMPLIANCE_ID
                                 Forms\Components\Hidden::make('compliance_id')
                                     ->default(function () {
@@ -137,6 +138,7 @@ class WorkReportsRelationManager extends RelationManager
                                     ->label('Trabajos a realizar')
                                     ->helperText('Proporciona sugerencias o comentarios adicionales sobre el trabajo realizado.')
                                     ->maxLength(5000)
+                                    ->columnSpanFull()
                                     ->toolbarButtons([
                                         'attachFiles',
                                         'bold',

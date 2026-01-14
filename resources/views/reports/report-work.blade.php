@@ -387,7 +387,7 @@
         <!-- TRABAJOS A REALIZAR -->
         <div class="section-title">Conclusiones:</div>
         @php
-            $conclusionsDoLines = $conclusions !== 'N/A' ? explode("\n", $conclusions) : [];
+            $conclusionsDoLines = $conclusionsDoLines !== 'N/A' ? explode("\n", $conclusionsDoLines) : [];
             $minLines = 2;
         @endphp
         @if (count($conclusionsDoLines) > 0)

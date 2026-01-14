@@ -217,6 +217,22 @@
             </table>
         @endif
 
+        {{-- CONCLUSIONES --}}
+        @if ($workReport->conclusions)
+            <table class="basic-info-text">
+                <thead>
+                    <tr>
+                        <th>Conclusiones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{!! $workReport->conclusions !!}</td>
+                    </tr>
+                </tbody>
+            </table>
+        @endif
+
         {{-- TABLA DE HERRAMIENTAS Y MATERIALES --}}
         <table class="basic-info-table">
             <thead>
@@ -408,7 +424,7 @@
             </table>
         @endif
 
-        {{-- FIRMAS DEL REPORTE --}}
+        {{-- FIRMAS DEL REPORTE
         @if ($workReport->manager_signature || $workReport->supervisor_signature)
             <div class="divider"></div>
             <table class="signature-table">
@@ -451,6 +467,7 @@
             </table>
         @endif
 
+         --}}
         {{-- SALTO DE PÁGINA ENTRE REPORTES (excepto el último) --}}
         @if (!$loop->last)
             <div class="page-break"></div>

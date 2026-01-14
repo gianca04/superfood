@@ -54,7 +54,7 @@
             <tr>
                 <th class="info-table-header-col">
                     <div class="info-cell-gris">
-                        Generado: {{ $workReport->created_at->format('d/m/Y H:i') ?? 'N/A' }}
+                        Generado: {{ $workReport->created_at?->format('d/m/Y H:i') ?? 'N/A' }}
                     </div>
                 </th>
                 <th class="info-table-header-col">
@@ -105,7 +105,7 @@
                 <th style="width: 150px;">Fecha de inicio</th>
                 {{-- <td style="width: 350px;">{{ $workReport->project->start_date->format('d/m/Y') ?? 'N/A' }}</td> --}}
                 <th style="width: 150px;">Fecha de fin</th>
-                <td>{{ $project->end_date->format('d/m/Y') ?? 'N/A' }}</td>
+                <td>{{ $project->end_date?->format('d/m/Y') ?? 'N/A' }}</td>
             </tr>
         </tbody>
     </table>
@@ -163,6 +163,22 @@
             </tr>
         </tbody>
     </table>
+
+    {{-- CONCLUSIONES --}}
+    @if ($workReport->conclusions)
+        <table class="basic-info-text">
+            <thead>
+                <tr>
+                    <th>Conclusiones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{!! $workReport->conclusions !!}</td>
+                </tr>
+            </tbody>
+        </table>
+    @endif
 
     {{-- TABLA DE HERRAMIENTAS --}}
     <table class="basic-info-text">

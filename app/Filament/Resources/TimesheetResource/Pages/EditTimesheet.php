@@ -37,9 +37,7 @@ class EditTimesheet extends EditRecord
                 })
                 ->visible(fn() => $this->record->attendances()->count() === 0),
 
-                */
-            Actions\DeleteAction::make(),
-        ];
+                */];
     }
 
     protected function getHeaderWidgets(): array

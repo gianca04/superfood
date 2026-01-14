@@ -44,6 +44,15 @@ class WorkReportResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-wrench-screwdriver';
 
+    public static function canViewAny(): bool
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        // Solo Administrador y Gerencial pueden ver este recurso
+        return $user && ($user->hasRole('Administrador') || $user->hasRole('Gerencial'));
+    }
+
     public static function form(Form $form): Form
     {
         return $form

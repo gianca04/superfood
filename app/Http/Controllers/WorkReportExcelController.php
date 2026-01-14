@@ -305,6 +305,7 @@ class WorkReportExcelController extends Controller
             'storeAddress' => $storeAddress,
             //'workDone' => $workDone ?: 'N/A',
             'workToDo' => $workToDo ?: 'N/A',
+            'conclusionsDoLines' => $workReport->conclusions ?: 'N/A',
             'suggestions' => $suggestions ?: 'N/A',
             'toolsAndMaterials' => $toolsAndMaterials,
             'personnel' => $personnelData['personnel'],

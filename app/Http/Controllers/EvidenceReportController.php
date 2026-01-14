@@ -56,7 +56,7 @@ class EvidenceReportController extends Controller
 
             return response()->json([
                 'error' => 'Error al generar el Informe de Evidencias',
-                'message' => config('app.debug') ? $e->getMessage() : 'Error interno del servidor'
+                'message' => $e->getMessage()
             ], 500);
         }
     }

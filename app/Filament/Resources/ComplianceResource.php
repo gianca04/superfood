@@ -704,7 +704,8 @@ class ComplianceResource extends Resource
                                 ->send();
                         })
                         ->url(fn(Compliance $record) => route('actas.pdf-with-reports', $record->id))
-                        ->openUrlInNewTab(),
+                        ->openUrlInNewTab()
+                        ->visible(fn(Compliance $record) => $record->workReports()->count() > 0),
                     // Acción Vista Previa
                     Tables\Actions\Action::make('previewActaPdf')
                         ->label('Vista Rápida')

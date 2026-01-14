@@ -80,7 +80,7 @@ class ProjectResource extends Resource
         $isSuperUser = $user->roles()->whereIn('id', [1, 3])->exists();
 
         if ($isSuperUser) {
-            return $query; // Ellos ven TODO
+            return $query;
         }
 
         $employeeId = $user->employee_id;
