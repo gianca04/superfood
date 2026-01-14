@@ -309,41 +309,11 @@ class WorkReportsRelationManager extends RelationManager
                                                     ->suffix('hrs')
                                                     ->columnSpan(1),
 
-                                                // Select para cargo (visible cuando is_not_registered = false)
-                                                Forms\Components\Select::make('position_id')
+                                                // TextInput para cargo (visible cuando is_not_registered = false)
+                                                Forms\Components\TextInput::make('position_name')
                                                     ->label('Cargo')
-                                                    ->placeholder('Seleccionar cargo...')
-                                                    ->options(fn() => Position::orderBy('name')->pluck('name', 'id'))
-                                                    ->searchable()
-                                                    ->preload()
-                                                    ->live()
+                                                    ->readonly() // Solo lectura, se llena automáticamente
                                                     ->visible(fn(callable $get) => !$get('is_not_registered'))
-                                                    ->afterStateUpdated(function ($state, callable $set) {
-                                                        if ($state) {
-                                                            $position = Position::find($state);
-                                                            if ($position) {
-                                                                $set('position_name', $position->name);
-                                                            }
-                                                        } else {
-                                                            $set('position_name', null);
-                                                        }
-                                                    })
-                                                    ->createOptionForm([
-                                                        Forms\Components\TextInput::make('name')
-                                                            ->label('Nombre del cargo')
-                                                            ->required()
-                                                            ->maxLength(255),
-                                                    ])
-                                                    ->createOptionUsing(function (array $data): int {
-                                                        $position = Position::create($data);
-                                                        return $position->id;
-                                                    })
-                                                    ->createOptionAction(function (FormAction $action) {
-                                                        return $action
-                                                            ->modalHeading('Crear nuevo cargo')
-                                                            ->modalButton('Crear cargo')
-                                                            ->modalWidth('md');
-                                                    })
                                                     ->columnSpan(1),
 
                                                 // TextInput para cargo manual (visible cuando is_not_registered = true)
