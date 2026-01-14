@@ -39,6 +39,7 @@ class DashboardPanelProvider extends PanelProvider
             ->darkMode(false)
             ->databaseNotifications()
             ->databaseNotificationsPolling('30s') // Actualizar cada 30 segundos
+            ->authGuard('web')
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
