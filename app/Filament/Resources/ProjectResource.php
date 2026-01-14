@@ -1087,6 +1087,11 @@ class ProjectResource extends Resource
             ->defaultSort('created_at', 'desc');
     }
 
+    public static function getNavigationBadge(): ?string
+    {
+        // Llamamos al Scope 'allowedForUser' directamente
+        return (string) static::getModel()::allowedForUser(Auth::user())->count();
+    }
     public static function getRelations(): array
     {
         return [

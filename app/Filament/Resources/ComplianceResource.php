@@ -749,7 +749,13 @@ class ComplianceResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::count();
+        // Obtenemos el modelo Compliance
+        return (string) static::getModel()::query()
+            // Filtramos: Solo contar aquellas cuyo proyecto esté permitido para el usuario actual
+            ->whereHas('project', function (Builder $query) {
+                $query->allowedForUser(Auth::user());
+            })
+            ->count();
     }
 
     public static function getNavigationBadgeColor(): ?string
