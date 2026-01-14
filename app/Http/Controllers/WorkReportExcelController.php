@@ -273,7 +273,6 @@ class WorkReportExcelController extends Controller
         $storeAddress = $workReport->project?->subClient?->address ?? 'N/A';
 
         // Trabajos (limpiar HTML)
-        $workDone = $this->cleanHtmlToText($workReport->work_done ?? '');
         $workToDo = $this->cleanHtmlToText($workReport->work_to_do ?? '');
         $suggestions = $this->cleanHtmlToText($workReport->suggestions ?? '');
 
@@ -304,7 +303,7 @@ class WorkReportExcelController extends Controller
             'documentNumber' => $documentNumber,
             'storeName' => $storeName,
             'storeAddress' => $storeAddress,
-            'workDone' => $workDone ?: 'N/A',
+            //'workDone' => $workDone ?: 'N/A',
             'workToDo' => $workToDo ?: 'N/A',
             'suggestions' => $suggestions ?: 'N/A',
             'toolsAndMaterials' => $toolsAndMaterials,
@@ -469,7 +468,6 @@ class WorkReportExcelController extends Controller
      * - J11: RUC del cliente (document_number)
      * - C13: Nombre de la tienda/sede (SubClient name)
      * - J13: Dirección de la tienda/sede (SubClient address)
-     * - B18: Trabajos realizados (work_done)
      * - B24: Trabajos a realizar (work_to_do)
      * - B56: Recomendaciones (suggestions)
      *
@@ -523,11 +521,6 @@ class WorkReportExcelController extends Controller
         // Ruta: WorkReport -> Project -> SubClient -> address
         $storeAddress = $workReport->project?->subClient?->address ?? 'N/A';
         $sheet->setCellValue('J13', $storeAddress);
-
-        // B18 - Trabajos realizados (work_done)
-        // Se limpia el HTML del RichEditor y se convierte a texto plano
-        $workDone = $this->cleanHtmlToText($workReport->work_done ?? '');
-        $sheet->setCellValue('B18', $workDone ?: 'N/A');
 
         // B24 - Trabajos a realizar (work_to_do)
         // Se limpia el HTML del RichEditor y se convierte a texto plano

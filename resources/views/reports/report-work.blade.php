@@ -384,24 +384,6 @@
             @endfor
         @endif
 
-        <!-- TRABAJOS REALIZADOS -->
-        <div class="section-title">Trabajos Realizados:</div>
-        @php
-            $workDoneLines = $workDone !== 'N/A' ? explode("\n", $workDone) : [];
-            $minLinesRealizados = 3;
-        @endphp
-        @if (count($workDoneLines) > 0)
-            @foreach ($workDoneLines as $line)
-                <div class="cyan-underline">{{ $line }}</div>
-            @endforeach
-            @for ($i = count($workDoneLines); $i < $minLinesRealizados; $i++)
-                <div class="cyan-underline">&nbsp;</div>
-            @endfor
-        @else
-            @for ($i = 0; $i < $minLinesRealizados; $i++)
-                <div class="cyan-underline">&nbsp;</div>
-            @endfor
-        @endif
 
         <!-- MATERIALES/HERRAMIENTAS TABLE -->
         <table class="data-table">

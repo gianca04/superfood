@@ -643,22 +643,7 @@ class WorkReportsRelationManager extends RelationManager
                             ->icon('heroicon-o-clipboard-document-list')
                             ->columns(2)
                             ->schema([
-                                Forms\Components\RichEditor::make('work_done')
-                                    ->label('Trabajos realizados')
-                                    ->helperText('Proporciona una descripción detallada del trabajo realizado.')
-                                    ->toolbarButtons([
-                                        'attachFiles',
-                                        'bold',
-                                        'bulletList',
-                                        'h2',
-                                        'h3',
-                                        'italic',
-                                        'orderedList',
-                                        'redo',
-                                        'strike',
-                                        'underline',
-                                        'undo',
-                                    ]),
+
                                 Forms\Components\RichEditor::make('work_to_do')
                                     ->label('Trabajos a realizar')
                                     ->helperText('Proporciona sugerencias o comentarios adicionales sobre el trabajo realizado.')

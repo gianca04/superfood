@@ -23,7 +23,6 @@ class WorkReport extends Model
         'personnel',
         'materials',
         'work_to_do',      // Trabajos a realizar
-        'work_done',       // Trabajos realizados
         'start_time',  // Hora de inicio del trabajo
         'end_time',    // Hora de finalizacin del trabajo
         'report_date',  // Fecha del reporte (solo fecha)

@@ -200,21 +200,6 @@
             </table>
         @endif
 
-        {{-- TRABAJOS REALIZADOS --}}
-        @if ($workReport->work_done)
-            <table class="basic-info-text">
-                <thead>
-                    <tr>
-                        <th>Trabajos realizados</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>{!! $workReport->work_done !!}</td>
-                    </tr>
-                </tbody>
-            </table>
-        @endif
 
         {{-- SUGERENCIAS --}}
         @if ($workReport->suggestions)

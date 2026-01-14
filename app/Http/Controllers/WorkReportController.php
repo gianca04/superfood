@@ -36,8 +36,6 @@ class WorkReportController extends Controller
             $searchTerm = '%' . $request->search . '%';
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('name', 'like', $searchTerm)
-                    ->orWhere('work_to_do', 'like', $searchTerm) // Nuevo campo con HTML
-                    ->orWhere('work_done', 'like', $searchTerm)  // Nuevo campo con HTML
                     ->orWhere('suggestions', 'like', $searchTerm) // Nuevo campo con HTML
                     ->orWhereHas('employee', function ($q) use ($searchTerm) {
                         $q->where('first_name', 'like', $searchTerm)
@@ -419,8 +417,6 @@ class WorkReportController extends Controller
             'project_id' => $report->project_id,
             'name' => $report->name ?? '',
             'description' => $report->description ?? '',
-            'work_to_do' => $report->work_to_do ?? '',
-            'work_done' => $report->work_done ?? '',
             'suggestions' => $report->suggestions ?? '',
             'tools' => $report->tools ?? [],
             'personnel' => $report->personnel ?? [],
