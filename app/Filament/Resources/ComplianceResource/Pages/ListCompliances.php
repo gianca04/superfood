@@ -8,6 +8,7 @@ use Filament\Actions;
 use Filament\Forms\Components\Select;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\Auth;
 
 class ListCompliances extends ListRecords
 {
@@ -25,6 +26,9 @@ class ListCompliances extends ListRecords
                         ->label('Seleccionar Acta de Conformidad')
                         ->options(
                             Compliance::with('project')
+                                ->whereHas('project', function ($query) {
+                                    $query->allowedForUser(Auth::user());
+                                })
                                 ->latest('id')
                                 ->limit(10)
                                 ->get()
@@ -35,7 +39,7 @@ class ListCompliances extends ListRecords
                         ->searchable()
                         ->required()
                         ->placeholder('Buscar acta por ID o proyecto...')
-                        ->helperText('Mostrando las últimas 10 actas. Usa búsqueda para filtrar.'),
+                        ->helperText('Mostrando las últimas 10 actas. Usa búsqueda para filtrar. Solo se listarán las actas de proyectos a los que pertenezcas.'),
                 ])
                 ->action(function (array $data) {
                     return redirect()->route('actas.pdf-with-reports', $data['compliance_id']);

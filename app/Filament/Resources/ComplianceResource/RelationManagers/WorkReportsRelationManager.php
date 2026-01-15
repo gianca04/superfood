@@ -487,7 +487,8 @@ class WorkReportsRelationManager extends RelationManager
                         $data['project_id'] = $this->ownerRecord->project_id;
                         return $data;
                     }),
-                Tables\Actions\Action::make('download_all_reports')
+                /*
+                    Tables\Actions\Action::make('download_all_reports')
                     ->label('Descargar Todos los Reportes de esta acta')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('info')
@@ -509,6 +510,7 @@ class WorkReportsRelationManager extends RelationManager
 
                         return redirect(route('work-reports.download-multiple-pdf', $projectId));
                     }),
+                */
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([

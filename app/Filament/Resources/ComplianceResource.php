@@ -658,6 +658,7 @@ class ComplianceResource extends Resource
                         ->label('Exportar a Excel')
                         ->icon('heroicon-m-table-cells') // Icono más específico de Excel
                         ->color('success')
+                        ->visible(false)
                         ->action(function (Compliance $record) {
                             Notification::make()
                                 ->title('Preparando Excel')
@@ -669,43 +670,53 @@ class ComplianceResource extends Resource
                         ->openUrlInNewTab(),
 
                     // Acción PDF
-                    Tables\Actions\Action::make('downloadPdf')
-                        ->label('Descargar Acta PDF')
-                        ->icon('heroicon-m-arrow-down-tray')
-                        ->color('danger')
-                        ->requiresConfirmation() // Evita descargas accidentales
-                        ->modalHeading('Generar Documento PDF')
-                        ->modalDescription('El sistema procesará los activos y generará el acta oficial. ¿Continuar?')
-                        ->modalSubmitActionLabel('Descargar ahora')
-                        ->action(function (Compliance $record) {
-                            Notification::make()
-                                ->title('Generando archivo...')
-                                ->body('El PDF se abrirá en una nueva pestaña.')
-                                ->warning()
-                                ->send();
-                        })
-                        ->url(fn(Compliance $record) => route('actas.pdf', $record->id))
-                        ->openUrlInNewTab(),
-
-                    //DESCARGAR EL ACTA CON SUS REPORTES DE TRABAJO
-                    Tables\Actions\Action::make('downloadActaWithReports')
-                        ->label('Acta + Reportes PDF')
-                        ->icon('heroicon-m-document-arrow-down')
-                        ->color('primary')
+                    Tables\Actions\Action::make('downloadPdfOrWithReports')
+                        ->label(
+                            fn(Compliance $record) =>
+                            $record->workReports()->count() > 0
+                                ? 'Acta + Reportes PDF'
+                                : 'Descargar Acta PDF'
+                        )
+                        ->icon(
+                            fn(Compliance $record) =>
+                            $record->workReports()->count() > 0
+                                ? 'heroicon-m-document-arrow-down'
+                                : 'heroicon-m-arrow-down-tray'
+                        )
+                        ->color(
+                            fn(Compliance $record) =>
+                            $record->workReports()->count() > 0
+                                ? 'primary'
+                                : 'danger'
+                        )
                         ->requiresConfirmation()
-                        ->modalHeading('Descargar Acta y Reportes')
-                        ->modalDescription('¿Deseas descargar el acta de conformidad junto con todos los reportes de trabajo del proyecto?')
+                        ->modalHeading(
+                            fn(Compliance $record) =>
+                            $record->workReports()->count() > 0
+                                ? 'Descargar Acta y Reportes'
+                                : 'Generar Documento PDF'
+                        )
+                        ->modalDescription(
+                            fn(Compliance $record) =>
+                            $record->workReports()->count() > 0
+                                ? '¿Deseas descargar el acta de conformidad junto con todos los reportes de trabajo del proyecto?'
+                                : 'El sistema procesará los activos y generará el acta oficial. ¿Continuar?'
+                        )
                         ->modalSubmitActionLabel('Descargar')
                         ->action(function (Compliance $record) {
                             Notification::make()
-                                ->title('Generando PDF combinado...')
+                                ->title($record->workReports()->count() > 0 ? 'Generando PDF combinado...' : 'Generando archivo...')
                                 ->body('El archivo se abrirá en una nueva pestaña.')
-                                ->success()
+                                ->{$record->workReports()->count() > 0 ? 'success' : 'warning'}()
                                 ->send();
                         })
-                        ->url(fn(Compliance $record) => route('actas.pdf-with-reports', $record->id))
-                        ->openUrlInNewTab()
-                        ->visible(fn(Compliance $record) => $record->workReports()->count() > 0),
+                        ->url(
+                            fn(Compliance $record) =>
+                            $record->workReports()->count() > 0
+                                ? route('actas.pdf-with-reports', $record->id)
+                                : route('actas.pdf', $record->id)
+                        )
+                        ->openUrlInNewTab(),
                     // Acción Vista Previa
                     Tables\Actions\Action::make('previewActaPdf')
                         ->label('Vista Rápida')

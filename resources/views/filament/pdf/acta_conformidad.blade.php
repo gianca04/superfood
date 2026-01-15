@@ -341,11 +341,11 @@
             }
         }
     </style>
-    </style>
 </head>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <body>
+
     <!-- ===== BOTONES DE ACCIÓN ===== -->
     <div class="action-buttons">
         <button class="btn-back" onclick="cerrarPestana()" title="Cerrar pestaña">
