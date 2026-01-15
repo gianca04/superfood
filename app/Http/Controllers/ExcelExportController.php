@@ -68,10 +68,18 @@ class ExcelExportController extends Controller
 
     public function downloadActaWithReports($id)
     {
+        $tempBasePath = storage_path('app');
+        $currentUser = exec('whoami'); // Obtiene el usuario del sistema (ej: www-data)
+
+        Log::info('🛠️ INICIO DEBUG PDF MERGE', [
+            'id' => $id,
+            'usuario_sistema' => $currentUser,
+            'ruta_base_intentada' => $tempBasePath,
+            'existe_carpeta' => file_exists($tempBasePath) ? 'SI' : 'NO',
+            'es_escribible' => is_writable($tempBasePath) ? 'SI' : 'NO',
+            'permisos_linux' => substr(sprintf('%o', fileperms($tempBasePath)), -4),
+        ]);
         try {
-            set_time_limit(300);
-            // Aumentar memoria a 512MB (o más si es necesario)
-            ini_set('memory_limit', '512M');
             // --- PASO 1: GENERAR EL ACTA (mPDF) ---
             $actaData = $this->getActaData($id);
             $logoPath = public_path('images/Logo2.png');
@@ -80,7 +88,18 @@ class ExcelExportController extends Controller
             }
             $htmlActa = view('filament.pdf.acta_conformidad_pdf', $actaData)->render();
 
-            $mpdfActa = new \Mpdf\Mpdf(['format' => 'A4', 'margin_left' => 10, 'margin_right' => 10, 'margin_top' => 10, 'margin_bottom' => 10]);
+            $mpdfConfig = [
+                'format' => 'A4',
+                'margin_left' => 10,
+                'margin_right' => 10,
+                'margin_top' => 10,
+                'margin_bottom' => 10,
+                'tempDir' => $tempBasePath // <--- Forzamos la carpeta temporal aquí
+            ];
+
+            Log::info('⚙️ Configurando mPDF con tempDir:', ['dir' => $mpdfConfig['tempDir']]);
+
+            $mpdfActa = new \Mpdf\Mpdf($mpdfConfig);
             $mpdfActa->WriteHTML($htmlActa);
 
             $actaPath = storage_path('app/temp_acta_' . $id . '_' . time() . '.pdf');
@@ -107,9 +126,12 @@ class ExcelExportController extends Controller
                 ->setPaper('a4', 'portrait')
                 ->setOptions(['isRemoteEnabled' => true, 'isHtml5ParserEnabled' => true]);
 
+            $reportsPath = $tempBasePath . '/temp_reports_' . $id . '_' . time() . '.pdf';
+            Log::info('📄 Intentando crear archivo Reportes:', ['path' => $reportsPath]);
+
             $reportsPath = storage_path('app/temp_reports_' . $id . '_' . time() . '.pdf');
             file_put_contents($reportsPath, $dompdf->output());
-
+            Log::info('🔗 Iniciando Merge de PDFs...');
             // --- PASO 3: UNIR AMBOS (MERGE usando el mPDF principal) ---
             // Creamos la instancia que servirá de contenedor final
             $finalMpdf = new \Mpdf\Mpdf(['format' => 'A4']);
@@ -144,9 +166,14 @@ class ExcelExportController extends Controller
                 'Content-Disposition' => 'attachment; filename="' . $filename . '"',
             ]);
         } catch (\Exception $e) {
-            Log::error("Error uniendo PDFs: " . $e->getMessage());
+            // === 🔴 LOG DETALLADO DEL ERROR ===
+            Log::error("❌ CRASH en downloadActaWithReports", [
+                'mensaje' => $e->getMessage(),
+                'archivo' => $e->getFile(),
+                'linea' => $e->getLine(),
+                'trace_resumido' => substr($e->getTraceAsString(), 0, 500)
+            ]);
             return back()->with('error', 'Ocurrió un error al generar el documento combinado.');
-            dd($e->getMessage(), $e->getTraceAsString());
         }
     }
 

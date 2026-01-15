@@ -703,12 +703,11 @@ class ComplianceResource extends Resource
                                 : 'El sistema procesará los activos y generará el acta oficial. ¿Continuar?'
                         )
                         ->modalSubmitActionLabel('Descargar')
-                        // ELIMINAMOS ->action() PORQUE CHOCA CON ->url()
                         ->url(
                             fn(Compliance $record) =>
                             // Aquí decides a qué ruta ir. Como es un URL directo, el navegador maneja la descarga.
                             $record->workReports()->count() > 0
-                                ? route('descargar.acta.o.reportes', $record->id) // Usamos tu ruta "inteligente"
+                                ? route('actas.pdf-with-reports', $record->id)
                                 : route('actas.pdf', $record->id)
                         )
                         ->openUrlInNewTab(),
