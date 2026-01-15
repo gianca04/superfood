@@ -69,6 +69,9 @@ class ExcelExportController extends Controller
     public function downloadActaWithReports($id)
     {
         try {
+            set_time_limit(300);
+            // Aumentar memoria a 512MB (o más si es necesario)
+            ini_set('memory_limit', '512M');
             // --- PASO 1: GENERAR EL ACTA (mPDF) ---
             $actaData = $this->getActaData($id);
             $logoPath = public_path('images/Logo2.png');
@@ -143,6 +146,7 @@ class ExcelExportController extends Controller
         } catch (\Exception $e) {
             Log::error("Error uniendo PDFs: " . $e->getMessage());
             return back()->with('error', 'Ocurrió un error al generar el documento combinado.');
+            dd($e->getMessage(), $e->getTraceAsString());
         }
     }
 
