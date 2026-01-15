@@ -885,11 +885,6 @@ class ProjectResource extends Resource
                     })
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('employees.full_name')
-                    ->label('Inspectores')
-                    ->limit(30)
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('service_start_date')
                     ->label('Fecha Inicio')
                     ->date('d/m/Y')

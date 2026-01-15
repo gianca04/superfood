@@ -124,7 +124,7 @@
         /* ===== Tabla Compuesta OT/Descripción ===== */
         .composite-table {
             width: 100%;
-            bordeAr-collapse: collapse;
+            border-collapse: collapse;
             margin-bottom: 8px;
             border: 1px solid #00a99d;
         }
@@ -248,55 +248,27 @@
         }
 
         /* ===== Sección de Firmas AMPLIADA ===== */
+        /* Busca y reemplaza esta sección en tu <style> */
         .signatures-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
-            /* Más espacio arriba */
+            table-layout: fixed;
+            /* Fuerza a que las columnas midan lo mismo */
         }
 
         .signatures-table td {
-            width: 50%;
+            width: 45%;
+            /* Reducimos un poco el ancho para dejar aire */
             vertical-align: top;
-            padding: 0 20px;
-            /* Más espacio entre columnas */
+            padding: 0 15px;
+            /* Espacio interno a los lados */
         }
 
         .signature-header {
             background-color: #00a99d;
             color: white;
             text-align: center;
-            padding: 20px 8px;
-            /* Más grueso */
-            font-weight: bold;
-            font-size: 20px;
-            /* Título más grande */
-            margin-bottom: 0;
-        }
-
-        /* Contenedor visual de la firma */
-        .signature-box {
-            border: 1px solid #00a99d;
-            border-top: none;
-            /* Para que se una al header */
-            padding: 26px;
-            text-align: center;
-        }
-
-        .signature-area {
-            width: 100%;
-            height: 180px;
-            /* Aumentado de 120 a 140 para que se vea mucho más grande */
-            display: block;
-            text-align: center;
-        }
-
-        .signature-area img {
-            height: 180px;
-            width: 100%;
-            object-fit: contain;
-            image-rendering: crisp-edges;
-            /* Mantiene la nitidez en firmas digitales */
         }
 
         .signature-label-text {
@@ -321,17 +293,14 @@
 
         .signature-field-table .label {
             font-weight: bold;
-            width: 25%;
+            width: 35%;
             /* Ajuste de ancho */
-            font-size: 20px;
             /* Texto más legible */
         }
 
         .signature-field-table .value {
             border-bottom: 2px solid #00a99d;
             /* Línea más gruesa y visible */
-            width: 75%;
-            font-size: 20px;
             padding-left: 10px;
         }
     </style>
@@ -434,7 +403,7 @@
                     @foreach ($assets as $index => $asset)
                         <tr>
                             <td class="number">{{ $index + 1 }}</td>
-                            <td class="asset-name">{{ $asset['name'] }} ({{ $asset['selected'] ? 'X' : '  ' }})
+                            <td class="asset-name">{{ $asset['name'] }} ({{ $asset['selected'] ? 'X' : ' ' }})
                             </td>
                             <td style="text-align: center;">{{ $asset['quantity'] }}</td>
                             <td>{{ $asset['comments'] }}</td>
@@ -472,63 +441,103 @@
                 SEÑOR CLIENTE LA FIRMA DE ESTE DOCUMENTO DA POR ACEPTADO EL TRABAJO REALIZADO POR NUESTRO PERSONAL
             </div>
 
-            <!-- Área de Firmas -->
-            <table class="signatures-table">
-                <tr>
-                    <!-- Firma Cliente -->
-                    <td style="width: 50%; padding-right: 10px;">
-                        <div class="signature-header">CLIENTE</div>
 
-                        <div class="signature-area">
+            <table class="signatures-table" border="0" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th
+                            style="padding: 15px 10px; width: 50%; background-color: #00a99d; color: white; border: 5px solid white;">
+                            <div class="signature-header">CLIENTE</div>
+                        </th>
+                        <th
+                            style="padding: 15px 10px; width: 50%; background-color: #00a99d; color: white; border: 5px solid white;">
+                            <div class="signature-header">SAT INDUSTRIALES S.A.C.</div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="text-align: center; padding: 10px; height: 100px; vertical-align: bottom;">
                             @if ($firma_cliente)
-                                <img src="{{ $firma_cliente }}" alt="Firma Cliente">
+                                <img src="{{ $firma_cliente }}" alt="Firma Cliente"
+                                    style="max-height: 80px; max-width: 100%;">
                             @else
-                                &nbsp;
+                                <br><br><br>
                             @endif
-                        </div>
-
-                        <div style="text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 20px;">
-                            FIRMA</div>
-
-                        <table class="signature-field-table">
-                            <tr>
-                                <td class="label">NOMBRE:</td>
-                                <td class="value">{{ $cliente_nombre }}</td>
-                            </tr>
-                            <tr>
-                                <td class="label">{{ $cliente_tipo_doc }}:</td>
-                                <td class="value">{{ $cliente_documento }}</td>
-                            </tr>
-                        </table>
-                    </td>
-
-                    <!-- Firma SAT Industriales -->
-                    <td style="width: 50%; padding-left: 30px;">
-                        <div class="signature-header">SAT INDUSTRIALES S.A.C.</div>
-
-                        <div class="signature-area">
+                        </td>
+                        <td style="text-align: center; padding: 10px; height: 100px; vertical-align: bottom;">
                             @if ($firma_empleado)
-                                <img src="{{ $firma_empleado }}" alt="Firma Empleado">
+                                <img src="{{ $firma_empleado }}" alt="Firma Empleado"
+                                    style="max-height: 80px; max-width: 100%;">
                             @else
-                                &nbsp;
+                                <br><br><br>
                             @endif
-                        </div>
+                        </td>
+                    </tr>
 
-                        <div style="text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 20px;">
-                            FIRMA</div>
+                    <tr>
+                        <td style="padding: 5px; text-align: center; font-weight: bold;">FIRMA</td>
+                        <td style="padding: 5px; text-align: center; font-weight: bold;">FIRMA</td>
+                    </tr>
 
-                        <table class="signature-field-table">
-                            <tr>
-                                <td class="label">NOMBRE:</td>
-                                <td class="value">{{ $empleado_nombre }}</td>
-                            </tr>
-                            <tr>
-                                <td class="label">{{ $empleado_tipo_doc }}:</td>
-                                <td class="value">{{ $empleado_documento }}</td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
+                    <tr>
+                        <td style="padding: 0;">
+                            <table class="signature-field-table"
+                                style="width: 100%; border-collapse: collapse; border: none;">
+                                <tr>
+                                    <td class="label" style="width: 30%; padding: 5px; font-weight: bold;">
+                                        NOMBRE:
+                                    </td>
+                                    <td class="value" style="width: 70%; padding: 5px;">
+                                        {{ $cliente_nombre }}
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td style="padding: 0;">
+                            <table class="signature-field-table"
+                                style="width: 100%; border-collapse: collapse; border: none;">
+                                <tr>
+                                    <td class="label" style="width: 30%; padding: 5px; font-weight: bold;">
+                                        NOMBRE:
+                                    </td>
+                                    <td class="value" style="width: 70%; padding: 5px;">
+                                        {{ $empleado_nombre }}
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 0;">
+                            <table class="signature-field-table"
+                                style="width: 100%; border-collapse: collapse; border: none;">
+                                <tr>
+                                    <td class="label" style="width: 30%; padding: 5px; font-weight: bold;">
+                                        {{ $cliente_tipo_doc ?? 'DOC' }}:
+                                    </td>
+                                    <td class="value" style="width: 70%; padding: 5px;">
+                                        {{ $cliente_documento }}
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td style="padding: 0;">
+                            <table class="signature-field-table"
+                                style="width: 100%; border-collapse: collapse; border: none;">
+                                <tr>
+                                    <td class="label" style="width: 30%; padding: 5px; font-weight: bold;">
+                                        {{ $empleado_tipo_doc ?? 'DOC' }}:
+                                    </td>
+                                    <td class="value" style="width: 70%; padding: 5px;">
+                                        {{ $empleado_documento }}
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </tbody>
             </table>
         </div>
     </div>
