@@ -216,14 +216,32 @@
         }
 
         .signature-area {
-            height: 60px;
-            text-align: center;
-            margin-bottom: 8px;
+            /* 1. Definimos el tamaño CUADRADO (mismo ancho y alto) */
+            width: 100px;
+            height: 100px;
+
+            /* 2. Centramos el cuadro dentro de la celda de la tabla */
+            margin: 0 auto;
+
+            /* 3. Centramos la imagen dentro del cuadro */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            /* Opcional: Borde suave para guiar la vista (puedes quitarlo si prefieres transparente) */
+            border: 1px dashed #ccc;
+            background-color: #fff;
+            /* Asegura fondo blanco */
+            overflow: hidden;
         }
 
         .signature-area img {
-            max-height: 55px;
-            width: auto;
+            /* 4. Hacemos que la imagen nunca exceda el cuadro */
+            max-width: 100%;
+            max-height: 100%;
+
+            /* 5. LA CLAVE: 'contain' ajusta la imagen para que se vea ENTERA dentro del cuadrado sin deformarse */
+            object-fit: contain;
         }
 
         .signature-field-table {
@@ -346,7 +364,8 @@
 
 <body>
 
-    <!-- ===== BOTONES DE ACCIÓN ===== -->
+
+    <!-- ===== PEVIEW BOTONES DE ACCIÓN ===== -->
     <div class="action-buttons">
         <button class="btn-back" onclick="cerrarPestana()" title="Cerrar pestaña">
             <span>⬅️</span> Volver

@@ -124,7 +124,7 @@
         /* ===== Tabla Compuesta OT/Descripción ===== */
         .composite-table {
             width: 100%;
-            border-collapse: collapse;
+            bordeAr-collapse: collapse;
             margin-bottom: 8px;
             border: 1px solid #00a99d;
         }
@@ -233,7 +233,7 @@
 
         /* ===== Sección de Firmas ===== */
         .responsibility-text {
-            font-size: 9px;
+            font-size: 7px;
             text-align: justify;
             margin-bottom: 10px;
             line-height: 1.3;
@@ -269,7 +269,7 @@
             padding: 20px 8px;
             /* Más grueso */
             font-weight: bold;
-            font-size: 30px;
+            font-size: 20px;
             /* Título más grande */
             margin-bottom: 0;
         }
@@ -293,7 +293,8 @@
 
         .signature-area img {
             height: 180px;
-            width: auto;
+            width: 100%;
+            object-fit: contain;
             image-rendering: crisp-edges;
             /* Mantiene la nitidez en firmas digitales */
         }
@@ -322,7 +323,7 @@
             font-weight: bold;
             width: 25%;
             /* Ajuste de ancho */
-            font-size: 26px;
+            font-size: 20px;
             /* Texto más legible */
         }
 
@@ -330,7 +331,7 @@
             border-bottom: 2px solid #00a99d;
             /* Línea más gruesa y visible */
             width: 75%;
-            font-size: 26px;
+            font-size: 20px;
             padding-left: 10px;
         }
     </style>
@@ -481,6 +482,8 @@
                         <div class="signature-area">
                             @if ($firma_cliente)
                                 <img src="{{ $firma_cliente }}" alt="Firma Cliente">
+                            @else
+                                &nbsp;
                             @endif
                         </div>
 
@@ -506,6 +509,8 @@
                         <div class="signature-area">
                             @if ($firma_empleado)
                                 <img src="{{ $firma_empleado }}" alt="Firma Empleado">
+                            @else
+                                &nbsp;
                             @endif
                         </div>
 
