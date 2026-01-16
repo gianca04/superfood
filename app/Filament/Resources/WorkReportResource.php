@@ -49,9 +49,11 @@ class WorkReportResource extends Resource
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        // Solo Administrador y Gerencial pueden ver este recurso
-        return $user && ($user->hasRole('Administrador') || $user->hasRole('Gerencial'));
+        // Solo Sistemas y Gerencial pueden ver este recurso
+        // return $user && ($user->hasRole('Sistemas') || $user->hasRole('Gerencial'));
+        return $user && ($user->hasRole('Sistemas'));
     }
+    
 
     public static function form(Form $form): Form
     {

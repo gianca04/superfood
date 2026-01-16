@@ -57,22 +57,22 @@ Route::prefix('request/{request}')->middleware('auth')->group(function () {
 // Las rutas de Livewire y Filament se configuran automáticamente
 // a través del DashboardPanelProvider
 
-//Route::get('/work-report/{workReport}/word', [WorkReportWordController::class, 'generateReport'])
-//    ->name('work-report.word')
-//    ->middleware('auth');
-/*
+Route::get('/work-report/{workReport}/word', [WorkReportWordController::class, 'generateReport'])
+    ->name('work-report.word')
+    ->middleware('auth');
+
 Livewire::setScriptRoute(function ($handle) {
-    return Route::get('/monitor.sat-industriales.pe/public/livewire/livewire.js', $handle);
+    return Route::get('/superfood/public/livewire/livewire.js', $handle);
 });
 
 Livewire::setUpdateRoute(function ($handle) {
-    return Route::post('/monitor.sat-industriales.pe/public/livewire/update', $handle);
+    return Route::post('/superfood/public/livewire/update', $handle);
 });
 
 Route::get('/storage-link', function () {
     Artisan::call('storage:link');
 });
-*/
+
 
 Route::middleware(['auth'])->group(function () {
     // Actas de Conformidad
