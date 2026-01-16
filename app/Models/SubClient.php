@@ -19,6 +19,7 @@ class SubClient extends Model
         'latitude',
         'longitude',
         'address',
+        'ceco',
     ];
 
     protected $casts = [
@@ -29,6 +30,7 @@ class SubClient extends Model
         'latitude' => 'float',
         'longitude' => 'float',
         'address' => 'string',
+        'ceco' => 'string',
     ];
 
     public function client()
