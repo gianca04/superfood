@@ -39,6 +39,7 @@ class ClientResource extends Resource
                 Forms\Components\Repeater::make('subClients')
                     ->itemLabel(fn(array $state): ?string => $state['name'] ?? null)
                     ->label('Subclientes')
+                    ->collapsed()
                     ->relationship('subClients')
                     ->schema([
                         Forms\Components\TextInput::make('name')
@@ -46,6 +47,11 @@ class ClientResource extends Resource
                             ->required()
                             ->maxLength(255)
                             ->prefixIcon('heroicon-o-user'),
+
+                        Forms\Components\TextInput::make('ceco')
+                            ->label('CECO')
+                            ->required()
+                            ->maxLength(255),
 
                         Forms\Components\TextInput::make('address')
                             ->label('Dirección')
@@ -191,7 +197,7 @@ class ClientResource extends Resource
 
             ])
             ->defaultSort('created_at', 'desc')
-            
+
             ->actions([
                 Tables\Actions\ViewAction::make()
                     ->icon('heroicon-o-eye')
