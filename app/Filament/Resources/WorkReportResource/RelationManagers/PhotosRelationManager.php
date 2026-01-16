@@ -73,12 +73,12 @@ class PhotosRelationManager extends RelationManager
                         ->extraInputAttributes(['capture' => 'user'])
                         ->helperText('Formatos soportados: JPEG, PNG, WebP. Se convertirá automáticamente a WebP. Tamaño máximo: 25MB.'),
 
-                    Forms\Components\RichEditor::make('descripcion')
+                    Forms\Components\Textarea::make('descripcion')
                         ->label('Descripción de la evidencia del trabajo realizado')
                         ->maxLength(500)
                         ->placeholder('Describe brevemente lo que se muestra...')
-                        ->helperText('Máximo 500 caracteres')
-                        ->toolbarButtons([
+                        ->helperText('Máximo 500 caracteres'),
+                        /*->toolbarButtons([
                             'bold',
                             'h2',
                             'h3',
@@ -88,6 +88,7 @@ class PhotosRelationManager extends RelationManager
                             'underline',
                             'undo',
                         ]),
+                        */
 
                 ])->from('md')
                     ->columnSpanFull()
@@ -197,11 +198,12 @@ class PhotosRelationManager extends RelationManager
                                     ->extraInputAttributes(['capture' => 'environment'])
                                     ->helperText('Formatos: JPEG, PNG, WebP. Se convertirá automáticamente a WebP. Tamaño máx: 25MB.'),
 
-                                Forms\Components\RichEditor::make('descripcion')
+                                Forms\Components\Textarea::make('descripcion')
                                     ->label('Descripción de la evidencia del trabajo realizado')
                                     ->maxLength(500)
                                     ->placeholder('Describe brevemente lo que se muestra...')
-                                    ->helperText('Máximo 500 caracteres')
+                                    ->helperText('Máximo 500 caracteres'),
+                                    /*
                                     ->toolbarButtons([
                                         'bold',
                                         'h2',
@@ -212,6 +214,7 @@ class PhotosRelationManager extends RelationManager
                                         'underline',
                                         'undo',
                                     ]),
+                                    */
 
                             ])->from('md')
                                 ->columnSpanFull()
@@ -271,12 +274,12 @@ class PhotosRelationManager extends RelationManager
                                     // Sin 'extraInputAttributes' para que abra la galería
                                     ->helperText('Formatos: JPEG, PNG, WebP. Se convertirá automáticamente a WebP. Tamaño máx: 25MB.'),
 
-                                Forms\Components\RichEditor::make('descripcion')
+                                Forms\Components\Textarea::make('descripcion')
                                     ->label('Descripción de la evidencia del trabajo realizado')
                                     ->maxLength(500)
                                     ->placeholder('Describe brevemente lo que se muestra...')
-                                    ->helperText('Máximo 500 caracteres')
-                                    ->toolbarButtons([
+                                    ->helperText('Máximo 500 caracteres'),
+                                    /*->toolbarButtons([
                                         'bold',
                                         'h2',
                                         'h3',
@@ -286,6 +289,7 @@ class PhotosRelationManager extends RelationManager
                                         'underline',
                                         'undo',
                                     ]),
+                                    */
                             ])->from('md')
                                 ->columnSpanFull()
                                 ->columns(2),

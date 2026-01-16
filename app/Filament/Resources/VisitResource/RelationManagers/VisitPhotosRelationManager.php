@@ -41,12 +41,12 @@ class VisitPhotosRelationManager extends RelationManager
                         ->extraInputAttributes(['capture' => 'user'])
                         ->helperText('Formatos soportados: JPEG, PNG, WebP. Tamaño máximo: 25MB.'),
 
-                    Forms\Components\RichEditor::make('descripcion')
+                    Forms\Components\Textarea::make('descripcion')
                         ->label('Descripción de la evidencia del trabajo realizado')
                         ->maxLength(500)
                         ->placeholder('Describe brevemente lo que se muestra...')
-                        ->helperText('Máximo 500 caracteres')
-                        ->toolbarButtons([
+                        ->helperText('Máximo 500 caracteres'),
+                    /*->toolbarButtons([
                             'bold',
                             'h2',
                             'h3',
@@ -55,7 +55,8 @@ class VisitPhotosRelationManager extends RelationManager
                             'redo',
                             'underline',
                             'undo',
-                        ]),
+                        ])
+                            */
 
                 ])->from('md')
                     ->columnSpanFull()
@@ -181,12 +182,12 @@ class VisitPhotosRelationManager extends RelationManager
                                     // Sin 'extraInputAttributes' para que abra la galería
                                     ->helperText('Formatos: JPEG, PNG, WebP. Tamaño máx: 25MB.'),
 
-                                Forms\Components\RichEditor::make('descripcion')
+                                Forms\Components\Textarea::make('descripcion')
                                     ->label('Descripción de la evidencia del trabajo realizado')
                                     ->maxLength(500)
                                     ->placeholder('Describe brevemente lo que se muestra...')
-                                    ->helperText('Máximo 500 caracteres')
-                                    ->toolbarButtons([
+                                    ->helperText('Máximo 500 caracteres'),
+                                /*->toolbarButtons([
                                         'bold',
                                         'h2',
                                         'h3',
@@ -196,6 +197,7 @@ class VisitPhotosRelationManager extends RelationManager
                                         'underline',
                                         'undo',
                                     ]),
+                                    */
                             ])->from('md')
                                 ->columnSpanFull()
                                 ->columns(2),

@@ -310,15 +310,15 @@
         <table class="header-table">
             <tr>
                 <td class="logo-cell">
-                    @if (!empty($logoBase64))
-                        <img src="{{ $logoBase64 }}" alt="SAT Industriales S.A.C" class="logo-img">
+                    @if(file_exists(public_path('images/Logo2.png')))
+                        <img src="{{ asset('images/Logo2.png') }}" alt="SAT Industriales S.A.C" class="logo-img">
                     @else
                         <div style="font-size: 14pt; font-weight: bold; color: #00B0B9;">SAT INDUSTRIALES S.A.C
                         </div>
                     @endif
                     <div class="contact-info">
-                        <div>Calle uno Principal s/n Las Mercedes de Pedregal, Piura - Piura</div>
-                        <div>Tel.: 934451894 &nbsp;&nbsp;&nbsp; Web: www.sat-industriales.pe</div>
+                        <div>Km 9 de la expansión Av. José Aguilar Santisteban. (Pista nueva Curumuy - Fundo las Mercedes)</div>
+                        <div>Tel.: 934 451 894 &nbsp;&nbsp;&nbsp; Web: www.sat-industriales.pe</div>
                         <div>Email: operaciones@sat-industriales.pe</div>
                     </div>
                 </td>
@@ -414,22 +414,19 @@
                 </tr>
             </thead>
             <tbody>
-                @php $materialRows = 6; @endphp
-                @forelse($toolsAndMaterials as $item)
+                @if(count($toolsAndMaterials) > 0)
+                    @foreach($toolsAndMaterials as $item)
+                        <tr>
+                            <td class="col-name">{{ $item['nombre'] }}</td>
+                            <td class="col-unit">{{ $item['unidad'] }}</td>
+                            <td class="col-qty">{{ $item['cantidad'] }}</td>
+                        </tr>
+                    @endforeach
+                @else
                     <tr>
-                        <td class="col-name">{{ $item['nombre'] }}</td>
-                        <td class="col-unit">{{ $item['unidad'] }}</td>
-                        <td class="col-qty">{{ $item['cantidad'] }}</td>
+                        <td colspan="3" style="text-align: center;">No hay materiales o herramientas registrados.</td>
                     </tr>
-                @empty
-                @endforelse
-                @for ($i = count($toolsAndMaterials); $i < $materialRows; $i++)
-                    <tr>
-                        <td class="col-name">&nbsp;</td>
-                        <td class="col-unit">&nbsp;</td>
-                        <td class="col-qty">&nbsp;</td>
-                    </tr>
-                @endfor
+                @endif
             </tbody>
         </table>
 
@@ -443,22 +440,19 @@
                 </tr>
             </thead>
             <tbody>
-                @php $personnelRows = 5; @endphp
-                @forelse($personnel as $person)
+                @if(count($personnel) > 0)
+                    @foreach($personnel as $person)
+                        <tr>
+                            <td class="col-name">{{ $person['nombre'] }}</td>
+                            <td class="col-unit">{{ $person['hh'] }}</td>
+                            <td class="col-qty">{{ $person['cargo'] }}</td>
+                        </tr>
+                    @endforeach
+                @else
                     <tr>
-                        <td class="col-name">{{ $person['nombre'] }}</td>
-                        <td class="col-unit">{{ $person['hh'] }}</td>
-                        <td class="col-qty">{{ $person['cargo'] }}</td>
+                        <td colspan="3" style="text-align: center;">No hay personal registrado.</td>
                     </tr>
-                @empty
-                @endforelse
-                @for ($i = count($personnel); $i < $personnelRows; $i++)
-                    <tr>
-                        <td class="col-name">&nbsp;</td>
-                        <td class="col-unit">&nbsp;</td>
-                        <td class="col-qty">&nbsp;</td>
-                    </tr>
-                @endfor
+                @endif
             </tbody>
             <tfoot>
                 <tr class="total-row">
