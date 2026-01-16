@@ -276,6 +276,8 @@ class WorkReportExcelController extends Controller
         $workToDo = $this->cleanHtmlToText($workReport->work_to_do ?? '');
         $suggestions = $this->cleanHtmlToText($workReport->suggestions ?? '');
 
+        $conclusions = $this->cleanHtmlToText($workReport->conclusions ?? '');
+
         // Procesar herramientas y materiales
         $toolsAndMaterials = $this->processToolsAndMaterials(
             $workReport->tools ?? [],
@@ -305,7 +307,7 @@ class WorkReportExcelController extends Controller
             'storeAddress' => $storeAddress,
             //'workDone' => $workDone ?: 'N/A',
             'workToDo' => $workToDo ?: 'N/A',
-            'conclusionsDoLines' => $workReport->conclusions ?: 'N/A',
+            'conclusions' => $conclusions ?: 'N/A',
             'suggestions' => $suggestions ?: 'N/A',
             'toolsAndMaterials' => $toolsAndMaterials,
             'personnel' => $personnelData['personnel'],
