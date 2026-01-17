@@ -867,6 +867,24 @@ class ProjectResource extends Resource
                     ->label('Tienda')
                     ->searchable()
                     ->sortable(),
+
+                TextColumn::make('visit.quotedBy.first_name')
+                    ->label('Cotizador')
+                    ->formatStateUsing(fn($record) => $record->visit?->quotedBy
+                        ? $record->visit->quotedBy->first_name . ' ' . $record->visit->quotedBy->last_name
+                        : '-')
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->whereHas('visit.quotedBy', function (Builder $q) use ($search) {
+                            $q->where('first_name', 'like', "%{$search}%")
+                                ->orWhere('last_name', 'like', "%{$search}%");
+                        });
+                    })
+                    ->sortable(query: function (Builder $query, string $direction): Builder {
+                        return $query->join('visits', 'projects.id', '=', 'visits.project_id')
+                            ->join('employees', 'visits.quoted_by_id', '=', 'employees.id')
+                            ->orderBy('employees.first_name', $direction);
+                    })
+                    ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('status')
                     ->label('Estado')
                     ->formatStateUsing(
@@ -906,12 +924,6 @@ class ProjectResource extends Resource
                     ->label('N° de Orden de Trabajo')
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
-
-                TextColumn::make('')
-                    ->label('N° de Orden de Trabajo')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->searchable(),
-
 
                 TextColumn::make('fracttal_status')
                     ->label('Estado Fracttal')
