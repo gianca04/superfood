@@ -115,6 +115,16 @@ class Quote extends Model
     }
 
     /**
+     * Obtiene los detalles/ítems de esta cotización.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<\App\Models\QuoteDetail>
+     */
+    public function details(): HasMany
+    {
+        return $this->hasMany(QuoteDetail::class, 'quote_id');
+    }
+
+    /**
      * Obtiene las visitas asociadas a esta cotización.
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany<\App\Models\Visit>
