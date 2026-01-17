@@ -179,7 +179,7 @@ class VisitResource extends Resource
                                 Forms\Components\TextInput::make('amount')
                                     ->label('Monto (S/.)')
                                     ->numeric()
-                                    ->prefix('S/.')
+                                    ->prefix('S/ ')
                                     ->prefixIcon('heroicon-m-banknotes')
                                     ->inputMode('decimal')
                                     ->step('0.01')

@@ -613,7 +613,7 @@ class ProjectResource extends Resource
 
                                         Forms\Components\TextInput::make('amount')
                                             ->numeric()
-                                            ->prefix('S/')
+                                            ->prefix('S/ ')
                                             ->label('Monto de la visita'),
 
                                         Forms\Components\Textarea::make('description')
