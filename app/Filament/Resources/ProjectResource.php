@@ -953,6 +953,25 @@ class ProjectResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                // Filtro de Cliente
+                SelectFilter::make('client')
+                    ->label('Cliente')
+                    ->relationship('subClient.client', 'business_name')
+                    ->searchable()
+                    ->preload()
+                    ->native(false),
+
+                // Filtro de SubCliente (Tienda)
+                SelectFilter::make('sub_client_id')
+                    ->label('Tienda')
+                    ->options(fn() => SubClient::query()
+                        ->orderBy('name')
+                        ->pluck('name', 'id')
+                        ->toArray())
+                    ->searchable()
+                    ->preload()
+                    ->native(false),
+
                 SelectFilter::make('fracttal_status')
                     ->label('Estado Fracttal')
                     ->native(false)
