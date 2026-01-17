@@ -859,20 +859,23 @@ class ProjectResource extends Resource
 
                 TextColumn::make('subClient.client.business_name')
                     ->label('Cliente')
+                    ->placeholder('No definido')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
 
                 TextColumn::make('subClient.name')
                     ->label('Tienda')
+                    ->placeholder('No definido')
                     ->searchable()
                     ->sortable(),
 
                 TextColumn::make('visit.quotedBy.first_name')
                     ->label('Cotizador')
+                    ->placeholder('No definido')
                     ->formatStateUsing(fn($record) => $record->visit?->quotedBy
                         ? $record->visit->quotedBy->first_name . ' ' . $record->visit->quotedBy->last_name
-                        : '-')
+                        : null)
                     ->searchable(query: function (Builder $query, string $search): Builder {
                         return $query->whereHas('visit.quotedBy', function (Builder $q) use ($search) {
                             $q->where('first_name', 'like', "%{$search}%")
@@ -885,74 +888,153 @@ class ProjectResource extends Resource
                             ->orderBy('employees.first_name', $direction);
                     })
                     ->toggleable(isToggledHiddenByDefault: false),
+
                 Tables\Columns\TextColumn::make('status')
                     ->label('Estado')
-                    ->formatStateUsing(
-                        fn($state) =>
-                        $state === 'pending' ? 'Pendiente' : $state
-                    )
-                    ->badge() // Esto le da el diseño de "píldora" o etiqueta
-                    ->color(fn(string $state): string => match ($state) {
-                        'pending', 'Pendiente' => 'warning',      // Naranja/Amarillo
-                        'Enviada' => 'info',           // Azul claro
-                        'Aprobado' => 'primary',       // Azul
-                        'En Ejecución' => 'gray',      // Gris
-                        'Completado', 'Facturado' => 'success', // Verde
-                        'Anulado' => 'danger',         // Rojo
+                    ->placeholder('No definido')
+                    ->badge()
+                    ->formatStateUsing(fn(?string $state): string => match ($state) {
+                        'pending' => 'Pendiente',
+                        null, '' => 'No definido',
+                        default => ucfirst($state),
+                    })
+                    ->color(fn(?string $state): string => match ($state) {
+                        'pending', 'Pendiente' => 'warning',
+                        'Enviada' => 'info',
+                        'Aprobado' => 'success',
+                        'En Ejecución' => 'primary',
+                        'Completado', 'Facturado' => 'success',
+                        'Anulado' => 'danger',
                         default => 'gray',
                     })
                     ->searchable()
                     ->sortable(),
+
                 TextColumn::make('service_start_date')
                     ->label('Fecha Inicio')
+                    ->placeholder('No definido')
                     ->date('d/m/Y')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->sortable(),
+
+                TextColumn::make('request_number')
+                    ->label('N° de Solicitud')
+                    ->placeholder('No definido')
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
 
                 TextColumn::make('service_end_date')
                     ->label('Fecha Fin')
+                    ->placeholder('No definido')
                     ->date('d/m/Y')
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
 
-                TextColumn::make('OT')
-                    ->label('OT')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->searchable(),
-
                 TextColumn::make('work_order_number')
                     ->label('N° de Orden de Trabajo')
+                    ->placeholder('No definido')
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
 
                 TextColumn::make('fracttal_status')
                     ->label('Estado Fracttal')
+                    ->placeholder('No definido')
                     ->toggleable(isToggledHiddenByDefault: true)
-                    ->sortable(),
+                    ->sortable()
+                    ->badge()
+                    ->color(fn(?string $state): string => match ($state) {
+                        'Pendiente' => 'danger',
+                        'En Proceso' => 'warning',
+                        'Completado' => 'success',
+                        default => 'gray',
+                    }),
 
                 TextColumn::make('purchase_order')
                     ->label('OC')
+                    ->placeholder('No definido')
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
 
                 TextColumn::make('migo_code')
                     ->label('MIGO')
-                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->placeholder('No definido')
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->sortable(),
+
+                // Columnas adicionales del modelo
+                TextColumn::make('service_days')
+                    ->label('Días de Servicio')
+                    ->placeholder('No definido')
+                    ->suffix(' días')
+                    ->numeric()
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->sortable(),
+
+                TextColumn::make('task_type')
+                    ->label('Tipo de Tarea')
+                    ->placeholder('No definido')
+                    ->badge()
+                    ->color(fn(?string $state): string => match ($state) {
+                        'OPEX' => 'info',
+                        'CAPEX' => 'warning',
+                        default => 'gray',
+                    })
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->sortable(),
+
+                TextColumn::make('quote_sent_at')
+                    ->label('Cotización Enviada')
+                    ->placeholder('No definido')
+                    ->dateTime('d/m/Y H:i')
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->sortable(),
+
+                TextColumn::make('quote_approved_at')
+                    ->label('Cotización Aprobada')
+                    ->placeholder('No definido')
+                    ->dateTime('d/m/Y H:i')
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->sortable(),
+
+                TextColumn::make('wo_review_at')
+                    ->label('OT en Revisión')
+                    ->placeholder('No definido')
+                    ->dateTime('d/m/Y H:i')
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->sortable(),
+
+                TextColumn::make('wo_completed_at')
+                    ->label('OT Finalizado')
+                    ->placeholder('No definido')
+                    ->dateTime('d/m/Y H:i')
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->sortable(),
+
+                TextColumn::make('days_to_completion')
+                    ->label('Días hasta Finalización')
+                    ->placeholder('No definido')
+                    ->suffix(' días')
+                    ->numeric()
+                    ->toggleable(isToggledHiddenByDefault: false)
                     ->sortable(),
 
                 TextColumn::make('created_at')
                     ->label('Creado')
                     ->dateTime('d/m/Y H:i')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: false),
 
                 TextColumn::make('updated_at')
                     ->label('Actualizado')
                     ->dateTime('d/m/Y H:i')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: false),
             ])
+            ->filtersFormColumns(3)
+            ->columnToggleFormColumns(3)
+
             ->filters([
+
                 // Filtro de Cliente
                 SelectFilter::make('client')
                     ->label('Cliente')

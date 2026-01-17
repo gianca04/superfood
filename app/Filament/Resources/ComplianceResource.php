@@ -479,12 +479,14 @@ class ComplianceResource extends Resource
             ->columns([
                 TextColumn::make('project.service_code')
                     ->label('Código de Servicio')
+                    ->placeholder('No definido')
                     ->sortable()
                     ->badge()
                     ->color('gray'),
 
                 TextColumn::make('project.name')
                     ->label('Proyecto')
+                    ->placeholder('No definido')
                     ->sortable()
                     ->searchable()
                     ->icon('heroicon-o-briefcase')
@@ -494,6 +496,7 @@ class ComplianceResource extends Resource
 
                 TextColumn::make('project.subClient.name')
                     ->label('Tienda')
+                    ->placeholder('No definido')
                     ->searchable()
                     ->icon('heroicon-o-building-office')
                     ->toggleable()
@@ -501,6 +504,7 @@ class ComplianceResource extends Resource
 
                 TextColumn::make('project.service_start_date')
                     ->label('Inicio')
+                    ->placeholder('No definido')
                     ->date('d/m/Y')
                     ->icon('heroicon-o-calendar')
                     ->sortable()
@@ -508,6 +512,7 @@ class ComplianceResource extends Resource
 
                 TextColumn::make('project.end_date')
                     ->label('Fin')
+                    ->placeholder('No definido')
                     ->date('d/m/Y')
                     ->icon('heroicon-o-calendar-days')
                     ->sortable()
@@ -515,14 +520,16 @@ class ComplianceResource extends Resource
 
                 TextColumn::make('fullname_cliente')
                     ->label('Responsable')
+                    ->placeholder('No definido')
                     ->searchable()
                     ->icon('heroicon-o-user')
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('state')
                     ->label('Estado')
+                    ->placeholder('No definido')
                     ->sortable()
                     ->badge()
-                    ->color(fn($state) => match ($state) {
+                    ->color(fn(?string $state): string => match ($state) {
                         'En Ejecución' => 'primary',
                         'Completado'   => 'gray',
                         default        => 'secondary',

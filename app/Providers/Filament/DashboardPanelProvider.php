@@ -12,6 +12,7 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
+use WatheqAlshowaiter\FilamentStickyTableHeader\StickyTableHeaderPlugin;
 use Filament\SpatieLaravelTranslatablePlugin;
 use Filament\Support\Colors\Color;
 use Filament\Widgets;
@@ -56,12 +57,14 @@ class DashboardPanelProvider extends PanelProvider
             ->plugins([
                 FilamentShieldPlugin::make(),
                 SpatieLaravelTranslatablePlugin::make()
-                    ->defaultLocales(['es'])
+                    ->defaultLocales(['es']),
+                StickyTableHeaderPlugin::make(),
             ])
             ->authMiddleware([
                 Authenticate::class,
             ])
             ->colors([
+                'indigo' => Color::Indigo,
                 'primary' => [
                     50 => 'rgb(213, 242, 239)',
                     100 => 'rgb(161, 222, 214)',
