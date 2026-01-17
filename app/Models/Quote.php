@@ -18,6 +18,7 @@ class Quote extends Model
         'client_id',
         'employee_id',
         'sub_client_id',
+        'quote_category_id',
         'TDR',
         'quote_file',        // Nuevo campo para el archivo de cotización
         'correlative',
@@ -59,6 +60,15 @@ class Quote extends Model
     public function client()
     {
         return $this->belongsTo(Client::class, 'client_id');
+    }
+
+    /**
+     * Relación con el modelo QuoteCategory
+     * Una cotización pertenece a una categoría.
+     */
+    public function quoteCategory()
+    {
+        return $this->belongsTo(QuoteCategory::class, 'quote_category_id');
     }
 
 
