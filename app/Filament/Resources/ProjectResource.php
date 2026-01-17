@@ -897,7 +897,10 @@ class ProjectResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
 
-
+                TextColumn::make('OT')
+                    ->label('OT')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->searchable(),
                 TextColumn::make('fracttal_status')
                     ->label('Estado Fracttal')
                     ->toggleable(isToggledHiddenByDefault: true)

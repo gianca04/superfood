@@ -3,50 +3,26 @@
 namespace App\Filament\Resources\QuoteResource\Pages;
 
 use App\Filament\Resources\QuoteResource;
-use Filament\Actions;
-use Filament\Notifications\Notification;
-use Filament\Resources\Pages\EditRecord;
+use App\Models\Quote;
+use Filament\Resources\Pages\Page;
 
-class EditQuote extends EditRecord
+class EditQuote extends Page
 {
     protected static string $resource = QuoteResource::class;
 
-    public function getActions(): array
+    protected static string $view = 'filament.resources.quote-resource.pages.manage-quote';
+
+    protected static ?string $title = 'Editar Cotización';
+
+    public Quote $record;
+
+    public function mount(int | string $record): void
     {
-        return [
-            Actions\DeleteAction::make(),
-            Actions\Action::make('crearProyecto')
-                ->label('Crear Proyecto')
-                ->icon('heroicon-o-bolt')
-                ->visible(fn($record) => $record->status === 'accepted')
-                ->action(function ($record) {
-                    session()->flash('quote_id', $record->id);
-                    Notification::make()
-                        ->title('ID de cotización guardada en sesión.')
-                        ->success()
-                        ->send();
-                    return redirect('/projects/create'); // Cambia esta URL si tu panel usa otra ruta
-                }),
-        ];
+        $this->record = Quote::findOrFail($record);
     }
 
-    protected function getHeaderActions(): array
+    public function getTitle(): string
     {
-        return [
-            Actions\Action::make('crearProyecto')
-                ->label('Crear Proyecto')
-                ->icon('heroicon-o-puzzle-piece')
-                ->visible(fn() => $this->record->status === 'accepted')
-                ->action(function () {
-                    session()->flash('quote_id', value: $this->record->id);
-                    Notification::make()
-                        ->title('Cotización transferida.')
-                        ->success()
-                        ->send();
-                    return redirect('/dashboard/projects/create'); // Cambia esta URL si tu panel usa otra ruta
-                }),
-
-            Actions\DeleteAction::make(),
-        ];
+        return 'Editar Cotización #' . $this->record->id;
     }
 }
