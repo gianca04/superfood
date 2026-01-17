@@ -40,7 +40,7 @@ class SubClient extends Model
 
     public function quotes()
     {
-        return $this->hasMany(Quote::class, 'employee_id'); // Relación con la tabla quotes
+        return $this->hasMany(Quote::class, 'sub_client_id');
     }
 
     /**
