@@ -317,7 +317,8 @@
                         </div>
                     @endif
                     <div class="contact-info">
-                        <div>Km 9 de la expansión Av. José Aguilar Santisteban. (Pista nueva Curumuy - Fundo las Mercedes)</div>
+                        <div>Km 9 de la expansión Av. José Aguilar Santisteban. (Pista nueva Curumuy - Fundo las
+                            Mercedes)</div>
                         <div>Tel.: 934 451 894 &nbsp;&nbsp;&nbsp; Web: www.sat-industriales.pe</div>
                         <div>Email: operaciones@sat-industriales.pe</div>
                     </div>
@@ -387,14 +388,14 @@
         <!-- TRABAJOS A REALIZAR -->
         <div class="section-title">Conclusiones:</div>
         @php
-            $conclusionsDoLines = $conclusionsDoLines !== 'N/A' ? explode("\n", $conclusionsDoLines) : [];
+            $conclusionsLines = $conclusions !== 'N/A' ? explode("\n", $conclusions) : [];
             $minLines = 2;
         @endphp
-        @if (count($conclusionsDoLines) > 0)
-            @foreach ($conclusionsDoLines as $line)
+        @if (count($conclusionsLines) > 0)
+            @foreach ($conclusionsLines as $line)
                 <div class="cyan-underline">{{ $line }}</div>
             @endforeach
-            @for ($i = count($conclusionsDoLines); $i < $minLines; $i++)
+            @for ($i = count($conclusionsLines); $i < $minLines; $i++)
                 <div class="cyan-underline">&nbsp;</div>
             @endfor
         @else
@@ -526,7 +527,7 @@
                 </tr>
             </table>
         </div>
-         --}}
+        --}}
 </body>
 
 </html>

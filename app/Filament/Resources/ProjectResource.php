@@ -901,6 +901,18 @@ class ProjectResource extends Resource
                     ->label('OT')
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
+
+                TextColumn::make('work_order_number')
+                    ->label('N° de Orden de Trabajo')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->searchable(),
+
+                TextColumn::make('')
+                    ->label('N° de Orden de Trabajo')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->searchable(),
+
+
                 TextColumn::make('fracttal_status')
                     ->label('Estado Fracttal')
                     ->toggleable(isToggledHiddenByDefault: true)
