@@ -1,15 +1,15 @@
 import defaultTheme from 'tailwindcss/defaultTheme'
-import flowbitePlugin from 'flowbite/plugin'
 
 export default {
     darkMode: 'class',
     content: [
         './vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php',
+        './vendor/filament/**/*.blade.php',
         './storage/framework/views/*.php',
         './resources/**/*.blade.php',
         './resources/**/*.js',
         './resources/**/*.vue',
-        './node_modules/flowbite/**/*.js',
+        './app/Filament/**/*.php',
     ],
     theme: {
         extend: {
@@ -19,6 +19,5 @@ export default {
         },
     },
     plugins: [
-        flowbitePlugin,
     ],
 }

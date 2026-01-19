@@ -14,12 +14,19 @@ use App\Http\Controllers\PositionController;
 use App\Http\Controllers\EvidenceController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\WorkReportController;
+use App\Http\Controllers\Api\PricelistSearchController;
 use Illuminate\Support\Facades\Route;
 
 // Rutas públicas
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/status', function () {
     return response()->json(['status' => 'OK', 'message' => 'El sistema está funcionando correctamente']);
+});
+
+// Pricelist search API (para autocomplete en cotizaciones)
+Route::prefix('pricelists')->group(function () {
+    Route::get('/search', [PricelistSearchController::class, 'search']);
+    Route::get('/price-types', [PricelistSearchController::class, 'priceTypes']);
 });
 
 // Rutas protegidas con autenticación
