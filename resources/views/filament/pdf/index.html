@@ -309,7 +309,7 @@
         <tr>
             <td style="width: 200px;">
                 @if (isset($logo_base64) && $logo_base64)
-                    <img src="{{ $logo_base64 }}" alt="Logo" style="height: 80px;">
+                <img src="{{ $logo_base64 }}" alt="Logo" style="height: 80px;">
                 @endif
             </td>
             <td class="header-title">
@@ -363,16 +363,16 @@
             <!-- Fila 4: Fechas -->
             <table class="dates-table">
                 <tr>
-                    <td class="form-label">A5) Fecha de inicio:</td>
+                    <td class="form-label">A7) Fecha de inicio:</td>
                     <td><span class="date-box">{{ $fecha_inicio }}</span></td>
-                    <td class="form-label" style="padding-left: 30px;">A6) Fecha de fin:</td>
+                    <td class="form-label" style="padding-left: 30px;">A8) Fecha de fin:</td>
                     <td><span class="date-box">{{ $fecha_fin }}</span></td>
                 </tr>
             </table>
 
             <!-- Nota de Conformidad -->
             <div class="conformity-note">
-                A7) En el presente documento, se consta la <strong>CONFORMIDAD</strong> de los servicios presentados
+                A9) En el presente documento, se consta la <strong>CONFORMIDAD</strong> de los servicios presentados
                 por la empresa:
             </div>
         </div>
@@ -398,13 +398,13 @@
                 </thead>
                 <tbody>
                     @foreach ($assets as $index => $asset)
-                        <tr>
-                            <td class="number">{{ $index + 1 }}</td>
-                            <td class="asset-name">{{ $asset['name'] }} ({{ $asset['selected'] ? 'X' : ' ' }})
-                            </td>
-                            <td style="text-align: center;">{{ $asset['quantity'] }}</td>
-                            <td>{{ $asset['comments'] }}</td>
-                        </tr>
+                    <tr>
+                        <td class="number">{{ $index + 1 }}</td>
+                        <td class="asset-name">{{ $asset['name'] }} ({{ $asset['selected'] ? 'X' : ' ' }})
+                        </td>
+                        <td style="text-align: center;">{{ $asset['quantity'] }}</td>
+                        <td>{{ $asset['comments'] }}</td>
+                    </tr>
                     @endforeach
                 </tbody>
             </table>
@@ -456,18 +456,18 @@
                     <tr>
                         <td style="text-align: center; padding: 10px; height: 100px; vertical-align: bottom;">
                             @if ($firma_cliente)
-                                <img src="{{ $firma_cliente }}" alt="Firma Cliente"
-                                    style="max-height: 80px; max-width: 100%;">
+                            <img src="{{ $firma_cliente }}" alt="Firma Cliente"
+                                style="max-height: 80px; max-width: 100%;">
                             @else
-                                <br><br><br>
+                            <br><br><br>
                             @endif
                         </td>
                         <td style="text-align: center; padding: 10px; height: 100px; vertical-align: bottom;">
                             @if ($firma_empleado)
-                                <img src="{{ $firma_empleado }}" alt="Firma Empleado"
-                                    style="max-height: 80px; max-width: 100%;">
+                            <img src="{{ $firma_empleado }}" alt="Firma Empleado"
+                                style="max-height: 80px; max-width: 100%;">
                             @else
-                                <br><br><br>
+                            <br><br><br>
                             @endif
                         </td>
                     </tr>

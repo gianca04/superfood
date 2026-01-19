@@ -385,25 +385,6 @@
             @endfor
         @endif
 
-        <!-- TRABAJOS A REALIZAR -->
-        <div class="section-title">Conclusiones:</div>
-        @php
-            $conclusionsLines = $conclusions !== 'N/A' ? explode("\n", $conclusions) : [];
-            $minLines = 2;
-        @endphp
-        @if (count($conclusionsLines) > 0)
-            @foreach ($conclusionsLines as $line)
-                <div class="cyan-underline">{{ $line }}</div>
-            @endforeach
-            @for ($i = count($conclusionsLines); $i < $minLines; $i++)
-                <div class="cyan-underline">&nbsp;</div>
-            @endfor
-        @else
-            @for ($i = 0; $i < $minLines; $i++)
-                <div class="cyan-underline">&nbsp;</div>
-            @endfor
-        @endif
-
 
         <!-- MATERIALES/HERRAMIENTAS TABLE -->
         <table class="data-table">
@@ -463,6 +444,25 @@
                 </tr>
             </tfoot>
         </table>
+
+        <!-- CONCLUSIONES -->
+        <div class="section-title">Conclusiones:</div>
+        @php
+            $conclusionsLines = $conclusions !== 'N/A' ? explode("\n", $conclusions) : [];
+            $minLines = 2;
+        @endphp
+        @if (count($conclusionsLines) > 0)
+            @foreach ($conclusionsLines as $line)
+                <div class="cyan-underline">{{ $line }}</div>
+            @endforeach
+            @for ($i = count($conclusionsLines); $i < $minLines; $i++)
+                <div class="cyan-underline">&nbsp;</div>
+            @endfor
+        @else
+            @for ($i = 0; $i < $minLines; $i++)
+                <div class="cyan-underline">&nbsp;</div>
+            @endfor
+        @endif
 
         <!-- RECOMENDACIONES -->
         <div class="recommendations-section">

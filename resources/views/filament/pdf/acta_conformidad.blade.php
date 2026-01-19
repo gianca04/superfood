@@ -393,8 +393,7 @@
                         $logoMime = 'image/png';
                     @endphp
                     @if ($logoData)
-                        <img src="data:{{ $logoMime }};base64,{{ $logoData }}" alt="Logo2"
-                            style="height: 80px;">
+                        <img src="data:{{ $logoMime }};base64,{{ $logoData }}" alt="Logo2" style="height: 80px;">
                     @endif
                 </td>
                 <td class="header-title">
@@ -443,25 +442,35 @@
                             {{ $descripcion_servicio }}
                         </td>
                     </tr>
+                    <tr>
+                        <td class="left">
+                            <span class="label">A5) N° de Solicitud:</span><br>
+                            {{ $request_number ?? 'N/A' }}
+                        </td>
+                        <td>
+                            <span class="label">A6) Código de Servicio:</span><br>
+                            {{ $service_code ?? 'N/A' }}
+                        </td>
+                    </tr>
                 </table>
 
                 <!-- Fila 4: Fechas -->
                 <table class="dates-table">
                     <tr>
-                        <td class="form-label">A5) Fecha de inicio:</td>
+                        <td class="form-label">A7) Fecha de inicio:</td>
                         <td style="flex-grow: 1;">
                             <span class="date-box">
                                 {{ !empty($fecha_inicio) ? $fecha_inicio : 'N/A' }}
                             </span>
                         </td>
-                        <td class="form-label" style="padding-left: 30px;">A6) Fecha de fin:</td>
+                        <td class="form-label" style="padding-left: 30px;">A8) Fecha de fin:</td>
                         <td style="flex-grow: 1;"><span class="date-box">{{ $fecha_fin ?? 'N/A' }}</span></td>
                     </tr>
                 </table>
 
                 <!-- Nota de Conformidad -->
                 <div class="conformity-note">
-                    A7) En el presente documento, se consta la <strong>CONFORMIDAD</strong> de los servicios presentados
+                    A9) En el presente documento, se consta la <strong>CONFORMIDAD</strong> de los servicios presentados
                     por la empresa:
                 </div>
             </div>
@@ -655,7 +664,7 @@
 
             function cerrarPestana() {
                 window.close();
-                setTimeout(function() {
+                setTimeout(function () {
                     window.history.back();
                 }, 300);
             }

@@ -23,6 +23,7 @@
         "marcelweidum/filament-expiration-notice": "^1.0",
         "mpdf/mpdf": "^8.2",
         "phpoffice/phpword": "^1.4",
+        "relaticle/flowforge": "^1.0",
         "saade/filament-autograph": "^3.2",
         "watheqalshowaiter/filament-sticky-table-header": "^1.4"
     },

@@ -1,0 +1,166 @@
+/* Quote Form Styles */
+
+/* === Form Inputs === */
+.form-input-clean {
+    border-color: transparent;
+    background-color: transparent;
+    border-radius: 0.375rem;
+    transition: all 0.15s ease;
+    font-size: 0.875rem;
+    width: 100%;
+    padding: 0.375rem 0.5rem;
+}
+
+.form-input-clean:hover {
+    background-color: rgb(249 250 251);
+}
+
+.dark .form-input-clean:hover {
+    background-color: rgb(51 65 85);
+}
+
+.form-input-clean:focus {
+    border-color: rgb(16 185 129);
+    box-shadow: 0 0 0 2px rgb(16 185 129 / 0.2);
+    outline: none;
+}
+
+/* === Sidebar Inputs === */
+.sidebar-input {
+    width: 100%;
+    font-size: 0.875rem;
+    border-radius: 0.375rem;
+    border: 1px solid rgb(229 231 235);
+    background-color: rgb(249 250 251);
+    padding: 0.5rem 0.75rem;
+}
+
+.dark .sidebar-input {
+    border-color: rgb(55 65 81);
+    background-color: rgb(30 41 59);
+    color: white;
+}
+
+.sidebar-input:focus {
+    border-color: rgb(16 185 129);
+    box-shadow: 0 0 0 2px rgb(16 185 129 / 0.2);
+    outline: none;
+}
+
+/* === Card Sections === */
+.card-section {
+    background-color: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+    border: 1px solid rgb(229 231 235);
+    overflow: hidden;
+}
+
+.dark .card-section {
+    background-color: rgb(30 41 59);
+    border-color: rgb(55 65 81);
+}
+
+/* === Number Input Spinners === */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* === Modal === */
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 10vh;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 1rem;
+    width: 100%;
+    max-width: 700px;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+    animation: modalSlideIn 0.2s ease-out;
+}
+
+.dark .modal-content {
+    background: rgb(30 41 59);
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* === Search Results === */
+.search-result-item {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgb(243 244 246);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.search-result-item:hover {
+    background-color: rgb(236 253 245);
+}
+
+.dark .search-result-item {
+    border-color: rgb(55 65 81);
+}
+
+.dark .search-result-item:hover {
+    background-color: rgb(6 78 59 / 0.3);
+}
+
+/* === Filter Tabs === */
+.filter-tab {
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: all 0.15s ease;
+}
+
+.filter-tab.active {
+    background-color: rgb(209 250 229);
+    color: rgb(4 120 87);
+}
+
+.dark .filter-tab.active {
+    background-color: rgb(6 78 59 / 0.5);
+    color: rgb(52 211 153);
+}
+
+.filter-tab:not(.active) {
+    background-color: rgb(243 244 246);
+    color: rgb(75 85 99);
+}
+
+.filter-tab:not(.active):hover {
+    background-color: rgb(229 231 235);
+}
+
+.dark .filter-tab:not(.active) {
+    background-color: rgb(55 65 81);
+    color: rgb(209 213 219);
+}
+
+.dark .filter-tab:not(.active):hover {
+    background-color: rgb(75 85 99);
+}

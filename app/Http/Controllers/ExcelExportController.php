@@ -376,6 +376,8 @@ class ExcelExportController extends Controller
                 'tienda' => $subClient?->name ?? '',
                 'direccion' => $subClient?->address ?? '',
                 'numero_ot' => $quote?->correlative ?? 'OT-' . ($project?->id ?? ''),
+                'request_number' => $project?->request_number ?? '',
+                'service_code' => $project?->service_code ?? '',
                 'descripcion_servicio' => $quote?->project_description ?? $project?->name ?? '',
                 'fecha_inicio' => $project?->start_date?->format('d/m/Y') ?? '',
                 'fecha_fin' => $project?->end_date?->format('d/m/Y') ?? '',
