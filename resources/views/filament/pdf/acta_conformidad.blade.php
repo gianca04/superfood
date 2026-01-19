@@ -393,7 +393,8 @@
                         $logoMime = 'image/png';
                     @endphp
                     @if ($logoData)
-                        <img src="data:{{ $logoMime }};base64,{{ $logoData }}" alt="Logo2" style="height: 80px;">
+                        <img src="data:{{ $logoMime }};base64,{{ $logoData }}" alt="Logo2"
+                            style="height: 80px;">
                     @endif
                 </td>
                 <td class="header-title">
@@ -434,7 +435,7 @@
                 <table class="composite-table">
                     <tr>
                         <td class="left">
-                            <span class="label">A3) N° de OT:</span><br>
+                            <span class="label">A3) N° de Orden de trabajo:</span><br>
                             {{ $numero_ot }}
                         </td>
                         <td>
@@ -446,10 +447,6 @@
                         <td class="left">
                             <span class="label">A5) N° de Solicitud:</span><br>
                             {{ $request_number ?? 'N/A' }}
-                        </td>
-                        <td>
-                            <span class="label">A6) Código de Servicio:</span><br>
-                            {{ $service_code ?? 'N/A' }}
                         </td>
                     </tr>
                 </table>
@@ -664,7 +661,7 @@
 
             function cerrarPestana() {
                 window.close();
-                setTimeout(function () {
+                setTimeout(function() {
                     window.history.back();
                 }, 300);
             }

@@ -16,7 +16,11 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class QuoteResource extends Resource
 {
     protected static ?string $model = Quote::class;
-
+    protected static ?string $title = 'Cotización';
+    protected static ?string $modelLabel = 'Cotización';
+    protected static ?string $pluralModelLabel = 'Cotizaciones';
+    protected static ?string $singularModelLabel = 'Cotización';
+    protected static ?string $navigationGroup = 'Control de operaciones';
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form

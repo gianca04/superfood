@@ -60,6 +60,9 @@ class Project extends Model
         'longitude',
         'quote_id',
         'end_date',
+
+        //Supervisor string:
+        'supervisor_name',
     ];
 
     protected $casts = [

@@ -34,6 +34,7 @@ use Filament\Forms\Components\Actions\Action as FormAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Split;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
@@ -343,12 +344,29 @@ class ProjectResource extends Resource
 
                         Forms\Components\Tabs\Tab::make('Datos de la Visita')
                             ->schema([
+                                // ACA COLOCAREMOS SOLAMENTE  A Supervisor de seguimiento.
+                                Select::make('supervisor_name')
+                                    ->label('Supervisor de seguimiento')
+                                    ->options(
+                                        Employee::whereIn('id', [40, 50, 55])
+                                            ->with('user')
+                                            ->get()
+                                            ->mapWithKeys(function ($employee) {
+                                                return [$employee->id => $employee->fullname];
+                                            })
+                                            ->toArray()
+                                    )
+                                    ->searchable()
+                                    ->afterStateUpdated(function ($state, $set) {
+                                        // Busca el empleado y guarda el nombre en supervisor_name
+                                        $employee = Employee::find($state);
+                                        $set('supervisor_name', $employee ? $employee->fullname : null);
+                                    }),
                                 Repeater::make('inspectors')
                                     ->relationship()
                                     ->label('Inspectores asignados')
                                     ->minItems(1)
                                     ->schema([
-
                                         Forms\Components\Select::make('employee_id')
                                             //->default(fn() => Auth::user()?->employee_id)->required()
                                             ->columns(2)
