@@ -14,7 +14,12 @@ use App\Http\Controllers\PositionController;
 use App\Http\Controllers\EvidenceController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\WorkReportController;
+use App\Http\Controllers\QuoteController;
+use App\Http\Controllers\SubClientController;
+use App\Http\Controllers\ClientController;
+use App\Http\Controllers\QuoteCategoryController;
 use App\Http\Controllers\Api\PricelistSearchController;
+use App\Http\Controllers\QuoteController as ControllersQuoteController;
 use Illuminate\Support\Facades\Route;
 
 // Rutas públicas
@@ -24,16 +29,35 @@ Route::get('/status', function () {
 });
 
 // Pricelist search API (para autocomplete en cotizaciones)
-Route::prefix('pricelists')->group(function () {
+Route::prefix('pricelists')->middleware('auth')->group(function () {
     Route::get('/search', [PricelistSearchController::class, 'search']);
     Route::get('/price-types', [PricelistSearchController::class, 'priceTypes']);
 });
+
+// Quotes API (para gestión de cotizaciones)
+Route::apiResource('quotes', QuoteController::class)->middleware('auth');
+
+// SubClients API (para búsqueda de subclientes)
+Route::prefix('sub-clients')->middleware('auth')->group(function () {
+    Route::get('/', [SubClientController::class, 'index']);
+    Route::get('/search', [SubClientController::class, 'search']);
+});
+
+// Clients API (para búsqueda de clientes)
+Route::prefix('clients')->middleware('auth')->group(function () {
+    Route::get('/', [ClientController::class, 'index']);
+    Route::get('/search', [ClientController::class, 'search']);
+});
+
+// Quote Categories API (para select de categorías)
+Route::get('/quote-categories', [QuoteCategoryController::class, 'index'])->middleware('auth');
 
 // Rutas protegidas con autenticación
 Route::middleware(['auth:sanctum', 'CheckTokenExpiration'])->group(function () {
 
     // Autenticación
     Route::post('/logout', [AuthController::class, 'logout']);
+
 
     // Proyectos
     Route::prefix('projects')->group(function () {

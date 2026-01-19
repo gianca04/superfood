@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ExcelExportController;
+use App\Http\Controllers\QuoteController;
 use App\Http\Controllers\VisitReportPdfController;
 use App\Http\Controllers\WorkReportExcelController;
 use Illuminate\Support\Facades\Route;
@@ -52,6 +53,11 @@ Route::prefix('request/{request}')->middleware('auth')->group(function () {
 
     Route::get('/consolidated-report/statistics', [RequestConsolidatedController::class, 'getConsolidatedStatistics'])
         ->name('request.consolidated-report.statistics');
+});
+
+//Cuotas:
+Route::prefix('quotes')->middleware('auth')->group(function () {
+    Route::get('/', [QuoteController::class, 'index']); // Listar cotizaciones
 });
 
 // Las rutas de Livewire y Filament se configuran automáticamente

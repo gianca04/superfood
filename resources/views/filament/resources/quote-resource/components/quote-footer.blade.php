@@ -2,13 +2,13 @@
 {{-- Usage: @include('filament.resources.quote-resource.components.quote-footer') --}}
 
 <div
-    class="fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700 shadow-lg shadow-gray-900/10 px-6 py-4">
-    <div class="max-w-7xl mx-auto flex items-center justify-between">
+    class="fixed bottom-0 left-0 right-0 z-50 px-6 py-4 border-t border-gray-200 shadow-lg bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm dark:border-gray-700 shadow-gray-900/10">
+    <div class="flex items-center justify-between mx-auto max-w-7xl">
         {{-- Status --}}
         <div class="flex items-center gap-3">
-            <span class="relative flex h-2 w-2">
-                <span class="animate-ping absolute h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span class="relative h-2 w-2 rounded-full bg-emerald-500"></span>
+            <span class="relative flex w-2 h-2">
+                <span class="absolute w-full h-full rounded-full opacity-75 animate-ping bg-emerald-400"></span>
+                <span class="relative w-2 h-2 rounded-full bg-emerald-500"></span>
             </span>
             <span class="text-sm text-gray-500" x-text="getTotalItems() + ' items'"></span>
         </div>
@@ -16,18 +16,18 @@
         {{-- Totals --}}
         <div class="flex items-center gap-8">
             <div class="text-right">
-                <div class="text-xs text-gray-400 font-medium">Subtotal</div>
+                <div class="text-xs font-medium text-gray-400">Subtotal</div>
                 <div class="font-mono font-bold text-gray-700 dark:text-gray-200"
                     x-text="'S/ ' + getSubtotal().toFixed(2)"></div>
             </div>
             <div class="text-right">
-                <div class="text-xs text-gray-400 font-medium">IGV (18%)</div>
+                <div class="text-xs font-medium text-gray-400">IGV (18%)</div>
                 <div class="font-mono font-bold text-gray-700 dark:text-gray-200" x-text="'S/ ' + getIGV().toFixed(2)">
                 </div>
             </div>
-            <div class="h-8 w-px bg-gray-200 dark:bg-gray-700"></div>
+            <div class="w-px h-8 bg-gray-200 dark:bg-gray-700"></div>
             <div class="text-right">
-                <div class="text-xs text-gray-400 font-medium">Total</div>
+                <div class="text-xs font-medium text-gray-400">Total</div>
                 <div class="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400"
                     x-text="'S/ ' + getTotal().toFixed(2)"></div>
             </div>

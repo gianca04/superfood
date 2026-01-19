@@ -1,0 +1,201 @@
+/* Contenedor principal - Solo afecta elementos dentro de esta vista */
+.quote-cards-container {
+    --quote-primary: rgb(59, 130, 246);
+    --quote-success: rgb(34, 197, 94);
+    --quote-warning: rgb(217, 119, 6);
+    --quote-danger: rgb(239, 68, 68);
+}
+
+/* Animaciones */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse-soft {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.8;
+    }
+}
+
+/* Cards - Solo dentro del contenedor de cotizaciones */
+.quote-cards-container .quote-card {
+    animation: slideUp 0.3s ease-out backwards;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.quote-cards-container .quote-card:nth-child(1) { animation-delay: 0.05s; }
+.quote-cards-container .quote-card:nth-child(2) { animation-delay: 0.1s; }
+.quote-cards-container .quote-card:nth-child(3) { animation-delay: 0.15s; }
+.quote-cards-container .quote-card:nth-child(4) { animation-delay: 0.2s; }
+.quote-cards-container .quote-card:nth-child(n+5) { animation-delay: 0.25s; }
+
+/* Hover effect */
+.quote-cards-container .quote-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+                0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Header gradient */
+.quote-cards-container .quote-card-header {
+    background: linear-gradient(to right, rgb(219, 234, 254), rgb(191, 219, 254));
+}
+
+.dark .quote-cards-container .quote-card-header {
+    background: linear-gradient(to right, rgb(30, 58, 138), rgb(25, 51, 120));
+}
+
+/* Amount section */
+.quote-cards-container .quote-card-amount {
+    background-color: rgb(249, 250, 251);
+}
+
+.dark .quote-cards-container .quote-card-amount {
+    background-color: rgb(17, 24, 39);
+}
+
+/* Icon backgrounds */
+.quote-cards-container .quote-icon-blue {
+    background-color: rgb(219, 234, 254);
+}
+
+.dark .quote-cards-container .quote-icon-blue {
+    background-color: rgb(30, 58, 138);
+}
+
+.quote-cards-container .quote-icon-amber {
+    background-color: rgb(254, 243, 199);
+}
+
+.dark .quote-cards-container .quote-icon-amber {
+    background-color: rgb(78, 65, 8);
+}
+
+.quote-cards-container .quote-icon-purple {
+    background-color: rgb(243, 232, 255);
+}
+
+.dark .quote-cards-container .quote-icon-purple {
+    background-color: rgb(88, 28, 135);
+}
+
+.quote-cards-container .quote-icon-green {
+    background-color: rgb(220, 252, 231);
+}
+
+.dark .quote-cards-container .quote-icon-green {
+    background-color: rgb(20, 83, 45);
+}
+
+/* Stats cards */
+.quote-cards-container .quote-stat-card {
+    transition: transform 0.2s ease;
+}
+
+.quote-cards-container .quote-stat-card:hover {
+    transform: translateY(-2px);
+}
+
+/* Buttons */
+.quote-cards-container .quote-btn-edit {
+    transition: all 0.2s ease;
+}
+
+.quote-cards-container .quote-btn-edit:hover {
+    background-color: rgb(243, 244, 246);
+}
+
+.dark .quote-cards-container .quote-btn-edit:hover {
+    background-color: rgb(55, 65, 81);
+}
+
+.quote-cards-container .quote-btn-pdf {
+    transition: all 0.2s ease;
+}
+
+.quote-cards-container .quote-btn-pdf:hover {
+    background-color: rgb(37, 99, 235);
+}
+
+/* Empty state */
+.quote-cards-container .quote-empty-state {
+    text-align: center;
+    padding: 3rem 1.5rem;
+}
+
+/* Pagination */
+.quote-cards-container .quote-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+}
+
+.quote-cards-container .quote-pagination button {
+    transition: all 0.2s ease;
+}
+
+.quote-cards-container .quote-pagination button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.quote-cards-container .quote-pagination button:not(:disabled):hover {
+    background-color: rgb(243, 244, 246);
+}
+
+.dark .quote-cards-container .quote-pagination button:not(:disabled):hover {
+    background-color: rgb(31, 41, 55);
+}
+
+/* Loading indicator */
+.quote-cards-container .filament-loading-indicator {
+    animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Search input */
+.quote-cards-container .quote-search-input {
+    transition: all 0.2s ease;
+}
+
+.quote-cards-container .quote-search-input:focus {
+    border-color: rgb(59, 130, 246);
+    box-shadow: 0 0 0 3px rgb(219, 234, 254);
+}
+
+.dark .quote-cards-container .quote-search-input:focus {
+    border-color: rgb(96, 165, 250);
+    box-shadow: 0 0 0 3px rgb(30, 58, 138);
+}
+
+/* Select filter */
+.quote-cards-container .quote-select-filter {
+    transition: all 0.2s ease;
+}
+
+.quote-cards-container .quote-select-filter:focus {
+    border-color: rgb(59, 130, 246);
+    box-shadow: 0 0 0 3px rgb(219, 234, 254);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .quote-cards-container .quote-card-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .quote-cards-container .quote-search-filter {
+        flex-direction: column;
+    }
+}

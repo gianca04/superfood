@@ -68,6 +68,9 @@ class Quote extends Model
     protected $casts = [
         'quote_date' => 'date',
         'execution_date' => 'date',
+        'energy_sci_manager' => 'string',
+        'ceco' => 'string',
+        'status' => 'string',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -133,4 +136,35 @@ class Quote extends Model
     {
         return $this->hasMany(Visit::class, 'quote_id');
     }
+
+    /**
+     * Obtiene el monto total de la cotización (suma de todos los detalles).
+     *
+     * @return float
+     */
+    public function getTotalAmountAttribute(): float
+    {
+        return $this->details()->sum('subtotal') ?? 0;
+    }
+
+    /**
+     * Scope para búsqueda avanzada.
+     */
+    public function scopeSearch($query, $search)
+    {
+        return $query->where(function ($q) use ($search) {
+            $q->where('request_number', 'LIKE', "%{$search}%")
+                ->orWhereHas('subClient', function ($sq) use ($search) {
+                    $sq->where('name', 'LIKE', "%{$search}%");
+                })
+                ->orWhereHas('employee', function ($sq) use ($search) {
+                    $sq->where('name', 'LIKE', "%{$search}%");
+                });
+        });
+    }
+
+    /**
+     * Obtiene los detalles con relaciones cargadas.
+     */
+    protected $appends = ['total_amount'];
 }
