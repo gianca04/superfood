@@ -5,7 +5,8 @@
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
     {{-- Main Container with Alpine --}}
-    <div x-data="quoteManager()" x-init="loadCategories()" class="space-y-6">
+    {{-- Pasamos los datos desde PHP directamente, eliminando llamadas API innecesarias --}}
+    <div x-data="quoteManager(@js($quoteCategories), @js($clients), @js($priceTypes))" class="space-y-6">
         {{-- Grid Layout --}}
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
             {{-- Sidebar --}}
@@ -31,16 +32,14 @@
 
     {{-- Alpine Component (inline fallback if not using modules) --}}
     <script>
-        function quoteManager() {
+        function quoteManager(categoriesFromPHP = [], clientsFromPHP = [], priceTypesFromPHP = []) {
             return {
                 // Quote header
                 quote: {
                     id: null,
                     service_name: '',
                     client_id: null,
-                    client_name: '',
                     sub_client_id: null,
-                    sub_client_name: '',
                     quote_category_id: null,
                     execution_date: '',
                     ceco: '',
@@ -48,32 +47,32 @@
 
                 // Sections
                 sections: [{
-                        key: 'viaticos',
-                        title: 'Viáticos',
-                        subtitle: 'Gastos de traslado',
-                        icon: 'flight_takeoff',
-                        priceTypeId: 3,
-                        bgClass: 'bg-blue-100 dark:bg-blue-900/30',
-                        iconClass: 'text-blue-600 dark:text-blue-400'
-                    },
-                    {
-                        key: 'suministros',
-                        title: 'Suministros',
-                        subtitle: 'Materiales y equipos',
-                        icon: 'inventory_2',
-                        priceTypeId: 2,
-                        bgClass: 'bg-amber-100 dark:bg-amber-900/30',
-                        iconClass: 'text-amber-600 dark:text-amber-400'
-                    },
-                    {
-                        key: 'mano_obra',
-                        title: 'Mano de Obra',
-                        subtitle: 'Personal técnico',
-                        icon: 'engineering',
-                        priceTypeId: 2,
-                        bgClass: 'bg-purple-100 dark:bg-purple-900/30',
-                        iconClass: 'text-purple-600 dark:text-purple-400'
-                    },
+                    key: 'viaticos',
+                    title: 'Viáticos',
+                    subtitle: 'Gastos de traslado',
+                    icon: 'flight_takeoff',
+                    priceTypeId: 3,
+                    bgClass: 'bg-blue-100 dark:bg-blue-900/30',
+                    iconClass: 'text-blue-600 dark:text-blue-400'
+                },
+                {
+                    key: 'suministros',
+                    title: 'Suministros',
+                    subtitle: 'Materiales y equipos',
+                    icon: 'inventory_2',
+                    priceTypeId: 2,
+                    bgClass: 'bg-amber-100 dark:bg-amber-900/30',
+                    iconClass: 'text-amber-600 dark:text-amber-400'
+                },
+                {
+                    key: 'mano_obra',
+                    title: 'Mano de Obra',
+                    subtitle: 'Personal técnico',
+                    icon: 'engineering',
+                    priceTypeId: 2,
+                    bgClass: 'bg-purple-100 dark:bg-purple-900/30',
+                    iconClass: 'text-purple-600 dark:text-purple-400'
+                },
                 ],
 
                 // Items per section
@@ -93,28 +92,25 @@
                     filter: null,
                 },
 
-                // Client/SubClient search
-                clientSearchResults: [],
-                subClientSearchResults: [],
-                quoteCategories: [],
+                // SubClientes cargados desde API (cuando se selecciona cliente)
+                subClients: [],
+                loadingSubClients: false,
 
-                // Price types
-                priceTypes: [{
-                        id: 1,
-                        name: 'Mantenimiento Preventivo BT',
-                        shortName: 'Preventivo'
-                    },
-                    {
-                        id: 2,
-                        name: 'Mantenimiento Correctivos BT',
-                        shortName: 'Correctivo'
-                    },
-                    {
-                        id: 3,
-                        name: 'Viáticos correctivos BT',
-                        shortName: 'Viáticos'
-                    },
-                ],
+                // Searchable select para subclientes
+                subClientSearch: '',
+                subClientDropdownOpen: false,
+                filteredSubClients: [],
+
+                // Datos cargados directamente desde PHP (sin API)
+                quoteCategories: categoriesFromPHP,
+                allClients: clientsFromPHP, // Clientes para el select (menos de 10)
+
+                // Price types - cargados desde PHP
+                priceTypes: priceTypesFromPHP.map(pt => ({
+                    id: pt.id,
+                    name: pt.name,
+                    shortName: pt.name.split(' ')[0] // Primer palabra como shortName
+                })),
 
                 saving: false,
                 igvRate: 0.18,
@@ -142,18 +138,8 @@
                     return section ? section.title : '';
                 },
 
-                // Load quote categories
-                async loadCategories() {
-                    console.log('📂 Loading quote categories...');
-                    try {
-                        const response = await fetch('/api/quote-categories');
-                        this.quoteCategories = await response.json();
-                        console.log('✅ Loaded categories:', this.quoteCategories);
-                    } catch (error) {
-                        console.error('❌ Error loading categories:', error);
-                        this.quoteCategories = [];
-                    }
-                },
+                // Las categorías ya están cargadas desde PHP - no se necesita llamada API
+                // quoteCategories ya está inicializado con categoriesFromPHP
 
                 // Search
                 async searchPricelist() {
@@ -175,68 +161,82 @@
                     }
                 },
 
-                // Client search
-                async searchClients() {
-                    if (this.quote.client_name.length < 2) {
-                        this.clientSearchResults = [];
-                        return;
-                    }
-                    console.log('🔍 Searching clients for:', this.quote.client_name);
-                    try {
-                        const response = await fetch(
-                            `/api/clients/search?q=${encodeURIComponent(this.quote.client_name)}&limit=10`
-                        );
-                        this.clientSearchResults = await response.json();
-                        console.log('✅ Client search results:', this.clientSearchResults);
-                    } catch (error) {
-                        console.error('❌ Client search error:', error);
-                        this.clientSearchResults = [];
-                    }
-                },
+                // Cuando se selecciona un cliente del select - carga subclientes
+                async onClientChange(event) {
+                    const clientId = event.target.value;
+                    console.log('🎯 Cliente seleccionado ID:', clientId);
 
-                // SubClient search
-                async searchSubClients() {
-                    if (!this.quote.client_id || this.quote.sub_client_name.length < 2) {
-                        this.subClientSearchResults = [];
-                        return;
-                    }
-                    console.log('🔍 Searching subclients for client_id:', this.quote.client_id, 'query:', this.quote
-                        .sub_client_name);
-                    try {
-                        const response = await fetch(
-                            `/api/sub-clients/search?client_id=${this.quote.client_id}&q=${encodeURIComponent(this.quote.sub_client_name)}&limit=10`
-                        );
-                        this.subClientSearchResults = await response.json();
-                        console.log('✅ SubClient search results:', this.subClientSearchResults);
-                    } catch (error) {
-                        console.error('❌ SubClient search error:', error);
-                        this.subClientSearchResults = [];
-                    }
-                },
-
-                // Select client
-                selectClient(client) {
-                    console.log('🎯 Selected client:', client);
-                    this.quote.client_id = client.id;
-                    this.quote.client_name = client.business_name;
-                    this.clientSearchResults = [];
-                    // Reset subclient when client changes
+                    // Reset subclient and search when client changes
                     this.quote.sub_client_id = null;
-                    this.quote.sub_client_name = '';
-                    this.quote.ceco = ''; // Reset CECO when client changes
-                    this.subClientSearchResults = [];
-                    console.log('🔄 Reset subclient and CECO for new client');
+                    this.quote.ceco = '';
+                    this.subClients = [];
+                    this.filteredSubClients = [];
+                    this.subClientSearch = '';
+                    this.subClientDropdownOpen = false;
+
+                    // Si no hay cliente seleccionado, no cargar subclientes
+                    if (!clientId) {
+                        console.log('🔄 No hay cliente, reset subclientes');
+                        return;
+                    }
+
+                    // Cargar subclientes desde API
+                    await this.loadSubClients(clientId);
                 },
 
-                // Select subclient
-                selectSubClient(subClient) {
-                    console.log('🎯 Selected subclient:', subClient);
+                // Cargar todos los subclientes de un cliente desde API
+                async loadSubClients(clientId) {
+                    this.loadingSubClients = true;
+                    console.log('📦 Cargando subclientes para client_id:', clientId);
+
+                    try {
+                        const response = await fetch(`/api/sub-clients?client_id=${clientId}`);
+                        const data = await response.json();
+                        // La API devuelve paginación, tomamos los datos
+                        this.subClients = data.data || data;
+                        // Inicializar filteredSubClients con todos
+                        this.filteredSubClients = [...this.subClients];
+                        console.log('✅ Subclientes cargados:', this.subClients.length);
+                    } catch (error) {
+                        console.error('❌ Error cargando subclientes:', error);
+                        this.subClients = [];
+                        this.filteredSubClients = [];
+                    } finally {
+                        this.loadingSubClients = false;
+                    }
+                },
+
+                // Filtrar subclientes localmente mientras se escribe
+                filterSubClients() {
+                    const query = this.subClientSearch.toLowerCase().trim();
+                    if (!query) {
+                        this.filteredSubClients = [...this.subClients];
+                    } else {
+                        this.filteredSubClients = this.subClients.filter(sc =>
+                            sc.name.toLowerCase().includes(query) ||
+                            (sc.ceco && sc.ceco.toLowerCase().includes(query))
+                        );
+                    }
+                    this.subClientDropdownOpen = true;
+                },
+
+                // Seleccionar subcliente desde el dropdown
+                selectSubClientFromDropdown(subClient) {
+                    console.log('🎯 SubCliente seleccionado:', subClient);
                     this.quote.sub_client_id = subClient.id;
-                    this.quote.sub_client_name = subClient.name;
-                    // Set CECO from subclient or show "No definido" if empty
+                    this.subClientSearch = subClient.name;
                     this.quote.ceco = subClient.ceco || 'No definido';
-                    console.log('📝 Updated CECO to:', this.quote.ceco);
-                    this.subClientSearchResults = [];
+                    this.subClientDropdownOpen = false;
+                    console.log('📝 CECO actualizado a:', this.quote.ceco);
+                },
+
+                // Limpiar selección de subcliente
+                clearSubClient() {
+                    this.quote.sub_client_id = null;
+                    this.subClientSearch = '';
+                    this.quote.ceco = '';
+                    this.filteredSubClients = [...this.subClients];
+                    console.log('🗑️ SubCliente limpiado');
                 },
 
                 // Items
@@ -255,7 +255,7 @@
                     this.items[sectionKey].splice(index, 1);
                 },
 
-                recalculate() {},
+                recalculate() { },
 
                 // Calculations
                 getSectionSubtotal(sectionKey) {
@@ -288,11 +288,8 @@
                         // Preparar datos de la cotización
                         const quoteData = {
                             service_name: this.quote.service_name,
-                            client_name: this.quote.client_name,
-                            sub_client_name: this.quote.sub_client_name,
                             execution_date: this.quote.execution_date,
                             ceco: this.quote.ceco,
-                            employee_id: this.quote.employee_id,
                             client_id: this.quote.client_id,
                             sub_client_id: this.quote.sub_client_id,
                             quote_category_id: this.quote.quote_category_id,
@@ -343,15 +340,15 @@
                         id: null,
                         service_name: '',
                         client_id: null,
-                        client_name: '',
                         sub_client_id: null,
-                        sub_client_name: '',
                         quote_category_id: null,
                         execution_date: '',
                         ceco: '',
                     };
-                    this.clientSearchResults = [];
-                    this.subClientSearchResults = [];
+                    this.subClients = [];
+                    this.filteredSubClients = [];
+                    this.subClientSearch = '';
+                    this.subClientDropdownOpen = false;
                     // Reset items if needed
                     Object.keys(this.items).forEach(key => {
                         this.items[key] = [];

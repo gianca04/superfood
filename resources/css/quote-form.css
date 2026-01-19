@@ -52,8 +52,8 @@
     background-color: white;
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-    border: 1px solid rgb(229 231 235);
-    overflow: hidden;
+    overflow: visible;
+    /* Cambiado de hidden para permitir dropdowns */
 }
 
 .dark .card-section {
@@ -163,4 +163,141 @@ input[type=number]::-webkit-outer-spin-button {
 
 .dark .filter-tab:not(.active):hover {
     background-color: rgb(75 85 99);
+}
+
+/* === Searchable Select Component === */
+.searchable-select {
+    position: relative;
+}
+
+.searchable-select-input {
+    width: 100%;
+    font-size: 0.875rem;
+    border-radius: 0.375rem;
+    border: 1px solid rgb(229 231 235);
+    background-color: rgb(249 250 251);
+    padding: 0.5rem 2rem 0.5rem 0.75rem;
+    transition: all 0.15s ease;
+}
+
+.dark .searchable-select-input {
+    border-color: rgb(55 65 81);
+    background-color: rgb(30 41 59);
+    color: white;
+}
+
+.searchable-select-input:focus {
+    border-color: rgb(16 185 129);
+    box-shadow: 0 0 0 2px rgb(16 185 129 / 0.2);
+    outline: none;
+}
+
+.searchable-select-input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.searchable-select-icon {
+    position: absolute;
+    inset-inline-end: 0;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    padding-right: 0.5rem;
+    pointer-events: none;
+}
+
+.searchable-select-icon.clickable {
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+.searchable-select-icon svg,
+.searchable-select-icon .spinner {
+    width: 1rem;
+    height: 1rem;
+    color: rgb(156 163 175);
+}
+
+.searchable-select-icon:hover svg {
+    color: rgb(107 114 128);
+}
+
+/* Dropdown - z-index muy alto para sobreponerse */
+.searchable-select-dropdown {
+    position: absolute;
+    z-index: 9999;
+    width: 100%;
+    margin-top: 0.25rem;
+    max-height: 12rem;
+    overflow-y: auto;
+    background-color: white;
+    border: 1px solid rgb(229 231 235);
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+.dark .searchable-select-dropdown {
+    background-color: rgb(30 41 59);
+    border-color: rgb(55 65 81);
+}
+
+.searchable-select-item {
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    transition: background-color 0.1s ease;
+}
+
+.searchable-select-item:hover {
+    background-color: rgb(243 244 246);
+}
+
+.dark .searchable-select-item:hover {
+    background-color: rgb(55 65 81);
+}
+
+.searchable-select-item.selected {
+    background-color: rgb(236 253 245);
+}
+
+.dark .searchable-select-item.selected {
+    background-color: rgb(6 78 59 / 0.3);
+}
+
+.searchable-select-item-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: rgb(31 41 55);
+}
+
+.dark .searchable-select-item-title {
+    color: rgb(229 231 235);
+}
+
+.searchable-select-item-subtitle {
+    font-size: 0.75rem;
+    color: rgb(107 114 128);
+}
+
+.searchable-select-empty {
+    padding: 0.75rem;
+    font-size: 0.875rem;
+    color: rgb(107 114 128);
+    text-align: center;
+}
+
+/* Spinner animation */
+.searchable-select .spinner {
+    display: inline-block;
+    border: 2px solid rgb(209 213 219);
+    border-top-color: rgb(16 185 129);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
