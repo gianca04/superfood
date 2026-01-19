@@ -375,12 +375,7 @@ class ExcelExportController extends Controller
                 'ruc' => $client?->document_number ?? '',
                 'tienda' => $subClient?->name ?? '',
                 'direccion' => $subClient?->address ?? '',
-                'numero_ot' => $project && $project->work_order_number
-                    ? (str_starts_with($project->work_order_number, 'OT-')
-                        ? $project->work_order_number
-                        : 'OT-' . $project->work_order_number)
-                    : '',
-                // 'numero_ot' => $quote?->correlative ?? 'OT-' . ($project?->id ?? ''),
+                'work_order_number' => $project?->work_order_number ?? '',
                 'request_number' => $project?->request_number ?? '',
                 'service_code' => $project?->service_code ?? '',
                 'descripcion_servicio' => $quote?->project_description ?? $project?->name ?? '',

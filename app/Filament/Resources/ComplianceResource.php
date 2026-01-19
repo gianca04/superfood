@@ -696,23 +696,8 @@ class ComplianceResource extends Resource
                                 ? 'primary'
                                 : 'danger'
                         )
-                        ->requiresConfirmation()
-                        ->modalHeading(
-                            fn(Compliance $record) =>
-                            $record->workReports()->count() > 0
-                                ? 'Descargar Acta y Reportes'
-                                : 'Generar Documento PDF'
-                        )
-                        ->modalDescription(
-                            fn(Compliance $record) =>
-                            $record->workReports()->count() > 0
-                                ? '¿Deseas descargar el acta de conformidad junto con todos los reportes de trabajo del proyecto?'
-                                : 'El sistema procesará los activos y generará el acta oficial. ¿Continuar?'
-                        )
-                        ->modalSubmitActionLabel('Descargar')
                         ->url(
                             fn(Compliance $record) =>
-                            // Aquí decides a qué ruta ir. Como es un URL directo, el navegador maneja la descarga.
                             $record->workReports()->count() > 0
                                 ? route('actas.pdf-with-reports', $record->id)
                                 : route('actas.pdf', $record->id)

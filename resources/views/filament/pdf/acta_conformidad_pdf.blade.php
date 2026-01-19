@@ -353,8 +353,8 @@
             <table class="composite-table">
                 <tr>
                     <td class="left">
-                        <span class="label">A3) N° de Orden de trabajo:</span><br>
-                        {{ $numero_ot }}
+                        <span class="label">A3) N° OT:</span><br>
+                        {{ $work_order_number }}
                     </td>
                     <td>
                         <span class="label">A4) Descripción del Servicio:</span><br>

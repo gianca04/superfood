@@ -1174,34 +1174,22 @@ class ProjectResource extends Resource
                         })
                         ->icon('heroicon-m-arrow-down-tray')
                         ->color('danger')
-                        ->requiresConfirmation()
-                        ->modalHeading(fn($record) => $record->compliance && $record->workReports()->exists() ? 'Descargar Acta y Reportes' : 'Confirmar descarga')
-                        ->modalDescription(fn($record) => match (true) {
-                            $record->compliance && $record->workReports()->exists() => 'Estás a punto de descargar el Acta junto con los Reportes en un solo PDF.',
-                            (bool) $record->compliance => 'Vas a descargar solo el Acta de Conformidad.',
-                            $record->workReports()->exists() => 'Vas a descargar solo los Reportes de Trabajo.',
-                            default => 'No hay archivos disponibles.',
-                        })
-                        ->action(function ($record) {
+                        ->url(function ($record) {
                             $compliance = $record->compliance;
                             $hasReports = $record->workReports()->exists();
 
                             if ($compliance && $hasReports) {
-                                return redirect()->route('actas.pdf-with-reports', $compliance->id);
+                                return route('actas.pdf-with-reports', $compliance->id);
                             } elseif ($compliance) {
-                                return redirect()->route('actas.pdf', $compliance->id);
+                                return route('actas.pdf', $compliance->id);
                             } elseif ($hasReports) {
-                                return redirect()->route('work-reports.download-multiple-pdf', $record->id);
+                                return route('work-reports.download-multiple-pdf', $record->id);
                             }
 
-                            \Filament\Notifications\Notification::make()
-                                ->title('Sin documentos')
-                                ->warning()
-                                ->send();
+                            return null;
                         })
                         ->visible(fn($record) => $record->compliance || $record->workReports()->exists())
                         ->openUrlInNewTab(),
-
                     // 3. ACCIÓN INFORME CONSOLIDADO (Tu segunda acción del primer bloque)
                     Tables\Actions\Action::make('pdf_report')
                         ->label('Informe Consolidado')
