@@ -46,8 +46,8 @@ class QuoteDetail extends Model
      */
     protected $fillable = [
         'quote_id',
-        'line',
-        'budget_code',
+        'pricelist_id',
+        'subtotal',
         'item_type',
         'description',
         'quantity',
@@ -61,7 +61,7 @@ class QuoteDetail extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'line' => 'integer',
+        'pricelist_id' => 'integer',
         'quantity' => 'decimal:2',
         'unit_price' => 'decimal:2',
         'created_at' => 'datetime',
@@ -93,5 +93,9 @@ class QuoteDetail extends Model
     public function quote(): BelongsTo
     {
         return $this->belongsTo(Quote::class, 'quote_id');
+    }
+    public function pricelist(): BelongsTo
+    {
+        return $this->belongsTo(Pricelist::class, 'pricelist_id');
     }
 }

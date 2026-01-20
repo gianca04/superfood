@@ -110,30 +110,32 @@
     <header class="q-header">
         <div class="q-title-section">
             <h1>COTIZACIÓN DE SERVICIOS</h1>
-            <span class="q-number">N° {{ $numero_cotizacion ?? '56-01' }}</span>
+            <span class="q-number">N° {{ $numero_cotizacion }}</span>
         </div>
 
         <div class="q-info-grid">
             <div class="q-info-column">
                 <p><strong>Servicio:</strong> <span>{{ $servicio }}</span></p>
-                <p><strong>RUC:</strong> <span>20539249640</span></p>
-                <p><strong>Empresa:</strong> <span class="text-blue">SAT INDUSTRIALES</span></p>
+                <p><strong>RUC:</strong> <span>{{ $ruc_empresa }}</span></p>
+                <p><strong>Empresa:</strong> <span class="text-blue">{{ $empresa_nombre }}</span></p>
                 <p><strong>Cotizado Por:</strong> <span>{{ $cotizado_por }}</span></p>
             </div>
             <div class="q-info-column">
                 <p><strong>N° de Solicitud:</strong> <span class="box">{{ $n_solicitud }}</span></p>
                 <p><strong>Cliente:</strong> <span class="text-blue">{{ $cliente }}</span></p>
                 <p><strong>Jefe de Energía y SCI:</strong> <span class="box">{{ $jefe_energia }}</span></p>
-                <p><strong>Fecha de cotización:</strong> <span class="box pink"></span></p>
+                <p><strong>Fecha de cotización:</strong> <span class="box pink">{{ $fecha_cotizacion }}</span></p>
             </div>
             <div class="q-info-column">
                 <p><strong>Categoría:</strong> <span class="box">{{ $categoria }}</span></p>
                 <p><strong>CECO:</strong> <span class="box">{{ $ceco }}</span></p>
-                <p><strong>Fecha ejec:</strong> <span class="box pink"></span></p>
+                <p><strong>Fecha ejec:</strong> <span class="box pink">{{ $fecha_ejecucion }}</span></p>
                 <div class="total-box">
                     <strong>Total:</strong>
-                    <span class="currency">S/</span>
-                    <span class="amount">-</span>
+                    <div>
+                        <span class="currency">S/</span>
+                        <span class="amount">{{ $total_general }}</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -153,25 +155,34 @@
             </tr>
         </thead>
         <tbody>
-            @foreach ($items as $index => $item)
+            @forelse ($items as $item)
                 @if ($item['tipo'] == 'header')
                     <tr class="row-category">
-                        <td>{{ $item['numero'] }}</td>
-                        <td colspan="7"><strong>{{ $item['nombre'] }}</strong></td>
+                        <td>{{ $item['index'] }}</td>
+                        <td colspan="7"><strong>{{ $item['descripcion'] }}</strong></td>
                     </tr>
                 @else
                     <tr>
-                        <td></td>
-                        <td>{{ $item['linea'] }}</td>
+                        <td style="text-align: center;">{{ $item['index'] }}</td>
+                        <td style="text-align: center;">{{ $item['linea'] }}</td>
                         <td>{{ $item['descripcion'] }}</td>
                         <td>{{ $item['comentario'] }}</td>
-                        <td>{{ $item['unidad'] }}</td>
-                        <td>{{ $item['cantidad'] }}</td>
-                        <td>S/ {{ number_format($item['pu'], 2) }}</td>
-                        <td>S/ {{ number_format($item['subtotal'], 2) }}</td>
+                        <td style="text-align: center;">{{ $item['unidad'] }}</td>
+                        <td style="text-align: center;">{{ number_format($item['cantidad'], 0) }}</td>
+                        <td style="text-align: right;">S/ {{ number_format($item['pu'], 2) }}</td>
+                        <td style="text-align: right; font-weight: bold;">S/ {{ number_format($item['subtotal'], 2) }}
+                        </td>
                     </tr>
                 @endif
-            @endforeach
+            @empty
+                <tr>
+                    <td colspan="8" style="text-align: center;">No hay items registrados en esta cotización.</td>
+                </tr>
+            @endforelse
         </tbody>
     </table>
+
+    <div class="footer-note">
+        * Esta es una previsualización del documento oficial.
+    </div>
 </div>

@@ -146,7 +146,8 @@
                             </span>
                             <div class="min-w-0">
                                 <p class="text-xs text-gray-500 dark:text-gray-400">Cotizador</p>
-                                <p class="font-medium text-gray-900 truncate dark:text-white" x-text="quote.employee
+                                <p class="font-medium text-gray-900 truncate dark:text-white"
+                                    x-text="quote.employee
                                         ? ((quote.employee.first_name ? quote.employee.first_name : '') +
                                            (quote.employee.last_name ? ' ' + quote.employee.last_name : '') || 'Sin nombre')
                                         : 'No asignado'">
@@ -208,7 +209,7 @@
                 Anterior
             </button>
             <span class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300"
-                x-text="Página ${currentPage} de ${totalPages}"></span>
+                x-text="'Página ' + currentPage + ' de ' + totalPages"></span>
             <button @click="nextPage()" :disabled="currentPage === totalPages" class="px-4 py-2 border rounded-lg">
                 Siguiente
             </button>
@@ -238,18 +239,24 @@
                 },
                 async fetchQuotes() {
                     this.loading = true;
-                    // No reiniciar currentPage aquí para mantener la paginación
                     try {
+                        // CORRECCIÓN: Uso de backticks ` ` para la URL
                         const params = new URLSearchParams({
                             q: this.search,
                             status: this.filterStatus,
                             page: this.currentPage
                         });
-                        const response = await fetch(/quotes?${params});
+
+                        const response = await fetch(`/quotes?${params}`); // <--- Backticks aquí
                         const data = await response.json();
+
+                        // Laravel devuelve los datos en data.data
                         this.quotes = data.data || [];
-                        // Calcula totalPages basado en la cantidad de cotizaciones y perPage
-                        this.totalPages = Math.ceil((data.total || this.quotes.length) / this.perPage) || 1;
+
+                        // CORRECCIÓN: Si el backend ya pagina (paginate(15)),
+                        // usa el total que viene de Laravel
+                        this.totalPages = data.last_page || 1;
+
                         await this.fetchStatistics();
                     } catch (e) {
                         console.error('Error fetching quotes:', e);
@@ -258,6 +265,10 @@
                     this.loading = false;
                 },
 
+                async printQuote(quoteId) {
+                    // CORRECCIÓN: Backticks y formato de URL
+                    window.open(`/quotes/${quoteId}/pdf`, '_blank');
+                },
 
                 initPagination() {
                     this.fetchQuotes();
@@ -292,7 +303,8 @@
                         'ENVIADO': 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
                         'RECHAZADA': 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
                     };
-                    return classes[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-900/40 dark:text-gray-300';
+                    return classes[status] ||
+                        'bg-gray-100 text-gray-800 dark:bg-gray-900/40 dark:text-gray-300';
                 },
 
                 formatDate(date) {
@@ -311,9 +323,6 @@
                     });
                 },
 
-                async printQuote(quoteId) {
-                    window.open(/quotes/${ quoteId } / pdf, '_blank');
-                },
 
                 async fetchStatistics() {
                     try {

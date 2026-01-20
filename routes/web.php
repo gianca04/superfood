@@ -55,11 +55,6 @@ Route::prefix('request/{request}')->middleware('auth')->group(function () {
         ->name('request.consolidated-report.statistics');
 });
 
-//Cuotas:
-Route::prefix('quotes')->middleware('auth')->group(function () {
-    Route::get('/', [QuoteController::class, 'index']); // Listar cotizaciones
-});
-
 // Las rutas de Livewire y Filament se configuran automáticamente
 // a través del DashboardPanelProvider
 

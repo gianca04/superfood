@@ -140,29 +140,34 @@ class QuoteController extends Controller
      */
     public function preview(Quote $quote)
     {
-        // Carga relaciones necesarias
         $quote->load(['employee', 'subClient', 'quoteCategory', 'quoteDetails']);
-
-        // Prepara los datos para la vista
+        $ceco = $quote->subClient->ceco ?? $quote->ceco ?? '----------';
         return view('filament.resources.quote-resource.pages.preview', [
             'numero_cotizacion' => $quote->request_number,
-            'servicio' => $quote->quoteCategory->name ?? '',
-            'cotizado_por' => $quote->employee ? ($quote->employee->first_name . ' ' . $quote->employee->last_name) : '',
-            'n_solicitud' => $quote->request_number,
-            'cliente' => $quote->subClient->name ?? '',
-            'jefe_energia' => $quote->energy_sci_manager,
-            'categoria' => $quote->quoteCategory->name ?? '',
-            'ceco' => $quote->ceco,
-            'items' => $quote->quoteDetails->map(function ($item, $idx) {
+            // Priorizamos service_name si existe, sino usamos la categoría
+            'servicio'          => $quote->service_name ?? $quote->quoteCategory->name ?? 'Sin servicio',
+            'ruc_empresa'       => '20539249640', // Dato estático según tu diseño
+            'empresa_nombre'    => 'SAT INDUSTRIALES',
+            'cotizado_por'      => $quote->employee ? ($quote->employee->first_name . ' ' . $quote->employee->last_name) : 'No asignado',
+            'n_solicitud'       => $quote->request_number,
+            'cliente'           => $quote->subClient->name ?? 'Sin cliente',
+            'jefe_energia'      => $quote->energy_sci_manager ?? '-',
+            'fecha_cotizacion'  => $quote->quote_date ? $quote->quote_date->format('d/m/Y') : '-',
+            'categoria'         => $quote->quoteCategory->name ?? '-',
+            'ceco'    => $ceco,
+            'fecha_ejecucion'   => $quote->execution_date ? $quote->execution_date->format('d/m/Y') : '-',
+            'total_general'     => number_format($quote->total_amount, 2),
+            'items'             => $quote->quoteDetails->map(function ($item, $idx) {
                 return [
-                    'tipo' => 'item',
-                    'linea' => $item->linea ?? '',
-                    'descripcion' => $item->descripcion ?? '',
-                    'comentario' => $item->comentario ?? '',
-                    'unidad' => $item->unidad ?? '',
-                    'cantidad' => $item->quantity ?? '',
-                    'pu' => $item->unit_price ?? '',
-                    'subtotal' => ($item->quantity ?? 0) * ($item->unit_price ?? 0),
+                    'tipo'        => 'item',
+                    'index'       => $idx + 1,
+                    'linea'       => $item->line ?? '-',
+                    'descripcion' => $item->description,
+                    'comentario'  => $item->comment,
+                    'unidad'      => $item->unit_type ?? 'UND',
+                    'cantidad'    => $item->quantity,
+                    'pu'          => $item->unit_price,
+                    'subtotal'    => $item->subtotal,
                 ];
             }),
         ]);

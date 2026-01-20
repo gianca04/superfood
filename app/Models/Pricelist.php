@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Pricelist extends Model
 {
@@ -36,5 +37,9 @@ class Pricelist extends Model
     public function priceType(): BelongsTo
     {
         return $this->belongsTo(PriceType::class);
+    }
+    public function quoteDetails(): HasMany
+    {
+        return $this->hasMany(QuoteDetail::class);
     }
 }
