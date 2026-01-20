@@ -18,7 +18,9 @@ class EditQuote extends Page
 
     protected static ?string $title = 'Editar Cotización';
 
-    public Quote $record;
+    public $record = null;
+
+    private Quote $quoteRecord;
 
     // Datos pasados a la vista desde PHP
     public Collection $quoteCategories;
@@ -27,8 +29,16 @@ class EditQuote extends Page
 
     public function mount(int | string $record): void
     {
-        $this->record = Quote::findOrFail($record);
-        
+        \Illuminate\Support\Facades\Log::info('EditQuote mount reached for record: ' . $record);
+        // dd('EditQuote mount reached', $record);
+        $this->quoteRecord = Quote::with([
+            'subClient',
+            'quoteDetails.pricelist.unit',
+            'quoteDetails.pricelist.priceType'
+        ])->findOrFail($record);
+
+        $this->record = $this->quoteRecord->toArray();
+
         // Cargar datos desde los modelos PHP directamente
         $this->quoteCategories = QuoteCategory::select('id', 'name')->orderBy('name')->get();
         $this->clients = Client::select('id', 'business_name', 'document_number')
@@ -39,6 +49,6 @@ class EditQuote extends Page
 
     public function getTitle(): string
     {
-        return 'Editar Cotización #' . $this->record->id;
+        return 'Editar Cotización #' . $this->quoteRecord->id;
     }
 }

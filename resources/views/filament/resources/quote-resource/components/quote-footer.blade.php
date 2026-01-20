@@ -1,8 +1,7 @@
 {{-- Quote Footer Component --}}
 {{-- Usage: @include('filament.resources.quote-resource.components.quote-footer') --}}
 
-<div
-    class="sticky bottom-0 z-40 px-4 py-2 border-t border-gray-200 bg-white dark:bg-gray-800 dark:border-gray-700 shadow-lg">
+<div class="sticky bottom-0 z-40 px-4 py-2 border-t border-gray-200 bg-white dark:bg-gray-800 dark:border-gray-700">
     <div class="flex items-center justify-between">
         {{-- Status --}}
         <div class="flex items-center gap-2">

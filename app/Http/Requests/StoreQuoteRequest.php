@@ -33,12 +33,20 @@ class StoreQuoteRequest extends FormRequest
             'quote_category_id' => 'nullable|exists:quote_categories,id',
             'energy_sci_manager' => 'nullable|string|max:255',
             'ceco' => 'nullable|string|max:255',
-            'service_name' => 'nullable|string|max:255',
+            'service_name' => 'required|string|max:255', // Changed to required as per logic
             'client_name' => 'nullable|string|max:255',
             'sub_client_name' => 'nullable|string|max:255',
             'quote_date' => 'nullable|date',
             'execution_date' => 'nullable|date',
-            // status se establece automáticamente como 'POR HACER'
+            'status' => 'nullable|string|in:POR HACER,ENVIADO,APROBADO,RECHAZADA',
+            'items' => 'required|array|min:1', // Enforce at least one item
+            'items.*.pricelist_id' => 'required|exists:pricelists,id',
+            'items.*.budget_code' => 'nullable|string|max:50',
+            'items.*.description' => 'nullable|string', // Description can be optional if derived from pricelist? Let's keep nullable or required? Test sends it.
+            'items.*.quantity' => 'required|numeric|min:0.01',
+            'items.*.unit_price' => 'required|numeric|min:0',
+            'items.*.item_type' => 'required|string',
+            'items.*.comment' => 'nullable|string',
         ];
     }
 

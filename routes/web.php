@@ -67,12 +67,21 @@ Livewire::setScriptRoute(function ($handle) {
     return Route::get('/superfood/public/livewire/livewire.js', $handle);
 });
 
+// Ruta pública para estadísticas de cotizaciones
+Route::get('/quotes/stats', [QuoteController::class, 'getStatistics']);
+
+// Rutas de cotizaciones (requieren autenticación)
 Route::prefix('quotes')->middleware('auth')->group(function () {
     Route::get('/', [QuoteController::class, 'index']); // Listar cotizaciones
-    Route::get('/stats', [QuoteController::class, 'getStatistics']); // Estadísticas de cotizaciones
-    Route::get('/{quote}/preview', [QuoteController::class, 'preview'])->name('quotes.preview'); // Vista previa
+    Route::post('/', [QuoteController::class, 'store']); // Crear cotización
+    Route::get('/{quote}', [QuoteController::class, 'show']); // Ver cotización (API)
+    Route::put('/{quote}', [QuoteController::class, 'update']); // Actualizar cotización
+    Route::delete('/{quote}', [QuoteController::class, 'destroy']); // Eliminar cotización
+    Route::get('/{quote}/preview', [QuoteController::class, 'preview'])->name('quotes.preview');
     Route::get('/{quote}/pdf', [QuoteExportController::class, 'exportPdf'])->name('quotes.pdf');
+    Route::get('/{quote}/excel', [QuoteExportController::class, 'exportExcel'])->name('quotes.excel');
 });
+
 
 Livewire::setUpdateRoute(function ($handle) {
     return Route::post('/superfood/public/livewire/update', $handle);

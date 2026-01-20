@@ -27,7 +27,7 @@ class CreateQuote extends Page
     public function mount(): void
     {
         $this->record = null;
-        
+
         // Cargar datos desde los modelos PHP directamente
         $this->quoteCategories = QuoteCategory::select('id', 'name')->orderBy('name')->get();
         $this->clients = Client::select('id', 'business_name', 'document_number')

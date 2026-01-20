@@ -33,9 +33,16 @@ class UpdateQuoteRequest extends FormRequest
             'quote_category_id' => 'sometimes|nullable|exists:quote_categories,id',
             'energy_sci_manager' => 'sometimes|nullable|string|max:255',
             'ceco' => 'sometimes|nullable|string|max:255',
+            'service_name' => 'sometimes|required|string|max:255',
             'status' => 'sometimes|required|string|in:POR HACER,ENVIADO,APROBADO,RECHAZADA',
             'quote_date' => 'sometimes|nullable|date',
             'execution_date' => 'sometimes|nullable|date|after_or_equal:quote_date',
+            'items' => 'sometimes|required|array|min:1',
+            'items.*.pricelist_id' => 'required|exists:pricelists,id',
+            'items.*.quantity' => 'required|numeric|min:0.01',
+            'items.*.unit_price' => 'required|numeric|min:0',
+            'items.*.item_type' => 'required|string',
+            'items.*.comment' => 'nullable|string',
         ];
     }
 

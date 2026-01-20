@@ -155,9 +155,9 @@ class Quote extends Model
      */
     public function getTotalAmountAttribute(): float
     {
-        // Sumamos el producto de quantity * unit_price de cada detalle
+        // Suma el subtotal de cada detalle (más preciso si hay descuentos o cálculos especiales)
         return (float) $this->details->sum(function ($detail) {
-            return $detail->quantity * $detail->unit_price;
+            return $detail->subtotal ?? ($detail->quantity * $detail->unit_price);
         });
     }
 

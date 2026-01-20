@@ -67,7 +67,7 @@
                 </span>
                 <input type="text" x-model="search" @input.debounce.500ms="fetchQuotes()"
                     class="block w-full py-2 pl-10 pr-4 border border-gray-300 rounded-lg quote-search-input dark:bg-gray-800 dark:border-gray-700"
-                    placeholder="Buscar por número, cliente o empleado...">
+                    placeholder="Buscar por número, cliente, cotizador o servicio...">
             </div>
 
             <select x-model="filterStatus" @change="fetchQuotes()"
@@ -78,6 +78,26 @@
                 <option value="APROBADO">Aprobado</option>
                 <option value="RECHAZADA">Rechazada</option>
             </select>
+
+            {{-- Select para filtrar por cotizador --}}
+            <select x-model="filterEmployeeId" @change="fetchQuotes()"
+                class="px-4 py-2 border border-gray-300 rounded-lg quote-select-filter dark:bg-gray-800 dark:border-gray-700">
+                <option value="">Todos los cotizadores</option>
+                <template x-for="emp in stats.employees" :key="emp.id">
+                    <option :value="emp.id" x-text="emp.fullname"></option>
+                </template>
+            </select>
+
+            {{-- Filtro por rango de precios --}}
+            <div class="flex items-center gap-2">
+                <input type="number" x-model.number="filterMinTotal" @input.debounce.500ms="fetchQuotes()"
+                    class="w-24 px-2 py-2 border border-gray-300 rounded-lg dark:bg-gray-800 dark:border-gray-700"
+                    placeholder="Mín S/" min="0">
+                <span class="text-gray-500">-</span>
+                <input type="number" x-model.number="filterMaxTotal" @input.debounce.500ms="fetchQuotes()"
+                    class="w-24 px-2 py-2 border border-gray-300 rounded-lg dark:bg-gray-800 dark:border-gray-700"
+                    placeholder="Máx S/" min="0">
+            </div>
         </div>
 
         {{-- Grid de Cards --}}
@@ -171,18 +191,24 @@
 
                     {{-- Footer con Acciones --}}
                     <div
-                        class="flex gap-2 p-3 border-t border-gray-100 bg-gray-50 dark:bg-gray-900/50 dark:border-gray-700">
-                        <a :href="'/admin/quotes/' + quote.id + '/edit'"
+                        class="flex flex-wrap gap-2 p-3 border-t border-gray-100 bg-gray-50 dark:bg-gray-900/50 dark:border-gray-700">
+                        <a :href="'/dashboard/quotes/' + quote.id + '/edit'"
                             class="flex-1 px-3 py-2 text-xs font-semibold text-center text-gray-700 bg-white border border-gray-300 rounded-lg quote-btn-edit dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300">
                             <span class="inline text-sm material-symbols-outlined">edit</span>
                             Editar
                         </a>
-                        <button @click="printQuote(quote.id)"
-                            class="flex-1 px-3 py-2 text-xs font-semibold text-white bg-blue-600 rounded-lg quote-btn-pdf hover:bg-blue-500">
-                            <span class="inline text-sm material-symbols-outlined">download</span>
-                            {{-- Cambié el icono --}}
+                        <a :href="'/quotes/' + quote.id + '/pdf'"
+                            class="flex-1 px-3 py-2 text-xs font-semibold text-center text-white bg-blue-600 rounded-lg quote-btn-pdf hover:bg-blue-500"
+                            target="_blank">
+                            <span class="inline text-sm material-symbols-outlined">picture_as_pdf</span>
                             Descargar PDF
-                        </button>
+                        </a>
+                        <a :href="'/quotes/' + quote.id + '/excel'"
+                            class="flex-1 px-3 py-2 text-xs font-semibold text-center text-white bg-green-700 rounded-lg hover:bg-green-600"
+                            target="_blank">
+                            <span class="inline text-sm material-symbols-outlined">grid_on</span>
+                            Descargar Excel
+                        </a>
                         <a :href="'/quotes/' + quote.id + '/preview'" target="_blank"
                             class="flex-1 px-3 py-2 text-xs font-semibold text-center text-white bg-green-600 rounded-lg hover:bg-green-500">
                             <span class="inline text-sm material-symbols-outlined">visibility</span>
@@ -224,6 +250,10 @@
                 loading: false,
                 search: '',
                 filterStatus: '',
+                filterEmployeeId: '',
+                filterMinTotal: null,
+                filterMaxTotal: null,
+                filterCategoryId: '',
                 currentPage: 1,
                 totalPages: 1,
                 stats: {
@@ -231,6 +261,8 @@
                     total_amount: 0,
                     approved: 0,
                     pending: 0,
+                    employees: [],
+                    categories: [],
                 },
                 perPage: 12,
                 get paginatedQuotes() {
@@ -241,21 +273,24 @@
                 async fetchQuotes() {
                     this.loading = true;
                     try {
-                        // CORRECCIÓN: Uso de backticks ` ` para la URL
                         const params = new URLSearchParams({
                             q: this.search,
                             status: this.filterStatus,
                             page: this.currentPage
                         });
-
-                        const response = await fetch(`/quotes?${params}`); // <--- Backticks aquí
+                        if (this.filterEmployeeId) {
+                            params.append('employee_id', this.filterEmployeeId);
+                        }
+                        if (this.filterMinTotal !== null && this.filterMinTotal !== '') {
+                            params.append('min_total', this.filterMinTotal);
+                        }
+                        if (this.filterMaxTotal !== null && this.filterMaxTotal !== '') {
+                            params.append('max_total', this.filterMaxTotal);
+                        }
+                        const response = await fetch(`/quotes?${params}`);
                         const data = await response.json();
 
-                        // Laravel devuelve los datos en data.data
                         this.quotes = data.data || [];
-
-                        // CORRECCIÓN: Si el backend ya pagina (paginate(15)),
-                        // usa el total que viene de Laravel
                         this.totalPages = data.last_page || 1;
 
                         await this.fetchStatistics();

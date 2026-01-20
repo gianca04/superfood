@@ -7,6 +7,7 @@ use App\Http\Requests\StoreQuoteRequest;
 use App\Http\Requests\UpdateQuoteRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Controlador para manejar las operaciones CRUD de cotizaciones (Quotes).
@@ -36,11 +37,27 @@ class QuoteController extends Controller
             $query->where('quote_category_id', $request->category);
         }
 
+        // Filtro por rango de precios (total_amount)
+        if ($request->filled('min_total')) {
+            $query->whereHas('quoteDetails', function ($q) use ($request) {
+                $q->selectRaw('quote_id, SUM(COALESCE(subtotal, quantity * unit_price)) as total')
+                    ->groupBy('quote_id')
+                    ->havingRaw('SUM(COALESCE(subtotal, quantity * unit_price)) >= ?', [$request->min_total]);
+            });
+        }
+        if ($request->filled('max_total')) {
+            $query->whereHas('quoteDetails', function ($q) use ($request) {
+                $q->selectRaw('quote_id, SUM(COALESCE(subtotal, quantity * unit_price)) as total')
+                    ->groupBy('quote_id')
+                    ->havingRaw('SUM(COALESCE(subtotal, quantity * unit_price)) <= ?', [$request->max_total]);
+            });
+        }
+
         $quotes = $query->latest()->paginate(15);
 
         $quotes->getCollection()->transform(function ($quote) {
             $quote->total_amount = (float) $quote->quoteDetails->sum(function ($detail) {
-                return $detail->quantity * $detail->unit_price;
+                return $detail->subtotal ?? ($detail->quantity * $detail->unit_price);
             });
             return $quote;
         });
@@ -56,9 +73,69 @@ class QuoteController extends Controller
      */
     public function store(StoreQuoteRequest $request): JsonResponse
     {
-        $quote = Quote::create($request->validated());
+        // 1. Obtener datos validados
+        $validated = $request->validated();
 
-        return response()->json($quote->load(['employee', 'subClient', 'quoteCategory']), 201);
+        try {
+            return \Illuminate\Support\Facades\DB::transaction(function () use ($validated, $request) {
+                // 2. Crear la Cotización
+                // Aseguramos que el status sea 'POR HACER' si no se envía
+                $validated['status'] = $validated['status'] ?? 'POR HACER';
+
+                // Asignar el employee_id del usuario autenticado
+                if (Auth::check() && Auth::user()->employee) {
+                    $validated['employee_id'] = Auth::user()->employee->id;
+                }
+
+                // Generar request_number automáticamente: COT-YYYY-XXXX
+                $year = date('Y');
+                $lastQuote = Quote::whereYear('created_at', $year)
+                    ->whereNotNull('request_number')
+                    ->orderByDesc('id')
+                    ->first();
+
+                if ($lastQuote && preg_match('/COT-' . $year . '-(\d+)/', $lastQuote->request_number, $matches)) {
+                    $nextNumber = (int) $matches[1] + 1;
+                } else {
+                    $nextNumber = 1;
+                }
+
+                $validated['request_number'] = sprintf('COT-%s-%04d', $year, $nextNumber);
+
+                $quote = Quote::create($validated);
+
+                // 3. Procesar los detalles (items)
+                $items = $request->input('items', []);
+
+                foreach ($items as $item) {
+                    // Cálculo backend del subtotal
+                    $quantity = (float) $item['quantity'];
+                    $unitPrice = (float) $item['unit_price'];
+                    $subtotal = round($quantity * $unitPrice, 2);
+
+                    $quote->details()->create([
+                        'pricelist_id' => $item['pricelist_id'],
+                        'item_type' => $item['item_type'],
+                        'quantity' => $quantity,
+                        'unit_price' => $unitPrice,
+                        //'subtotal' => $subtotal, // El modelo o la base de datos pueden no tener columna subtotal si es calculado, pero el modelo QuoteDetail tiene append.
+                        // Verificamos QuoteDetail: fillable tiene 'subtotal', así que lo guardamos explícitamente si la tabla lo soporta.
+                        // Si la columna existe en BD, guardamos. Si es solo append, no hace falta.
+                        // Asumiremos que se guarda para persistencia histórica.
+                        'subtotal' => $subtotal,
+                        // 'budget_code' and 'description' removed as they don't exist in DB
+                        'comment' => $item['comment'] ?? null,
+                    ]);
+                }
+
+                return response()->json($quote->load(['employee', 'subClient', 'quoteCategory', 'details']), 201);
+            });
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al guardar la cotización',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -81,9 +158,53 @@ class QuoteController extends Controller
      */
     public function update(UpdateQuoteRequest $request, Quote $quote): JsonResponse
     {
-        $quote->update($request->validated());
+        $validated = $request->validated();
 
-        return response()->json($quote->load(['employee', 'subClient', 'quoteCategory']));
+        try {
+            return \Illuminate\Support\Facades\DB::transaction(function () use ($validated, $request, $quote) {
+                // Si no se envía employee_id, mantener el original o asignar el del usuario autenticado
+                if (!isset($validated['employee_id']) || $validated['employee_id'] === null) {
+                    if ($quote->employee_id) {
+                        $validated['employee_id'] = $quote->employee_id;
+                    } elseif (Auth::check() && Auth::user()->employee) {
+                        $validated['employee_id'] = Auth::user()->employee->id;
+                    }
+                }
+
+                // Actualizar la cotización
+                $quote->update($validated);
+
+                // Si se envían items, actualizar los detalles
+                if ($request->has('items')) {
+                    // Eliminar detalles existentes
+                    $quote->details()->delete();
+
+                    // Crear nuevos detalles
+                    $items = $request->input('items', []);
+                    foreach ($items as $item) {
+                        $quantity = (float) $item['quantity'];
+                        $unitPrice = (float) $item['unit_price'];
+                        $subtotal = round($quantity * $unitPrice, 2);
+
+                        $quote->details()->create([
+                            'pricelist_id' => $item['pricelist_id'],
+                            'item_type' => $item['item_type'],
+                            'quantity' => $quantity,
+                            'unit_price' => $unitPrice,
+                            'subtotal' => $subtotal,
+                            'comment' => $item['comment'] ?? null,
+                        ]);
+                    }
+                }
+
+                return response()->json($quote->load(['employee', 'subClient', 'quoteCategory', 'details']));
+            });
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al actualizar la cotización',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -115,7 +236,14 @@ class QuoteController extends Controller
         $approved = $quotes->where('status', 'APROBADO')->count();
         $pending = $quotes->where('status', 'POR HACER')->count();
 
-        // Empleado más frecuente (a cargo)
+        // Cotizadores únicos para el filtro
+        $employees = $quotes->pluck('employee')->filter()->unique('id')->map(function ($emp) {
+            return [
+                'id' => $emp->id,
+                'fullname' => trim(($emp->first_name ?? '') . ' ' . ($emp->last_name ?? '')),
+            ];
+        })->values();
+
         $mostEmployee = $quotes->groupBy('employee_id')->sortByDesc(function ($group) {
             return $group->count();
         })->first();
@@ -129,6 +257,7 @@ class QuoteController extends Controller
             'approved' => $approved,
             'pending' => $pending,
             'employee_fullname' => $employee_fullname,
+            'employees' => $employees,
         ]);
     }
 
@@ -149,8 +278,7 @@ class QuoteController extends Controller
         $ceco = $quote->subClient->ceco ?? $quote->ceco ?? '----------';
         // 1. Agrupamos los detalles por el tipo de ítem
         $groupedDetails = $quote->quoteDetails->groupBy('item_type');
-
-        // 2. Definimos el orden deseado y las etiquetas
+        $formattedId = str_pad($quote->id, 5, '0', STR_PAD_LEFT);
         $sections = [
             'VIATICOS'   => 'VIATICOS',
             'SUMINISTRO' => 'SUMINISTRO',
@@ -185,6 +313,8 @@ class QuoteController extends Controller
             }
         }
         return view('filament.resources.quote-resource.pages.preview', [
+            'original_id'       => $quote->id,
+            'quote_id'          => $formattedId,
             'numero_cotizacion' => $quote->request_number,
             'servicio'          => $quote->service_name ?? $quote->quoteCategory->name ?? 'Sin servicio',
             'ruc_empresa'       => '20539249640',
@@ -199,6 +329,7 @@ class QuoteController extends Controller
             'fecha_ejecucion'   => $quote->execution_date ? $quote->execution_date->format('d/m/Y') : '-',
             'total_general'     => number_format($quote->total_amount, 2),
             'items'             => $itemsData,
+            'categories'   => \App\Models\QuoteCategory::select('id', 'name')->get(),
         ]);
     }
 }
