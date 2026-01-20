@@ -6,6 +6,7 @@ use App\Http\Controllers\VisitReportPdfController;
 use App\Http\Controllers\WorkReportExcelController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EvidenceReportController;
+use App\Http\Controllers\QuoteExportController;
 use App\Http\Controllers\WorkReportConsolidatedController;
 use Illuminate\Support\Facades\Artisan;
 use Livewire\Livewire;
@@ -66,11 +67,11 @@ Livewire::setScriptRoute(function ($handle) {
     return Route::get('/superfood/public/livewire/livewire.js', $handle);
 });
 
-
 Route::prefix('quotes')->middleware('auth')->group(function () {
     Route::get('/', [QuoteController::class, 'index']); // Listar cotizaciones
     Route::get('/stats', [QuoteController::class, 'getStatistics']); // Estadísticas de cotizaciones
     Route::get('/{quote}/preview', [QuoteController::class, 'preview'])->name('quotes.preview'); // Vista previa
+    Route::get('/{quote}/pdf', [QuoteExportController::class, 'exportPdf'])->name('quotes.pdf');
 });
 
 Livewire::setUpdateRoute(function ($handle) {

@@ -179,8 +179,9 @@
                         </a>
                         <button @click="printQuote(quote.id)"
                             class="flex-1 px-3 py-2 text-xs font-semibold text-white bg-blue-600 rounded-lg quote-btn-pdf hover:bg-blue-500">
-                            <span class="inline text-sm material-symbols-outlined">picture_as_pdf</span>
-                            PDF
+                            <span class="inline text-sm material-symbols-outlined">download</span>
+                            {{-- Cambié el icono --}}
+                            Descargar PDF
                         </button>
                         <a :href="'/quotes/' + quote.id + '/preview'" target="_blank"
                             class="flex-1 px-3 py-2 text-xs font-semibold text-center text-white bg-green-600 rounded-lg hover:bg-green-500">
@@ -266,7 +267,7 @@
                 },
 
                 async printQuote(quoteId) {
-                    // CORRECCIÓN: Backticks y formato de URL
+                    // Al usar 'D' en el controlador mPDF, el navegador iniciará la descarga automáticamente
                     window.open(`/quotes/${quoteId}/pdf`, '_blank');
                 },
 

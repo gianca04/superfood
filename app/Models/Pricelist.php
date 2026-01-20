@@ -21,8 +21,6 @@ class Pricelist extends Model
         'price_type_id',
     ];
 
-
-
     /**
      * Get the unit that owns the pricelist.
      */

@@ -1,57 +1,55 @@
 <style>
-    :root {
-        --primary-green: #28a745;
-        --soft-green: #e9f5ec;
-        --border-color: #dee2e6;
-        --text-blue: #0056b3;
-    }
-
+    /* 1. Colores fijos (mPDF no soporta :root o var) */
     .quotation-container {
-        font-family: 'Segoe UI', Arial, sans-serif;
-        padding: 20px;
-        color: #333;
-        max-width: 1200px;
-        margin: auto;
+        font-family: Arial, sans-serif;
+        padding: 10px;
+        color: #333333;
+        width: 100%;
     }
 
-    /* Encabezado */
+    /* 2. Encabezado Principal */
     .q-title-section {
-        background-color: var(--primary-green);
-        color: white;
+        background-color: #28a745;
+        color: #ffffff;
+        width: 100%;
+    }
+
+    .q-title-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .q-title-table td {
         padding: 10px 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-radius: 4px 4px 0 0;
+        color: #ffffff;
+        font-weight: bold;
     }
 
-    .q-title-section h1 {
-        margin: 0;
-        font-size: 1.2rem;
+    /* 3. Grid de Información (Convertido a Tabla para PDF) */
+    .q-info-table {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: #fdfdfd;
+        border: 1px solid #dee2e6;
     }
 
-    .q-info-grid {
-        display: grid;
-        grid-template-columns: 1.5fr 1fr 1fr;
-        gap: 20px;
-        padding: 15px;
-        background: #fdfdfd;
-        border: 1px solid var(--border-color);
-    }
-
-    .q-info-column p {
-        margin: 5px 0;
+    .q-info-table td {
+        width: 33.3%;
+        /* Dividimos en 3 columnas iguales */
+        padding: 10px;
+        vertical-align: top;
         font-size: 0.85rem;
-        display: flex;
-        justify-content: space-between;
+    }
+
+    .q-info-table p {
+        margin: 4px 0;
     }
 
     .box {
-        border: 1px solid #ccc;
-        min-width: 100px;
+        border: 1px solid #cccccc;
         padding: 2px 5px;
+        background-color: #ffffff;
         display: inline-block;
-        background: white;
     }
 
     .pink {
@@ -59,88 +57,91 @@
     }
 
     .text-blue {
-        color: var(--text-blue);
+        color: #0056b3;
         font-weight: bold;
     }
 
-    /* Total */
+    /* 4. Caja de Total */
     .total-box {
         background-color: #fff200;
-        border: 2px solid #000;
-        padding: 10px;
-        display: flex;
-        justify-content: space-between;
+        border: 2px solid #000000;
+        padding: 8px;
         margin-top: 10px;
         font-weight: bold;
+        text-align: center;
     }
 
-    /* Tabla */
+    /* 5. Tabla de Items */
     .q-table {
         width: 100%;
         border-collapse: collapse;
-        margin-top: 20px;
-        font-size: 0.8rem;
+        margin-top: 15px;
     }
 
     .q-table th {
-        background-color: var(--primary-green);
-        color: white;
+        background-color: #28a745;
+        color: #ffffff;
         padding: 8px;
-        border: 1px solid #fff;
+        font-size: 0.8rem;
+        border: 1px solid #ffffff;
     }
 
     .q-table td {
         padding: 6px;
-        border: 1px solid var(--border-color);
+        border: 1px solid #dee2e6;
+        font-size: 0.75rem;
     }
 
     .row-category {
-        background-color: var(--soft-green);
+        background-color: #e9f5ec;
         text-transform: uppercase;
-    }
-
-    .footer-note {
-        color: red;
-        font-size: 0.75rem;
-        margin-top: 5px;
-        font-style: italic;
+        font-weight: bold;
     }
 </style>
 <div class="quotation-container">
-    <header class="q-header">
-        <div class="q-title-section">
-            <h1>COTIZACIÓN DE SERVICIOS</h1>
-            <span class="q-number">N° {{ $numero_cotizacion }}</span>
-        </div>
+    {{-- Encabezado --}}
+    <div class="q-title-section">
+        <table class="q-title-table">
+            <tr>
+                <td align="left">
+                    <h1>COTIZACIÓN DE SERVICIOS</h1>
+                </td>
+                <td align="right" style="font-size: 1.2rem;">N° {{ $numero_cotizacion }}</td>
+            </tr>
+        </table>
+    </div>
 
-        <div class="q-info-grid">
-            <div class="q-info-column">
+    {{-- Info Grid (Layout de 3 columnas usando tabla) --}}
+    <table class="q-info-table">
+        <tr>
+            {{-- Columna 1 --}}
+            <td>
                 <p><strong>Servicio:</strong> <span>{{ $servicio }}</span></p>
                 <p><strong>RUC:</strong> <span>{{ $ruc_empresa }}</span></p>
                 <p><strong>Empresa:</strong> <span class="text-blue">{{ $empresa_nombre }}</span></p>
                 <p><strong>Cotizado Por:</strong> <span>{{ $cotizado_por }}</span></p>
-            </div>
-            <div class="q-info-column">
+            </td>
+            {{-- Columna 2 --}}
+            <td>
                 <p><strong>N° de Solicitud:</strong> <span class="box">{{ $n_solicitud }}</span></p>
                 <p><strong>Cliente:</strong> <span class="text-blue">{{ $cliente }}</span></p>
                 <p><strong>Jefe de Energía y SCI:</strong> <span class="box">{{ $jefe_energia }}</span></p>
                 <p><strong>Fecha de cotización:</strong> <span class="box pink">{{ $fecha_cotizacion }}</span></p>
-            </div>
-            <div class="q-info-column">
+            </td>
+            {{-- Columna 3 --}}
+            <td>
                 <p><strong>Categoría:</strong> <span class="box">{{ $categoria }}</span></p>
                 <p><strong>CECO:</strong> <span class="box">{{ $ceco }}</span></p>
                 <p><strong>Fecha ejec:</strong> <span class="box pink">{{ $fecha_ejecucion }}</span></p>
-                <div class="total-box">
-                    <strong>Total:</strong>
-                    <div>
-                        <span class="currency">S/</span>
-                        <span class="amount">{{ $total_general }}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
 
+                <div class="total-box">
+                    <span>TOTAL: S/ {{ $total_general }}</span>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    {{-- Tabla de Items --}}
     <table class="q-table">
         <thead>
             <tr>
@@ -155,34 +156,25 @@
             </tr>
         </thead>
         <tbody>
-            @forelse ($items as $item)
+            @foreach ($items as $item)
                 @if ($item['tipo'] == 'header')
                     <tr class="row-category">
-                        <td>{{ $item['index'] }}</td>
-                        <td colspan="7"><strong>{{ $item['descripcion'] }}</strong></td>
+                        <td align="center">{{ $item['numero'] }}</td>
+                        <td colspan="7" align="center">{{ $item['nombre'] }}</td>
                     </tr>
                 @else
                     <tr>
-                        <td style="text-align: center;">{{ $item['index'] }}</td>
-                        <td style="text-align: center;">{{ $item['linea'] }}</td>
+                        <td></td>
+                        <td align="center">{{ $item['linea'] }}</td>
                         <td>{{ $item['descripcion'] }}</td>
                         <td>{{ $item['comentario'] }}</td>
-                        <td style="text-align: center;">{{ $item['unidad'] }}</td>
-                        <td style="text-align: center;">{{ number_format($item['cantidad'], 0) }}</td>
-                        <td style="text-align: right;">S/ {{ number_format($item['pu'], 2) }}</td>
-                        <td style="text-align: right; font-weight: bold;">S/ {{ number_format($item['subtotal'], 2) }}
-                        </td>
+                        <td align="center">{{ $item['unidad'] }}</td>
+                        <td align="center">{{ number_format($item['cantidad'], 0) }}</td>
+                        <td align="right">{{ number_format($item['pu'], 2) }}</td>
+                        <td align="right">{{ number_format($item['subtotal'], 2) }}</td>
                     </tr>
                 @endif
-            @empty
-                <tr>
-                    <td colspan="8" style="text-align: center;">No hay items registrados en esta cotización.</td>
-                </tr>
-            @endforelse
+            @endforeach
         </tbody>
     </table>
-
-    <div class="footer-note">
-        * Esta es una previsualización del documento oficial.
-    </div>
 </div>

@@ -140,13 +140,54 @@ class QuoteController extends Controller
      */
     public function preview(Quote $quote)
     {
-        $quote->load(['employee', 'subClient', 'quoteCategory', 'quoteDetails']);
+        $quote->load([
+            'employee',
+            'subClient',
+            'quoteCategory',
+            'quoteDetails.pricelist.unit'
+        ]);
         $ceco = $quote->subClient->ceco ?? $quote->ceco ?? '----------';
+        // 1. Agrupamos los detalles por el tipo de ítem
+        $groupedDetails = $quote->quoteDetails->groupBy('item_type');
+
+        // 2. Definimos el orden deseado y las etiquetas
+        $sections = [
+            'VIATICOS'   => 'VIATICOS',
+            'SUMINISTRO' => 'SUMINISTRO',
+            'MANO DE OBRA' => 'MANO DE OBRA',
+            'SERVICIO'   => 'SERVICIO'
+        ];
+        $itemsData = collect();
+        $sectionIndex = 1;
+
+        foreach ($sections as $type => $label) {
+            if ($groupedDetails->has($type)) {
+                // Añadimos fila de encabezado de sección
+                $itemsData->push([
+                    'tipo' => 'header',
+                    'numero' => $sectionIndex++,
+                    'nombre' => $label
+                ]);
+
+                // Añadimos los ítems de esta sección
+                foreach ($groupedDetails->get($type) as $detail) {
+                    $itemsData->push([
+                        'tipo'        => 'item',
+                        'linea'       => $detail->pricelist->sat_line ?? '-',
+                        'descripcion' => $detail->pricelist->sat_description ?? 'Sin descripción',
+                        'comentario'  => $detail->comment ?? '-',
+                        'unidad'      => $detail->pricelist->unit->name ?? 'UND',
+                        'cantidad'    => $detail->quantity,
+                        'pu'          => $detail->unit_price,
+                        'subtotal'    => $detail->subtotal,
+                    ]);
+                }
+            }
+        }
         return view('filament.resources.quote-resource.pages.preview', [
             'numero_cotizacion' => $quote->request_number,
-            // Priorizamos service_name si existe, sino usamos la categoría
             'servicio'          => $quote->service_name ?? $quote->quoteCategory->name ?? 'Sin servicio',
-            'ruc_empresa'       => '20539249640', // Dato estático según tu diseño
+            'ruc_empresa'       => '20539249640',
             'empresa_nombre'    => 'SAT INDUSTRIALES',
             'cotizado_por'      => $quote->employee ? ($quote->employee->first_name . ' ' . $quote->employee->last_name) : 'No asignado',
             'n_solicitud'       => $quote->request_number,
@@ -154,22 +195,10 @@ class QuoteController extends Controller
             'jefe_energia'      => $quote->energy_sci_manager ?? '-',
             'fecha_cotizacion'  => $quote->quote_date ? $quote->quote_date->format('d/m/Y') : '-',
             'categoria'         => $quote->quoteCategory->name ?? '-',
-            'ceco'    => $ceco,
+            'ceco'              => $ceco,
             'fecha_ejecucion'   => $quote->execution_date ? $quote->execution_date->format('d/m/Y') : '-',
             'total_general'     => number_format($quote->total_amount, 2),
-            'items'             => $quote->quoteDetails->map(function ($item, $idx) {
-                return [
-                    'tipo'        => 'item',
-                    'index'       => $idx + 1,
-                    'linea'       => $item->line ?? '-',
-                    'descripcion' => $item->description,
-                    'comentario'  => $item->comment,
-                    'unidad'      => $item->unit_type ?? 'UND',
-                    'cantidad'    => $item->quantity,
-                    'pu'          => $item->unit_price,
-                    'subtotal'    => $item->subtotal,
-                ];
-            }),
+            'items'             => $itemsData,
         ]);
     }
 }
