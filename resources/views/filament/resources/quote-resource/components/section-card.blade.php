@@ -4,78 +4,89 @@
 
 <div class="card-section">
     {{-- Header --}}
-    <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-700">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl flex items-center justify-center" :class="section.bgClass">
-                <span class="material-symbols-outlined text-xl" :class="section.iconClass" x-text="section.icon"></span>
-            </div>
-            <div>
-                <h3 class="font-bold text-gray-800 dark:text-white" x-text="section.title"></h3>
-                <p class="text-xs text-gray-400" x-text="section.subtitle"></p>
-            </div>
+    <div class="flex items-center justify-between px-3 py-2 border-b border-gray-100 dark:border-gray-700">
+        <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-base" :class="section.iconClass" x-text="section.icon"></span>
+            <h3 class="font-semibold text-sm text-gray-800 dark:text-white" x-text="section.title"></h3>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2">
             <span class="text-xs text-gray-400" x-text="items[section.key].length + ' items'"></span>
-            <div class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 rounded-full">
-                <span class="text-sm font-bold text-gray-700 dark:text-gray-200"
-                    x-text="'S/ ' + getSectionSubtotal(section.key).toFixed(2)"></span>
-            </div>
+            <span
+                class="text-xs font-semibold text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded"
+                x-text="'S/ ' + getSectionSubtotal(section.key).toFixed(2)"></span>
         </div>
     </div>
 
-    {{-- Items List --}}
-    <div class="divide-y divide-gray-50 dark:divide-gray-700/50">
-        <template x-for="(item, index) in items[section.key]" :key="index">
-            <div
-                class="flex items-center gap-4 px-5 py-3 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 group transition-colors">
-                <span class="text-xs text-gray-400 w-6 text-center" x-text="index + 1"></span>
-                <div class="flex-1 grid grid-cols-12 gap-3 items-center">
-                    <div class="col-span-2">
-                        <span
-                            class="font-mono text-xs px-2 py-1 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-semibold"
-                            x-text="item.code"></span>
-                    </div>
-                    <div class="col-span-4">
-                        <input x-model="item.description"
-                            class="form-input-clean text-sm text-gray-700 dark:text-gray-200" type="text" />
-                    </div>
-                    <div class="col-span-1 text-center">
-                        <span class="text-xs text-gray-400 uppercase" x-text="item.unit"></span>
-                    </div>
-                    <div class="col-span-2">
-                        <input x-model.number="item.quantity" @input="recalculate()"
-                            class="form-input-clean text-center font-semibold text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-900/20 rounded-lg w-full"
-                            type="number" min="0.01" step="0.01" />
-                    </div>
-                    <div class="col-span-2">
-                        <input x-model.number="item.unit_price" @input="recalculate()"
-                            class="form-input-clean text-right font-mono text-sm" type="number" min="0" step="0.01" />
-                    </div>
-                    <div class="col-span-1 text-right">
-                        <span class="font-mono font-bold text-gray-900 dark:text-white text-sm"
-                            x-text="(item.quantity * item.unit_price).toFixed(2)"></span>
-                    </div>
-                </div>
-                <button @click="removeItem(section.key, index)"
-                    class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30">
-                    <span class="material-symbols-outlined text-lg">close</span>
-                </button>
-            </div>
-        </template>
+    {{-- Items Table --}}
+    <div class="overflow-x-auto">
+        <table class="w-full text-xs">
+            <thead class="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
+                <tr class="text-gray-500 dark:text-gray-400 uppercase">
+                    <th class="px-2 py-2 text-center w-10">#</th>
+                    <th class="px-2 py-2 text-left w-20">Línea</th>
+                    <th class="px-2 py-2 text-left min-w-[200px]">Descripción</th>
+                    <th class="px-2 py-2 text-left min-w-[120px]">Comentario</th>
+                    <th class="px-2 py-2 text-center w-16">Unid.</th>
+                    <th class="px-2 py-2 text-center w-16">Cant.</th>
+                    <th class="px-2 py-2 text-right w-20">P.U.</th>
+                    <th class="px-2 py-2 text-right w-24">Subtotal</th>
+                    <th class="px-2 py-2 w-8"></th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-700/50">
+                <template x-for="(item, index) in items[section.key]" :key="index">
+                    <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 group">
+                        <td class="px-2 py-1 text-center text-gray-400" x-text="index + 1"></td>
+                        <td class="px-2 py-1">
+                            <span
+                                class="font-mono text-xs px-1 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400"
+                                x-text="item.code"></span>
+                        </td>
+                        <td class="px-1 py-1">
+                            <input x-model="item.description" type="text"
+                                class="w-full px-1 py-0.5 text-xs border-0 bg-transparent focus:ring-1 focus:ring-emerald-500 rounded" />
+                        </td>
+                        <td class="px-1 py-1">
+                            <input x-model="item.comment" type="text" placeholder="—"
+                                class="w-full px-1 py-0.5 text-xs border-0 bg-transparent text-gray-500 focus:ring-1 focus:ring-emerald-500 rounded" />
+                        </td>
+                        <td class="px-2 py-1 text-center text-gray-400 uppercase" x-text="item.unit"></td>
+                        <td class="px-1 py-1">
+                            <input x-model.number="item.quantity" @input="recalculate()" type="number" min="0.01"
+                                step="0.01"
+                                class="w-full px-1 py-0.5 text-xs text-center border border-gray-200 dark:border-gray-600 rounded bg-blue-50/50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium" />
+                        </td>
+                        <td class="px-1 py-1">
+                            <input x-model.number="item.unit_price" @input="recalculate()" type="number" min="0"
+                                step="0.01"
+                                class="w-full px-1 py-0.5 text-xs text-right border border-gray-200 dark:border-gray-600 rounded font-mono" />
+                        </td>
+                        <td class="px-2 py-1 text-right font-mono font-semibold text-gray-900 dark:text-white"
+                            x-text="(item.quantity * item.unit_price).toFixed(2)"></td>
+                        <td class="px-1 py-1 text-center">
+                            <button @click="removeItem(section.key, index)"
+                                class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 p-0.5">
+                                <span class="material-symbols-outlined text-sm">close</span>
+                            </button>
+                        </td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
 
         {{-- Empty State --}}
-        <div x-show="items[section.key].length === 0" class="py-8 text-center text-gray-400">
-            <span class="material-symbols-outlined text-4xl mb-2 block opacity-50">inventory_2</span>
-            <p class="text-sm">No hay items agregados</p>
+        <div x-show="items[section.key].length === 0" class="py-6 text-center text-gray-400">
+            <span class="material-symbols-outlined text-3xl mb-1 block opacity-50">inventory_2</span>
+            <p class="text-xs">No hay items</p>
         </div>
     </div>
 
     {{-- Add Button --}}
-    <div class="px-5 py-3 bg-gray-50/50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-700">
+    <div class="px-3 py-2 border-t border-gray-100 dark:border-gray-700">
         <button @click="openSearchModal(section.key)"
-            class="w-full flex items-center justify-center gap-2 py-2.5 text-emerald-600 hover:text-emerald-700 font-medium text-sm rounded-lg border-2 border-dashed border-emerald-200 dark:border-emerald-800 hover:border-emerald-400 dark:hover:border-emerald-600 hover:bg-emerald-50/50 dark:hover:bg-emerald-900/20 transition-all">
-            <span class="material-symbols-outlined text-xl">add_circle</span>
-            <span x-text="'Agregar ' + section.title"></span>
+            class="flex items-center gap-1 text-xs text-gray-500 hover:text-emerald-600 dark:text-gray-400 dark:hover:text-emerald-400 transition-colors">
+            <span class="material-symbols-outlined text-sm">add</span>
+            <span x-text="'Agregar item'"></span>
         </button>
     </div>
 </div>

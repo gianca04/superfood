@@ -49,7 +49,6 @@
                 sections: [{
                     key: 'viaticos',
                     title: 'Viáticos',
-                    subtitle: 'Gastos de traslado',
                     icon: 'flight_takeoff',
                     priceTypeId: 3,
                     bgClass: 'bg-blue-100 dark:bg-blue-900/30',
@@ -58,7 +57,6 @@
                 {
                     key: 'suministros',
                     title: 'Suministros',
-                    subtitle: 'Materiales y equipos',
                     icon: 'inventory_2',
                     priceTypeId: 2,
                     bgClass: 'bg-amber-100 dark:bg-amber-900/30',
@@ -67,7 +65,6 @@
                 {
                     key: 'mano_obra',
                     title: 'Mano de Obra',
-                    subtitle: 'Personal técnico',
                     icon: 'engineering',
                     priceTypeId: 2,
                     bgClass: 'bg-purple-100 dark:bg-purple-900/30',
@@ -101,19 +98,29 @@
                 subClientDropdownOpen: false,
                 filteredSubClients: [],
 
+                // Searchable select para clientes
+                clientSearch: '',
+                clientDropdownOpen: false,
+                filteredClients: [],
+
                 // Datos cargados directamente desde PHP (sin API)
                 quoteCategories: categoriesFromPHP,
-                allClients: clientsFromPHP, // Clientes para el select (menos de 10)
+                allClients: clientsFromPHP,
 
                 // Price types - cargados desde PHP
                 priceTypes: priceTypesFromPHP.map(pt => ({
                     id: pt.id,
                     name: pt.name,
-                    shortName: pt.name.split(' ')[0] // Primer palabra como shortName
+                    shortName: pt.name.split(' ')[0]
                 })),
 
                 saving: false,
                 igvRate: 0.18,
+
+                // Inicializar filteredClients con todos los clientes
+                init() {
+                    this.filteredClients = [...this.allClients];
+                },
 
                 // Modal
                 openSearchModal(sectionKey) {
@@ -161,27 +168,52 @@
                     }
                 },
 
-                // Cuando se selecciona un cliente del select - carga subclientes
-                async onClientChange(event) {
-                    const clientId = event.target.value;
-                    console.log('🎯 Cliente seleccionado ID:', clientId);
+                // Filtrar clientes localmente mientras se escribe
+                filterClients() {
+                    const query = this.clientSearch.toLowerCase().trim();
+                    if (!query) {
+                        this.filteredClients = [...this.allClients];
+                    } else {
+                        this.filteredClients = this.allClients.filter(c => 
+                            c.business_name.toLowerCase().includes(query) || 
+                            (c.document_number && c.document_number.includes(query))
+                        );
+                    }
+                    this.clientDropdownOpen = true;
+                },
 
-                    // Reset subclient and search when client changes
+                // Seleccionar cliente desde el dropdown
+                selectClientFromDropdown(client) {
+                    console.log('🎯 Cliente seleccionado:', client);
+                    this.quote.client_id = client.id;
+                    this.clientSearch = client.business_name;
+                    this.clientDropdownOpen = false;
+    
+                    // Reset subclient when client changes
                     this.quote.sub_client_id = null;
                     this.quote.ceco = '';
                     this.subClients = [];
                     this.filteredSubClients = [];
                     this.subClientSearch = '';
                     this.subClientDropdownOpen = false;
+    
+                    // Cargar subclientes del nuevo cliente
+                    this.loadSubClients(client.id);
+                },
 
-                    // Si no hay cliente seleccionado, no cargar subclientes
-                    if (!clientId) {
-                        console.log('🔄 No hay cliente, reset subclientes');
-                        return;
-                    }
+                // Limpiar selección de cliente
+                clearClient() {
+                    this.quote.client_id = null;
+                    this.clientSearch = '';
+                    this.filteredClients = [...this.allClients];
 
-                    // Cargar subclientes desde API
-                    await this.loadSubClients(clientId);
+                    // Reset subclient too
+                    this.quote.sub_client_id = null;
+                    this.quote.ceco = '';
+                    this.subClients = [];
+                    this.filteredSubClients = [];
+                    this.subClientSearch = '';
+                    console.log('🗑️ Cliente y SubCliente limpiados');
                 },
 
                 // Cargar todos los subclientes de un cliente desde API
@@ -244,6 +276,7 @@
                     this.items[this.searchModal.section].push({
                         code: result.code,
                         description: result.description,
+                        comment: '', // Campo de comentario editable
                         unit: result.unit,
                         quantity: 1,
                         unit_price: result.unit_price,
@@ -345,11 +378,16 @@
                         execution_date: '',
                         ceco: '',
                     };
+                    // Reset client searchable select
+                    this.clientSearch = '';
+                    this.clientDropdownOpen = false;
+                    this.filteredClients = [...this.allClients];
+                    // Reset subclient searchable select
                     this.subClients = [];
                     this.filteredSubClients = [];
                     this.subClientSearch = '';
                     this.subClientDropdownOpen = false;
-                    // Reset items if needed
+                    // Reset items
                     Object.keys(this.items).forEach(key => {
                         this.items[key] = [];
                     });

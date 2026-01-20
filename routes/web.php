@@ -71,6 +71,13 @@ Livewire::setScriptRoute(function ($handle) {
     return Route::get('/superfood/public/livewire/livewire.js', $handle);
 });
 
+
+Route::prefix('quotes')->middleware('auth')->group(function () {
+    Route::get('/', [QuoteController::class, 'index']); // Listar cotizaciones
+    Route::get('/stats', [QuoteController::class, 'getStatistics']); // Estadísticas de cotizaciones
+    Route::get('/{quote}/preview', [QuoteController::class, 'preview'])->name('quotes.preview'); // Vista previa
+});
+
 Livewire::setUpdateRoute(function ($handle) {
     return Route::post('/superfood/public/livewire/update', $handle);
 });

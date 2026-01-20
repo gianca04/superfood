@@ -128,6 +128,16 @@ class Quote extends Model
     }
 
     /**
+     * Alias para obtener los detalles/ítems de esta cotización (compatibilidad con el controlador).
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<\App\Models\QuoteDetail>
+     */
+    public function quoteDetails(): HasMany
+    {
+        return $this->details();
+    }
+
+    /**
      * Obtiene las visitas asociadas a esta cotización.
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany<\App\Models\Visit>
@@ -144,7 +154,10 @@ class Quote extends Model
      */
     public function getTotalAmountAttribute(): float
     {
-        return $this->details()->sum('subtotal') ?? 0;
+        // Sumamos el producto de quantity * unit_price de cada detalle
+        return (float) $this->details->sum(function ($detail) {
+            return $detail->quantity * $detail->unit_price;
+        });
     }
 
     /**

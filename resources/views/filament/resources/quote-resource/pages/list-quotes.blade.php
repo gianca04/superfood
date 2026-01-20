@@ -1,30 +1,60 @@
 <x-filament-panels::page>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+
     @vite(['resources/css/quote-cards.css', 'resources/js/app.js', 'resources/css/app.css'])
 
     <div x-data="quoteIndex()" x-init="fetchQuotes(), initPagination()" class="quote-cards-container">
         {{-- Header con estadísticas --}}
         <div class="mb-8">
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div
-                    class="p-4 bg-white border border-gray-200 rounded-lg quote-stat-card dark:bg-gray-800 dark:border-gray-700">
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total de Cotizaciones</p>
-                    <p class="text-2xl font-bold text-gray-900 dark:text-white" x-text="stats.total_quotes">0</p>
+                    class="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-lg quote-stat-card dark:bg-gray-800 dark:border-gray-700">
+                    <span
+                        class="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-full dark:bg-blue-900/40">
+                        <span
+                            class="text-2xl text-blue-600 material-symbols-outlined dark:text-blue-300">assignment</span>
+                    </span>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total de Cotizaciones</p>
+                        <p class="text-2xl font-bold text-gray-900 dark:text-white" x-text="stats.total_quotes">0</p>
+                    </div>
                 </div>
                 <div
-                    class="p-4 bg-white border border-gray-200 rounded-lg quote-stat-card dark:bg-gray-800 dark:border-gray-700">
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Monto Total</p>
-                    <p class="text-2xl font-bold text-blue-600 dark:text-blue-400"
-                        x-text="'S/ ' + formatNumber(stats.total_amount)">S/ 0.00</p>
+                    class="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-lg quote-stat-card dark:bg-gray-800 dark:border-gray-700">
+                    <span
+                        class="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-full dark:bg-blue-900/40">
+                        <span
+                            class="text-2xl text-blue-600 material-symbols-outlined dark:text-blue-300">attach_money</span>
+                    </span>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Monto Total</p>
+                        <p class="text-2xl font-bold text-blue-600 dark:text-blue-400"
+                            x-text="'S/ ' + formatNumber(stats.total_amount)">S/ 0.00</p>
+                    </div>
                 </div>
                 <div
-                    class="p-4 border border-green-200 rounded-lg quote-stat-card bg-green-50 dark:bg-green-900/30 dark:border-green-800">
-                    <p class="text-sm font-medium text-green-700 dark:text-green-400">Aprobadas</p>
-                    <p class="text-2xl font-bold text-green-600 dark:text-green-300" x-text="stats.approved">0</p>
+                    class="flex items-center gap-4 p-4 border border-green-200 rounded-lg quote-stat-card bg-green-50 dark:bg-green-900/30 dark:border-green-800">
+                    <span
+                        class="flex items-center justify-center w-10 h-10 bg-green-100 rounded-full dark:bg-green-900/40">
+                        <span
+                            class="text-2xl text-green-600 material-symbols-outlined dark:text-green-300">check_circle</span>
+                    </span>
+                    <div>
+                        <p class="text-sm font-medium text-green-700 dark:text-green-400">Aprobadas</p>
+                        <p class="text-2xl font-bold text-green-600 dark:text-green-300" x-text="stats.approved">0</p>
+                    </div>
                 </div>
                 <div
-                    class="p-4 border border-blue-200 rounded-lg quote-stat-card bg-blue-50 dark:bg-blue-900/30 dark:border-blue-800">
-                    <p class="text-sm font-medium text-blue-700 dark:text-blue-400">Por Hacer</p>
-                    <p class="text-2xl font-bold text-blue-600 dark:text-blue-300" x-text="stats.pending">0</p>
+                    class="flex items-center col-span-1 gap-4 p-4 border border-blue-200 rounded-lg quote-stat-card bg-blue-50 dark:bg-blue-900/30 dark:border-blue-800 sm:col-span-3">
+                    <span
+                        class="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-full dark:bg-blue-900/40">
+                        <span
+                            class="text-2xl text-blue-600 material-symbols-outlined dark:text-blue-300">pending_actions</span>
+                    </span>
+                    <div>
+                        <p class="text-sm font-medium text-blue-700 dark:text-blue-400">Por Hacer</p>
+                        <p class="text-2xl font-bold text-blue-600 dark:text-blue-300" x-text="stats.pending">0</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -51,8 +81,8 @@
         </div>
 
         {{-- Grid de Cards --}}
-        <div class="grid grid-cols-1 gap-6 quote-card-grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            <template x-for="quote in quotes" :key="quote.id">
+        <div class="grid grid-cols-1 gap-6 quote-card-grid sm:grid-cols-3">
+            <template x-for="quote in paginatedQuotes" :key="quote.id">
                 <div
                     class="overflow-hidden bg-white border border-gray-200 quote-card rounded-xl dark:bg-gray-800 dark:border-gray-700">
 
@@ -92,6 +122,7 @@
                                 <p class="font-medium text-gray-900 truncate dark:text-white"
                                     x-text="quote.sub_client?.name || 'Sin cliente'"></p>
                             </div>
+
                         </div>
 
                         {{-- Fecha --}}
@@ -115,8 +146,11 @@
                             </span>
                             <div class="min-w-0">
                                 <p class="text-xs text-gray-500 dark:text-gray-400">Cotizador</p>
-                                <p class="font-medium text-gray-900 truncate dark:text-white"
-                                    x-text="quote.employee?.name || 'No asignado'"></p>
+                                <p class="font-medium text-gray-900 truncate dark:text-white" x-text="quote.employee
+                                        ? ((quote.employee.first_name ? quote.employee.first_name : '') +
+                                           (quote.employee.last_name ? ' ' + quote.employee.last_name : '') || 'Sin nombre')
+                                        : 'No asignado'">
+                                </p>
                             </div>
                         </div>
 
@@ -147,6 +181,11 @@
                             <span class="inline text-sm material-symbols-outlined">picture_as_pdf</span>
                             PDF
                         </button>
+                        <a :href="'/quotes/' + quote.id + '/preview'" target="_blank"
+                            class="flex-1 px-3 py-2 text-xs font-semibold text-center text-white bg-green-600 rounded-lg hover:bg-green-500">
+                            <span class="inline text-sm material-symbols-outlined">visibility</span>
+                            Previsualizar
+                        </a>
                     </div>
                 </div>
             </template>
@@ -154,7 +193,6 @@
 
         {{-- Empty State --}}
         <div x-show="!loading && quotes.length === 0" class="quote-empty-state">
-            <span class="block mb-4 text-6xl text-gray-300 material-symbols-outlined">assignment_ind</span>
             <p class="text-lg font-semibold text-gray-600 dark:text-gray-400">No se encontraron cotizaciones</p>
             <p class="text-sm text-gray-500 dark:text-gray-500">Intenta con otros términos de búsqueda</p>
         </div>
@@ -170,7 +208,7 @@
                 Anterior
             </button>
             <span class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300"
-                x-text="`Página ${currentPage} de ${totalPages}`"></span>
+                x-text="Página ${currentPage} de ${totalPages}"></span>
             <button @click="nextPage()" :disabled="currentPage === totalPages" class="px-4 py-2 border rounded-lg">
                 Siguiente
             </button>
@@ -192,20 +230,26 @@
                     approved: 0,
                     pending: 0,
                 },
-
+                perPage: 12,
+                get paginatedQuotes() {
+                    // Solo muestra 12 por página
+                    const start = (this.currentPage - 1) * this.perPage;
+                    return this.quotes.slice(start, start + this.perPage);
+                },
                 async fetchQuotes() {
                     this.loading = true;
-                    this.currentPage = 1;
+                    // No reiniciar currentPage aquí para mantener la paginación
                     try {
                         const params = new URLSearchParams({
                             q: this.search,
                             status: this.filterStatus,
                             page: this.currentPage
                         });
-                        const response = await fetch(`/quotes?${params}`);
+                        const response = await fetch(/quotes?${params});
                         const data = await response.json();
                         this.quotes = data.data || [];
-                        this.totalPages = data.last_page || 1;
+                        // Calcula totalPages basado en la cantidad de cotizaciones y perPage
+                        this.totalPages = Math.ceil((data.total || this.quotes.length) / this.perPage) || 1;
                         await this.fetchStatistics();
                     } catch (e) {
                         console.error('Error fetching quotes:', e);
@@ -214,15 +258,6 @@
                     this.loading = false;
                 },
 
-                async fetchStatistics() {
-                    try {
-                        const response = await fetch('/api/quotes/stats');
-                        const data = await response.json();
-                        this.stats = data;
-                    } catch (e) {
-                        console.error('Error fetching statistics:', e);
-                    }
-                },
 
                 initPagination() {
                     this.fetchQuotes();
@@ -277,8 +312,18 @@
                 },
 
                 async printQuote(quoteId) {
-                    window.open(`/quotes/${quoteId}/pdf`, '_blank');
-                }
+                    window.open(/quotes/${ quoteId } / pdf, '_blank');
+                },
+
+                async fetchStatistics() {
+                    try {
+                        const response = await fetch('/quotes/stats');
+                        const data = await response.json();
+                        this.stats = data;
+                    } catch (e) {
+                        console.error('Error fetching statistics:', e);
+                    }
+                },
             }
         }
     </script>
