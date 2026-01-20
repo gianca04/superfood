@@ -103,116 +103,97 @@
         {{-- Grid de Cards --}}
         <div class="grid grid-cols-1 gap-6 quote-card-grid sm:grid-cols-3">
             <template x-for="quote in paginatedQuotes" :key="quote.id">
-                <div
-                    class="overflow-hidden bg-white border border-gray-200 quote-card rounded-xl dark:bg-gray-800 dark:border-gray-700">
-
-                    {{-- Header Card --}}
-                    <div class="p-4 border-b border-gray-100 quote-card-header dark:border-gray-700">
-                        <div class="flex items-start justify-between mb-2">
-                            <div>
-                                <p
-                                    class="text-xs font-semibold tracking-widest text-gray-500 uppercase dark:text-gray-400">
-                                    Nº Solicitud
-                                </p>
-                                <p class="text-lg font-bold text-blue-700 dark:text-blue-400"
-                                    x-text="quote.request_number || 'S/N'"></p>
+                <div class="quote-card">
+                    {{-- 1. Logo del Cliente (Expandido) --}}
+                    <div class="quote-card-logo-container">
+                        <template x-if="quote.sub_client?.client?.logo">
+                            <img :src="'/storage/' + quote.sub_client.client.logo" class="quote-card-logo"
+                                alt="Logo Cliente">
+                        </template>
+                        <template x-if="!quote.sub_client?.client?.logo">
+                            <div class="flex flex-col items-center opacity-40">
+                                <span class="text-4xl material-symbols-outlined">corporate_fare</span>
+                                <span class="text-[10px] font-bold">SAT INDUSTRIALES</span>
                             </div>
-                            <span :class="getStatusClass(quote.status)" class="px-3 py-1 text-xs font-bold rounded-full"
-                                x-text="quote.status"></span>
+                        </template>
+                    </div>
+
+                    {{-- 2. Identificación y Estado --}}
+                    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50/50">
+                        <div>
+                            <p class="text-[9px] uppercase font-bold text-gray-400 tracking-tighter">Nº Solicitud</p>
+                            <p class="text-sm font-black text-blue-700" x-text="quote.request_number || 'S/N'"></p>
                         </div>
+                        <span :class="getStatusClass(quote.status)"
+                            class="px-3 py-1 text-[10px] font-black rounded-full shadow-sm uppercase tracking-wider"
+                            x-text="quote.status">
+                        </span>
                     </div>
 
-                    {{-- Monto Principal --}}
-                    <div class="px-4 py-3 border-b border-gray-100 quote-card-amount dark:border-gray-700">
-                        <p class="mb-1 text-xs font-medium text-gray-500 dark:text-gray-400">Monto Total</p>
-                        <p class="text-2xl font-bold text-blue-600 dark:text-blue-400"
-                            x-text="'S/ ' + formatNumber(quote.total_amount || 0)"></p>
+                    {{-- 3. Monto Total (Diseño Impactante) --}}
+                    <div class="quote-card-amount-banner">
+                        <p class="text-[10px] uppercase font-bold text-blue-100/80">Total</p>
+                        <p class="text-2xl font-black text-white"
+                            x-text="'S/. ' + formatNumber(quote.total_amount || 0)"></p>
                     </div>
 
-                    {{-- Contenido --}}
+                    {{-- 4. Información Detallada --}}
                     <div class="p-4 space-y-3">
-                        {{-- Cliente --}}
+                        {{-- Sede / Cliente --}}
                         <div class="flex items-center gap-3">
-                            <span class="flex-shrink-0 p-2 rounded-lg quote-icon-blue">
-                                <span
-                                    class="text-base text-blue-600 dark:text-blue-400 material-symbols-outlined">apartment</span>
-                            </span>
-                            <div class="min-w-0">
-                                <p class="text-xs text-gray-500 dark:text-gray-400">Cliente</p>
-                                <p class="font-medium text-gray-900 truncate dark:text-white"
-                                    x-text="quote.sub_client?.name || 'Sin cliente'"></p>
+                            <div class="p-2 text-blue-600 rounded-lg bg-blue-50">
+                                <span class="text-sm material-symbols-outlined">location_on</span>
                             </div>
-
-                        </div>
-
-                        {{-- Fecha --}}
-                        <div class="flex items-center gap-3">
-                            <span class="flex-shrink-0 p-2 rounded-lg quote-icon-amber">
-                                <span
-                                    class="text-base text-amber-600 dark:text-amber-400 material-symbols-outlined">calendar_month</span>
-                            </span>
                             <div class="min-w-0">
-                                <p class="text-xs text-gray-500 dark:text-gray-400">Fecha Emisión</p>
-                                <p class="font-medium text-gray-900 dark:text-white"
-                                    x-text="formatDate(quote.quote_date)"></p>
+                                <p class="text-[9px] font-bold text-gray-400 uppercase">Unidad / Sede</p>
+                                <p class="text-xs font-bold text-gray-800 truncate"
+                                    x-text="quote.sub_client?.name || 'Sin sede'"></p>
                             </div>
                         </div>
 
-                        {{-- Empleado --}}
-                        <div class="flex items-center gap-3">
-                            <span class="flex-shrink-0 p-2 rounded-lg quote-icon-purple">
-                                <span
-                                    class="text-base text-purple-600 dark:text-purple-400 material-symbols-outlined">person</span>
-                            </span>
-                            <div class="min-w-0">
-                                <p class="text-xs text-gray-500 dark:text-gray-400">Cotizador</p>
-                                <p class="font-medium text-gray-900 truncate dark:text-white"
-                                    x-text="quote.employee
+                        <div class="grid grid-cols-2 gap-2 pt-3 border-t border-gray-50">
+                            {{-- Fecha --}}
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs text-amber-500 material-symbols-outlined">calendar_month</span>
+                                <span class="text-[10px] font-bold text-gray-600"
+                                    x-text="formatDate(quote.quote_date)"></span>
+                            </div>
+                            {{-- Categoría --}}
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs text-green-600 material-symbols-outlined">label</span>
+                                <span class="text-[10px] font-bold text-gray-600 truncate"
+                                    x-text="quote.quote_category?.name || '-'"></span>
+                            </div>
+                        </div>
+
+                        {{-- Cotizador --}}
+                        <div class="flex items-center gap-2 mt-1">
+                            <span class="text-xs text-purple-500 material-symbols-outlined">person</span>
+                            <span class="text-[10px] font-medium text-gray-500 italic"
+                                x-text="quote.employee
                                         ? ((quote.employee.first_name ? quote.employee.first_name : '') +
                                            (quote.employee.last_name ? ' ' + quote.employee.last_name : '') || 'Sin nombre')
-                                        : 'No asignado'">
-                                </p>
-                            </div>
-                        </div>
-
-                        {{-- Categoría --}}
-                        <div class="flex items-center gap-3" x-show="quote.quote_category">
-                            <span class="flex-shrink-0 p-2 rounded-lg quote-icon-green">
-                                <span
-                                    class="text-base text-green-600 dark:text-green-400 material-symbols-outlined">category</span>
-                            </span>
-                            <div class="min-w-0">
-                                <p class="text-xs text-gray-500 dark:text-gray-400">Categoría</p>
-                                <p class="font-medium text-gray-900 truncate dark:text-white"
-                                    x-text="quote.quote_category?.name || '-'"></p>
-                            </div>
+                                        : 'No asignado'"></span>
                         </div>
                     </div>
 
-                    {{-- Footer con Acciones --}}
-                    <div
-                        class="flex flex-wrap gap-2 p-3 border-t border-gray-100 bg-gray-50 dark:bg-gray-900/50 dark:border-gray-700">
+                    {{-- 5. Botonera de Acciones (2x2 Grid) --}}
+                    <div class="grid grid-cols-2 gap-1.5 p-3 bg-gray-50 border-t border-gray-100">
                         <a :href="'/dashboard/quotes/' + quote.id + '/edit'"
-                            class="flex-1 px-3 py-2 text-xs font-semibold text-center text-gray-700 bg-white border border-gray-300 rounded-lg quote-btn-edit dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300">
-                            <span class="inline text-sm material-symbols-outlined">edit</span>
-                            Editar
-                        </a>
-                        <a :href="'/quotes/' + quote.id + '/pdf'"
-                            class="flex-1 px-3 py-2 text-xs font-semibold text-center text-white bg-blue-600 rounded-lg quote-btn-pdf hover:bg-blue-500"
-                            target="_blank">
-                            <span class="inline text-sm material-symbols-outlined">picture_as_pdf</span>
-                            Descargar PDF
-                        </a>
-                        <a :href="'/quotes/' + quote.id + '/excel'"
-                            class="flex-1 px-3 py-2 text-xs font-semibold text-center text-white bg-green-700 rounded-lg hover:bg-green-600"
-                            target="_blank">
-                            <span class="inline text-sm material-symbols-outlined">grid_on</span>
-                            Descargar Excel
+                            class="text-gray-700 bg-white border border-gray-200 btn-action-small hover:bg-gray-100">
+                            <span class="text-xs material-symbols-outlined">edit</span> Editar
                         </a>
                         <a :href="'/quotes/' + quote.id + '/preview'" target="_blank"
-                            class="flex-1 px-3 py-2 text-xs font-semibold text-center text-white bg-green-600 rounded-lg hover:bg-green-500">
-                            <span class="inline text-sm material-symbols-outlined">visibility</span>
-                            Previsualizar
+                            class="text-white bg-gray-800 btn-action-small hover:bg-black">
+                            <span class="text-xs material-symbols-outlined">visibility</span> Ver
+                        </a>
+                        <a :href="'/quotes/' + quote.id + '/pdf'" target="_blank"
+                            class="text-white bg-blue-600 btn-action-small hover:bg-blue-700">
+                            <span class="text-xs material-symbols-outlined">picture_as_pdf</span> PDF
+                        </a>
+                        <a :href="'/quotes/' + quote.id + '/excel'" target="_blank"
+                            class="text-white btn-action-small bg-emerald-700 hover:bg-emerald-800">
+                            <span class="text-xs material-symbols-outlined">grid_on</span> Excel
                         </a>
                     </div>
                 </div>

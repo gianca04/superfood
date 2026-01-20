@@ -22,7 +22,7 @@ class QuoteController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Quote::with(['employee', 'subClient', 'quoteCategory', 'quoteDetails']);
+        $query = Quote::with(['employee', 'subClient.client', 'quoteCategory', 'quoteDetails']);
 
         if ($request->filled('q')) {
             $query->search($request->q);

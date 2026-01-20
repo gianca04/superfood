@@ -29,8 +29,41 @@
 
 /* Cards - Solo dentro del contenedor de cotizaciones */
 .quote-cards-container .quote-card {
-    animation: slideUp 0.3s ease-out backwards;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.quote-cards-container .quote-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Sección de Monto Destacada */
+.quote-card-amount-box {
+    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+    color: white;
+    padding: 1.25rem 1rem;
+    text-align: center;
+}
+
+/* Botones más modernos */
+.btn-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border-radius: 8px;
+    font-size: 11px;
+    padding: 8px 4px;
+    transition: transform 0.2s;
+}
+
+.btn-action:hover {
+    transform: scale(1.03);
 }
 
 .quote-cards-container .quote-card:nth-child(1) { animation-delay: 0.05s; }
@@ -121,6 +154,68 @@
 
 .quote-cards-container .quote-btn-pdf {
     transition: all 0.2s ease;
+}
+/* Contenedor de la Card */
+.quote-card {
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+}
+
+.quote-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* Sección del Logo (Expandida) */
+.quote-card-logo-container {
+    height: 100px; /* Aumentado para que se vea grande */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px;
+    background: #fdfdfd;
+    border-radius: 16px 16px 0 0;
+}
+
+.quote-card-logo {
+    max-height: 75px; /* Logo más grande */
+    max-width: 90%;
+    object-fit: contain;
+    transition: transform 0.3s;
+}
+
+.quote-card:hover .quote-card-logo {
+    transform: scale(1.05);
+}
+
+/* Banner del Monto (Azul Elegante) */
+.quote-card-amount-banner {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+    padding: 1rem;
+    text-align: center;
+    box-shadow: inset 0 -2px 10px rgba(0,0,0,0.1);
+}
+/* Botones de acción pequeños */
+.btn-action-small {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 6px 2px;
+    transition: all 0.2s;
+    text-transform: uppercase;
+}
+/* Estados */
+.status-badge {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .quote-cards-container .quote-btn-pdf:hover {
