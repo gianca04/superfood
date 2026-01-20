@@ -60,6 +60,6 @@ class QuoteCategory extends Model
      */
     public function quotes(): HasMany
     {
-        return $this->hasMany(Quote::class, 'quote_category_id');
+        return $this->hasMany(Quote::class);
     }
 }

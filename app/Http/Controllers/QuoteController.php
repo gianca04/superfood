@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Quote;
 use App\Http\Requests\StoreQuoteRequest;
 use App\Http\Requests\UpdateQuoteRequest;
+use App\Models\QuoteCategory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -137,6 +138,11 @@ class QuoteController extends Controller
             ], 500);
         }
     }
+    public function categories()
+    {
+        $categories = QuoteCategory::orderBy('name')->get(['id', 'name']);
+        return response()->json($categories);
+    }
 
     /**
      * Muestra una cotización específica.
@@ -225,7 +231,7 @@ class QuoteController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getStatistics(): \Illuminate\Http\JsonResponse
+    public function getStatistics(): JsonResponse
     {
         $quotes = \App\Models\Quote::with('employee')->get();
 
@@ -329,7 +335,7 @@ class QuoteController extends Controller
             'fecha_ejecucion'   => $quote->execution_date ? $quote->execution_date->format('d/m/Y') : '-',
             'total_general'     => number_format($quote->total_amount, 2),
             'items'             => $itemsData,
-            'categories'   => \App\Models\QuoteCategory::select('id', 'name')->get(),
+            'categories'   => QuoteCategory::select('id', 'name')->get(),
         ]);
     }
 }

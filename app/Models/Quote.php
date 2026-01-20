@@ -168,11 +168,14 @@ class Quote extends Model
     {
         return $query->where(function ($q) use ($search) {
             $q->where('request_number', 'LIKE', "%{$search}%")
+                ->orWhere('service_name', 'LIKE', "%{$search}%") // <-- NUEVA LÍNEA PARA EL SERVICIO
                 ->orWhereHas('subClient', function ($sq) use ($search) {
                     $sq->where('name', 'LIKE', "%{$search}%");
                 })
                 ->orWhereHas('employee', function ($sq) use ($search) {
-                    $sq->where('name', 'LIKE', "%{$search}%");
+                    // Buscamos en ambos campos del empleado
+                    $sq->where('first_name', 'LIKE', "%{$search}%")
+                        ->orWhere('last_name', 'LIKE', "%{$search}%");
                 });
         });
     }

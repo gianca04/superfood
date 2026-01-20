@@ -69,6 +69,7 @@ Livewire::setScriptRoute(function ($handle) {
 
 // Ruta pública para estadísticas de cotizaciones
 Route::get('/quotes/stats', [QuoteController::class, 'getStatistics']);
+Route::get('/quotes/categories', [QuoteController::class, 'categories']);
 
 // Rutas de cotizaciones (requieren autenticación)
 Route::prefix('quotes')->middleware('auth')->group(function () {

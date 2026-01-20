@@ -88,6 +88,14 @@
                 </template>
             </select>
 
+            <select x-model="filterCategoryId" @change="fetchQuotes()"
+                class="px-4 py-2 border border-gray-300 rounded-lg quote-select-filter dark:bg-gray-800 dark:border-gray-700">
+                <option value="">Todas las categorías</option>
+                <template x-for="cat in stats.categories" :key="cat.id">
+                    <option :value="cat.id" x-text="cat.name"></option>
+                </template>
+            </select>
+
             {{-- Filtro por rango de precios --}}
             <div class="flex items-center gap-2">
                 <input type="number" x-model.number="filterMinTotal" @input.debounce.500ms="fetchQuotes()"
@@ -132,7 +140,7 @@
 
                     {{-- 3. Monto Total (Diseño Impactante) --}}
                     <div class="quote-card-amount-banner">
-                        <p class="text-[10px] uppercase font-bold text-blue-100/80">Total</p>
+                        <p class="text-[10px] uppercase font-bold text-blue-100/80" x-text="quote.service_name"></p>
                         <p class="text-2xl font-black text-white"
                             x-text="'S/. ' + formatNumber(quote.total_amount || 0)"></p>
                     </div>
@@ -251,6 +259,15 @@
                     const start = (this.currentPage - 1) * this.perPage;
                     return this.quotes.slice(start, start + this.perPage);
                 },
+                async fetchCategories() {
+                    try {
+                        const response = await fetch('/quotes/categories');
+                        const data = await response.json();
+                        this.stats.categories = data;
+                    } catch (e) {
+                        console.error('Error fetching categories:', e);
+                    }
+                },
                 async fetchQuotes() {
                     this.loading = true;
                     try {
@@ -261,6 +278,9 @@
                         });
                         if (this.filterEmployeeId) {
                             params.append('employee_id', this.filterEmployeeId);
+                        }
+                        if (this.filterCategoryId) {
+                            params.append('category', this.filterCategoryId);
                         }
                         if (this.filterMinTotal !== null && this.filterMinTotal !== '') {
                             params.append('min_total', this.filterMinTotal);
@@ -275,6 +295,7 @@
                         this.totalPages = data.last_page || 1;
 
                         await this.fetchStatistics();
+                        // await this.fetchCategories();
                     } catch (e) {
                         console.error('Error fetching quotes:', e);
                         this.quotes = [];
@@ -288,6 +309,7 @@
                 },
 
                 initPagination() {
+                    this.fetchCategories();
                     this.fetchQuotes();
                 },
 
@@ -345,7 +367,10 @@
                     try {
                         const response = await fetch('/quotes/stats');
                         const data = await response.json();
-                        this.stats = data;
+                        this.stats = {
+                            ...this.stats,
+                            ...data
+                        };
                     } catch (e) {
                         console.error('Error fetching statistics:', e);
                     }
