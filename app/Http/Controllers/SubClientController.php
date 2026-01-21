@@ -74,4 +74,16 @@ class SubClientController extends Controller
 
         return response()->json($subClients);
     }
+
+    /**
+     * Muestra un subcliente específico por su ID.
+     *
+     * @param int $id
+     * @return JsonResponse
+     */
+    public function show($id)
+    {
+        $subClient = SubClient::findOrFail($id);
+        return response()->json($subClient);
+    }
 }

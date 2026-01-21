@@ -156,3 +156,9 @@ Route::middleware(['auth:sanctum', 'CheckTokenExpiration'])->group(function () {
     Route::apiResource('photos', PhotoController::class);
     Route::apiResource('positions', PositionController::class);
 });
+
+// SubClient detail endpoint
+Route::get('/sub-clients/{id}', function ($id) {
+    $subClient = \App\Models\SubClient::select('id', 'name', 'client_id', 'ceco')->findOrFail($id);
+    return response()->json($subClient);
+});

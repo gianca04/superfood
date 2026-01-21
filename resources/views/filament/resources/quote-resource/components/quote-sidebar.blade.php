@@ -42,15 +42,6 @@
                 :class="sidebarOpen ? 'rotate-180' : ''">expand_more</span>
         </div>
     </div>
-    {{-- N° Solicitud --}}
-    <div class="mb-4">
-        <label class="block mb-1 text-xs font-medium text-gray-500">N° Solicitud</label>
-        <input class="text-sm sidebar-input bg-gray-50 font-bold text-emerald-700" type="text"
-            x-model="quote.request_number" readonly />
-        {{-- Campo oculto para el POST --}}
-        <input type="hidden" name="request_number" :value="quote.request_number">
-        <input type="hidden" name="project_id" :value="quote.project_id">
-    </div>
 
     {{-- Collapsible Content --}}
     <div x-show="sidebarOpen" x-transition:enter="transition ease-out duration-200"
@@ -62,6 +53,21 @@
         <div class="p-4 pb-6">
             <input type="hidden" name="employee_id" value="{{ auth()->user()->employee->id }}">
 
+
+            {{-- N° Solicitud --}}
+            <div class="mb-4">
+                <label class="block mb-1 text-xs font-medium text-gray-500">N° Solicitud</label>
+                <input class="text-sm sidebar-input bg-gray-50 font-bold text-emerald-700" type="text"
+                    x-model="quote.request_number" readonly />
+                {{-- Campo oculto para el POST --}}
+                <input type="hidden" name="request_number" :value="quote.request_number">
+                <input type="hidden" name="project_id" :value="quote.project_id">
+                {{-- Mostrar el project_id en la vista para depuración/visualización --}}
+                <div class="mt-1 text-xs text-gray-400">
+                    <span>Project ID:</span>
+                    <span x-text="quote.project_id"></span>
+                </div>
+            </div>
             {{-- Primera fila: Nombre del Servicio (campo amplio) --}}
             <div class="mb-4">
                 <label class="block mb-1 text-xs font-medium text-gray-500">Nombre del Servicio</label>
@@ -69,7 +75,9 @@
                     placeholder="Ej: Mantenimiento preventivo de equipos..." />
                 <input type="hidden" name="service_name" x-model="quote.service_name">
             </div>
-
+            {{-- -aca colocar el project_id para mandar a la base de datos con un dehydrated --}}
+            <input type="hidden" name="request_number" :value="quote.request_number">
+            <input type="hidden" name="project_id" :value="quote.project_id">
             {{-- Grid de campos en columnas para optimizar espacio --}}
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
 
@@ -91,10 +99,11 @@
                     <label class="block mb-1 text-xs font-medium text-gray-500">Cliente</label>
                     <div class="searchable-select">
                         <input type="text" x-model="clientSearch" @focus="clientDropdownOpen = true"
-                            @click="clientDropdownOpen = true" @input="filterClients()" placeholder="Buscar..."
+                            @click="clientDropdownOpen = true" @input="filterClients()"
+                            :disabled="!!projectFromPHP?.sub_client_id" placeholder="Buscar..."
                             class="text-sm searchable-select-input" />
                         <div class="searchable-select-icon" :class="{ 'clickable': quote.client_id }">
-                            <template x-if="quote.client_id">
+                            <template x-if="quote.client_id && !projectFromPHP?.sub_client_id">
                                 <button @click="clearClient()" type="button">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -118,8 +127,7 @@
                                     <div class="text-sm searchable-select-item-title" x-text="client.business_name">
                                     </div>
                                     <div class="searchable-select-item-subtitle"
-                                        x-text="client.document_number || 'Sin RUC'">
-                                    </div>
+                                        x-text="client.document_number || 'Sin RUC'"></div>
                                 </div>
                             </template>
                         </div>
@@ -137,11 +145,11 @@
                     <div class="searchable-select">
                         <input type="text" x-model="subClientSearch" @focus="subClientDropdownOpen = true"
                             @click="subClientDropdownOpen = true" @input="filterSubClients()"
-                            :disabled="!quote.client_id || loadingSubClients"
+                            :disabled="!!projectFromPHP?.sub_client_id || !quote.client_id || loadingSubClients"
                             :placeholder="loadingSubClients ? 'Cargando...' : (!quote.client_id ? 'Primero cliente...' : 'Buscar...')"
                             class="text-sm searchable-select-input" />
                         <div class="searchable-select-icon" :class="{ 'clickable': quote.sub_client_id }">
-                            <template x-if="quote.sub_client_id">
+                            <template x-if="quote.sub_client_id && !projectFromPHP?.sub_client_id">
                                 <button @click="clearSubClient()" type="button">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -167,8 +175,7 @@
                                     class="searchable-select-item">
                                     <div class="text-sm searchable-select-item-title" x-text="subClient.name"></div>
                                     <div class="searchable-select-item-subtitle"
-                                        x-text="subClient.ceco || 'Sin CECO'">
-                                    </div>
+                                        x-text="subClient.ceco || 'Sin CECO'"></div>
                                 </div>
                             </template>
                         </div>
@@ -228,3 +235,16 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.effect(() => {
+            // Log para depuración de datos iniciales
+            console.log('[DEBUG] projectFromPHP:', window.projectFromPHP);
+            console.log('[DEBUG] quote.client_id:', window.quote?.client_id);
+            console.log('[DEBUG] clientSearch:', window.clientSearch);
+            console.log('[DEBUG] quote.sub_client_id:', window.quote?.sub_client_id);
+            console.log('[DEBUG] subClientSearch:', window.subClientSearch);
+        });
+    });
+</script>
