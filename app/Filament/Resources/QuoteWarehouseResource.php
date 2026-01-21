@@ -26,8 +26,10 @@ class QuoteWarehouseResource extends Resource
                 Forms\Components\Select::make('quote_id')
                     ->relationship('quote', 'id')
                     ->required(),
-                Forms\Components\Select::make('user_id')
-                    ->relationship('user', 'name')
+                Forms\Components\Select::make('employee_id')
+                    ->relationship('employee', 'first_name')
+                    ->getOptionLabelFromRecordUsing(fn($record) => "{$record->first_name} {$record->last_name}")
+                    ->searchable()
                     ->required(),
                 Forms\Components\TextInput::make('status')
                     ->required()
@@ -46,8 +48,9 @@ class QuoteWarehouseResource extends Resource
                 Tables\Columns\TextColumn::make('quote.id')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('user.name')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('employee.first_name')
+                    ->label('Empleado')
+                    ->formatStateUsing(fn($state, $record) => $record->employee ? "{$record->employee->first_name} {$record->employee->last_name}" : '')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('status')
                     ->searchable(),

@@ -20,7 +20,7 @@ class WarehouseStatusController extends Controller
             ['quote_id' => $validated['quoteId']],
             [
                 'status' => $status,
-                'user_id' => Auth::user()?->employee_id ?? auth()->id(),
+                'employee_id' => Auth::user()?->employee_id, // If user has no employee_id, this will be null, which is fine for now
             ]
         );
 

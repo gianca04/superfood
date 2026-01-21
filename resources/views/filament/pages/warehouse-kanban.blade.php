@@ -5,8 +5,7 @@
         @foreach($statuses as $statusKey => $statusLabel)
             <div class="flex flex-col h-full">
                 <!-- Header -->
-                <div
-                    class="p-4 mb-4 bg-white rounded-lg shadow-sm border-t-4 border-primary-500 dark:bg-gray-800 dark:border-primary-400">
+                <div class="p-4 mb-4 bg-white rounded-lg dark:bg-gray-800 dark:border-primary-400">
                     <h3 class="font-bold text-lg text-gray-700 dark:text-gray-200">{{ $statusLabel }}</h3>
                     <span class="text-sm text-gray-500 dark:text-gray-400">{{ $kanbanData[$statusKey]->count() }}
                         cotizaciones</span>

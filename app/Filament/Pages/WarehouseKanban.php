@@ -7,10 +7,11 @@ use Illuminate\Support\Facades\Auth;
 
 class WarehouseKanban extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
-    protected static ?string $navigationLabel = 'Tablero Almacén';
+    protected static ?string $navigationIcon = null; // Hidden
+    protected static ?string $navigationLabel = 'Tablero Almacén (Legacy)';
     protected static ?string $title = 'Kanban de Atención de Almacén';
-    protected static ?string $slug = 'warehouse-kanban';
+    protected static ?string $slug = 'warehouse-kanban-legacy';
+    protected static bool $shouldRegisterNavigation = false;
 
     protected static string $view = 'filament.pages.warehouse-kanban';
 

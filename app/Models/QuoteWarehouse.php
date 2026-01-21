@@ -42,7 +42,7 @@ class QuoteWarehouse extends Model
      */
     protected $fillable = [
         'quote_id',
-        'user_id',
+        'employee_id',
         'status',
         'attended_at',
         'observations',
@@ -74,8 +74,8 @@ class QuoteWarehouse extends Model
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function user(): BelongsTo
+    public function employee(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(Employee::class, 'employee_id');
     }
 }
