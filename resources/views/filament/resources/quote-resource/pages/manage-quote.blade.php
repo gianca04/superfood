@@ -746,11 +746,24 @@
                             }
                             // Si es edición, puedes recargar datos o mantener el estado
                         } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: result.message || 'Error desconocido al guardar la cotización'
-                            });
+                            // Mostrar errores de validación si existen
+                            if (result.errors) {
+                                // Unir todos los mensajes de error en un string
+                                let messages = Object.values(result.errors)
+                                    .flat()
+                                    .join('<br>');
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Errores de validación',
+                                    html: messages
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: result.message || 'Error desconocido al guardar la cotización'
+                                });
+                            }
                         }
 
                     } catch (error) {
