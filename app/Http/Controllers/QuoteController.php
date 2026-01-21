@@ -101,8 +101,6 @@ class QuoteController extends Controller
                     $nextNumber = 1;
                 }
 
-                $validated['request_number'] = sprintf('COT-%s-%04d', $year, $nextNumber);
-
                 // Guardar project_id si viene en el request
                 if ($request->has('project_id')) {
                     $validated['project_id'] = $request->input('project_id');

@@ -37,6 +37,12 @@
 
         {{-- Sticky Footer --}}
         @include('filament.resources.quote-resource.components.quote-footer')
+
+        {{-- Puedes mostrar el project_id en la vista principal si lo necesitas --}}
+        <div class="mb-2 text-xs text-gray-500">
+            <span>Project ID en Alpine:</span>
+            <span x-text="quote.project_id"></span>
+        </div>
     </div>
 
     {{-- Alpine Component (inline fallback if not using modules) --}}
@@ -52,7 +58,7 @@
                 quote: {
                     id: null,
                     request_number: suggestedRequestNumber || projectFromPHP?.service_code ||
-                    '', // Si quieres igualar al service_code
+                        '', // Si quieres igualar al service_code
                     employee_id: null,
                     service_name: '',
                     client_id: projectFromPHP?.client_id || null,
@@ -189,6 +195,9 @@
                 init() {
                     this.filteredClients = [...this.allClients];
 
+                    console.log('[INIT] projectFromPHP:', projectFromPHP);
+                    console.log('[INIT] existingQuote:', existingQuote);
+
                     if (existingQuote) {
                         console.log('✏️ Editando cotización:', existingQuote);
 
@@ -269,6 +278,31 @@
 
                     if (!existingQuote && suggestedRequestNumber) {
                         this.quote.request_number = suggestedRequestNumber;
+                    }
+
+                    // Nueva lógica: inicializar búsqueda visual si hay sub_client_id en el proyecto
+                    if (!existingQuote && projectFromPHP && projectFromPHP.sub_client_id) {
+                        console.log('[INIT] Buscando subcliente por ID:', projectFromPHP.sub_client_id);
+                        fetch(`/api/sub-clients/${projectFromPHP.sub_client_id}`)
+                            .then(res => res.json())
+                            .then(subClient => {
+                                console.log('[FETCH] subClient:', subClient);
+                                this.quote.sub_client_id = subClient.id;
+                                this.subClientSearch = subClient.name;
+                                this.quote.ceco = subClient.ceco || '';
+                                this.quote.client_id = subClient.client_id;
+                                // Busca el cliente y setea el nombre en el buscador
+                                const client = this.allClients.find(c => c.id === subClient.client_id);
+                                if (client) {
+                                    this.clientSearch = client.business_name;
+                                    console.log('[FETCH] client.business_name:', client.business_name);
+                                }
+                                // Cargar subclientes del cliente para el select
+                                this.loadSubClients(subClient.client_id);
+                            })
+                            .catch(error => {
+                                console.error('[FETCH ERROR] subClient:', error);
+                            });
                     }
                 },
 
@@ -639,6 +673,7 @@
                         // Preparar datos de la cotización
                         const quoteData = {
                             request_number: this.quote.request_number,
+                            project_id: this.quote.project_id,
                             employee_id: this.quote.employee_id,
                             service_name: this.quote.service_name,
                             sub_client_id: this.quote.sub_client_id,
@@ -744,6 +779,7 @@
                         this.items[key] = [];
                     });
                 },
+                projectFromPHP, // <-- Añade esto para exponerlo en el template
             };
         }
     </script>

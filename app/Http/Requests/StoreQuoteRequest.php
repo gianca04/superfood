@@ -27,6 +27,7 @@ class StoreQuoteRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'project_id' => 'nullable|exists:projects,id',
             'request_number' => 'nullable|string|max:255',
             'employee_id' => 'nullable|exists:employees,id',
             'sub_client_id' => 'nullable|exists:sub_clients,id',
@@ -38,8 +39,7 @@ class StoreQuoteRequest extends FormRequest
             'sub_client_name' => 'nullable|string|max:255',
             'quote_date' => 'nullable|date',
             'execution_date' => 'nullable|date',
-            'status' => 'nullable|string|in:POR HACER,ENVIADO,APROBADO,RECHAZADA',
-            'items' => 'required|array|min:1', // Enforce at least one item
+            'status' => 'nullable|string|in:Pendiente,Enviado,Aprobado,Anulado',
             'items.*.pricelist_id' => 'required|exists:pricelists,id',
             'items.*.budget_code' => 'nullable|string|max:50',
             'items.*.description' => 'nullable|string', // Description can be optional if derived from pricelist? Let's keep nullable or required? Test sends it.
@@ -58,9 +58,33 @@ class StoreQuoteRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'status.required' => 'El estado de la cotización es obligatorio.',
-            'status.in' => 'El estado debe ser uno de: POR HACER, ENVIADO, APROBADO, RECHAZADA.',
-            'execution_date.after_or_equal' => 'La fecha de ejecución debe ser igual o posterior a la fecha de cotización.',
+            'request_number.max' => 'El número de solicitud no puede exceder 255 caracteres.',
+            'employee_id.exists' => 'El empleado seleccionado no existe.',
+            'sub_client_id.exists' => 'El subcliente seleccionado no existe.',
+            'quote_category_id.exists' => 'La categoría seleccionada no existe.',
+            'energy_sci_manager.max' => 'El nombre del gerente no puede exceder 255 caracteres.',
+            'ceco.max' => 'El CECO no puede exceder 255 caracteres.',
+            'service_name.required' => 'El nombre del servicio es obligatorio.',
+            'service_name.max' => 'El nombre del servicio no puede exceder 255 caracteres.',
+            'client_name.max' => 'El nombre del cliente no puede exceder 255 caracteres.',
+            'sub_client_name.max' => 'El nombre del subcliente no puede exceder 255 caracteres.',
+            'quote_date.date' => 'La fecha de cotización no es válida.',
+            'execution_date.date' => 'La fecha de ejecución no es válida.',
+            'status.in' => 'El estado debe ser uno de: Pendiente, Enviado, Aprobado, Anulado.',
+            'items.array' => 'El formato de los ítems no es válido.',
+            'items.*.pricelist_id.required' => 'El ítem debe tener un precio seleccionado.',
+            'items.*.pricelist_id.exists' => 'El precio seleccionado para el ítem no existe.',
+            'items.*.budget_code.max' => 'El código de presupuesto no puede exceder 50 caracteres.',
+            'items.*.description.string' => 'La descripción del ítem debe ser texto.',
+            'items.*.quantity.required' => 'La cantidad del ítem es obligatoria.',
+            'items.*.quantity.numeric' => 'La cantidad del ítem debe ser un número.',
+            'items.*.quantity.min' => 'La cantidad mínima permitida es 0.01.',
+            'items.*.unit_price.required' => 'El precio unitario del ítem es obligatorio.',
+            'items.*.unit_price.numeric' => 'El precio unitario debe ser un número.',
+            'items.*.unit_price.min' => 'El precio unitario mínimo es 0.',
+            'items.*.item_type.required' => 'El tipo de ítem es obligatorio.',
+            'items.*.item_type.string' => 'El tipo de ítem debe ser texto.',
+            'items.*.comment.string' => 'El comentario debe ser texto.',
         ];
     }
 }
