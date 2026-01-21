@@ -38,7 +38,6 @@ Route::prefix('pricelists')->middleware(['web', 'auth'])->group(function () {
 });
 
 // Quotes API (para gestión de cotizaciones)
-// Quotes API (para gestión de cotizaciones)
 Route::apiResource('quotes', QuoteController::class); // Middleware temporalmente deshabilitado para pruebas manuales
 
 

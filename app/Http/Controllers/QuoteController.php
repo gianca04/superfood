@@ -65,7 +65,6 @@ class QuoteController extends Controller
 
         return response()->json($quotes);
     }
-
     /**
      * Almacena una nueva cotización.
      *
@@ -81,7 +80,7 @@ class QuoteController extends Controller
             return \Illuminate\Support\Facades\DB::transaction(function () use ($validated, $request) {
                 // 2. Crear la Cotización
                 // Aseguramos que el status sea 'POR HACER' si no se envía
-                $validated['status'] = $validated['status'] ?? 'POR HACER';
+                $validated['status'] = $validated['status'] ?? 'Pendiente';
 
                 // Asignar el employee_id del usuario autenticado
                 if (Auth::check() && Auth::user()->employee) {
@@ -94,6 +93,7 @@ class QuoteController extends Controller
                     ->whereNotNull('request_number')
                     ->orderByDesc('id')
                     ->first();
+                // esto tendrá relacion con proyecto
 
                 if ($lastQuote && preg_match('/COT-' . $year . '-(\d+)/', $lastQuote->request_number, $matches)) {
                     $nextNumber = (int) $matches[1] + 1;
@@ -102,6 +102,11 @@ class QuoteController extends Controller
                 }
 
                 $validated['request_number'] = sprintf('COT-%s-%04d', $year, $nextNumber);
+
+                // Guardar project_id si viene en el request
+                if ($request->has('project_id')) {
+                    $validated['project_id'] = $request->input('project_id');
+                }
 
                 $quote = Quote::create($validated);
 

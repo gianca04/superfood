@@ -36,12 +36,20 @@
                 </template>
             </div>
         </div>
-
         <div class="flex items-center gap-2">
             <span class="text-xs text-gray-400" x-text="sidebarOpen ? 'Ocultar' : 'Datos del proyecto'"></span>
             <span class="text-gray-400 transition-transform duration-200 material-symbols-outlined"
                 :class="sidebarOpen ? 'rotate-180' : ''">expand_more</span>
         </div>
+    </div>
+    {{-- N° Solicitud --}}
+    <div class="mb-4">
+        <label class="block mb-1 text-xs font-medium text-gray-500">N° Solicitud</label>
+        <input class="text-sm sidebar-input bg-gray-50 font-bold text-emerald-700" type="text"
+            x-model="quote.request_number" readonly />
+        {{-- Campo oculto para el POST --}}
+        <input type="hidden" name="request_number" :value="quote.request_number">
+        <input type="hidden" name="project_id" :value="quote.project_id">
     </div>
 
     {{-- Collapsible Content --}}
@@ -105,7 +113,8 @@
                             @click.away="clientDropdownOpen = false" class="searchable-select-dropdown">
                             <template x-for="client in filteredClients" :key="client.id">
                                 <div @click="selectClientFromDropdown(client)"
-                                    :class="{ 'selected': quote.client_id == client.id }" class="searchable-select-item">
+                                    :class="{ 'selected': quote.client_id == client.id }"
+                                    class="searchable-select-item">
                                     <div class="text-sm searchable-select-item-title" x-text="client.business_name">
                                     </div>
                                     <div class="searchable-select-item-subtitle"
@@ -208,10 +217,10 @@
                 <div>
                     <label class="block mb-1 text-xs font-medium text-gray-500">Estado</label>
                     <select x-model="quote.status" class="text-sm sidebar-input">
-                        <option value="POR HACER">Por Hacer</option>
-                        <option value="ENVIADO">Enviado</option>
-                        <option value="APROBADO">Aprobado</option>
-                        <option value="RECHAZADA">Rechazada</option>
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="Enviado">Enviado</option>
+                        <option value="Aprobado">Aprobado</option>
+                        <option value="Anulado">Anulado</option>
                     </select>
                     <input type="hidden" name="status" x-model="quote.status">
                 </div>

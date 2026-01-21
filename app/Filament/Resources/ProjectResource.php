@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ProjectResource\Pages;
 use App\Filament\Resources\ProjectResource\RelationManagers;
 use App\Filament\Resources\ProjectResource\RelationManagers\EmployeesRelationManager;
+use App\Filament\Resources\ProjectResource\RelationManagers\QuotesRelationManager;
 use App\Filament\Resources\ProjectResource\RelationManagers\TimesheetsRelationManager;
 use App\Filament\Resources\ProjectResource\RelationManagers\WorkReportsRelationManager;
 use App\Forms\Components\ClientMainInfo;
@@ -1224,8 +1225,7 @@ class ProjectResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
-
+            QuotesRelationManager::class,
             //WorkReportsRelationManager::class,
             //TimesheetsRelationManager::class,
             //EmployeesRelationManager::class, // Relación con empleados (supervisores)

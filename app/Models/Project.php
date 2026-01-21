@@ -116,9 +116,9 @@ class Project extends Model
         return $this->hasOne(Compliance::class, 'project_id');
     }
 
-    public function quote()
+    public function quotes()
     {
-        return $this->belongsTo(Quote::class, 'quote_id');
+        return $this->hasMany(\App\Models\Quote::class, 'project_id');
     }
     /**
      * The attributes that should be cast to native types.

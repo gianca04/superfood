@@ -6,8 +6,18 @@
 
     {{-- Main Container with Alpine --}}
     {{-- Pasamos los datos desde PHP directamente, eliminando llamadas API innecesarias --}}
-    <div x-data="quoteManager(@js($quoteCategories), @js($clients), @js($priceTypes), @js($record ?? null))"
-        class="space-y-4">
+    <div x-data="quoteManager(
+        @js($quoteCategories),
+        @js($clients),
+        @js($priceTypes),
+        @js($record ?? null),
+        @js($project ?? null),
+        @js($quoteCount ?? 1),
+        @js($subClientId ?? null),
+        @js($serviceCode ?? null),
+        @js($projectId ?? null),
+        @js($suggestedRequestNumber ?? null) {{-- <-- NUEVO --}}
+    )" class="space-y-4">
 
         {{-- Collapsible Sidebar (Top Panel) --}}
         @include('filament.resources.quote-resource.components.quote-sidebar')
@@ -31,7 +41,9 @@
 
     {{-- Alpine Component (inline fallback if not using modules) --}}
     <script>
-        function quoteManager(categoriesFromPHP = [], clientsFromPHP = [], priceTypesFromPHP = [], existingQuote = null) {
+        function quoteManager(categoriesFromPHP = [], clientsFromPHP = [], priceTypesFromPHP = [], existingQuote = null,
+            projectFromPHP = null, quoteCount = 1, subClientId = null, serviceCode = null, projectId = null,
+            suggestedRequestNumber = null) {
             return {
                 // Sidebar state (collapsible)
                 sidebarOpen: true,
@@ -39,44 +51,47 @@
                 // Quote header - todos los campos del modelo
                 quote: {
                     id: null,
-                    request_number: '',
+                    request_number: suggestedRequestNumber || projectFromPHP?.service_code ||
+                    '', // Si quieres igualar al service_code
                     employee_id: null,
                     service_name: '',
-                    client_id: null,
-                    sub_client_id: null,
+                    client_id: projectFromPHP?.client_id || null,
+                    sub_client_id: projectFromPHP?.sub_client_id || subClientId || null,
                     quote_category_id: null,
                     energy_sci_manager: '',
                     ceco: '',
-                    status: 'POR HACER',
+                    status: 'Pendiente',
                     quote_date: new Date().toISOString().split('T')[0], // Fecha actual por defecto
                     execution_date: '',
+                    service_code: projectFromPHP?.service_code || '', // <-- Aquí
+                    project_id: projectFromPHP?.id || projectId || null,
                 },
 
                 // Sections
                 sections: [{
-                    key: 'viaticos',
-                    title: 'Viáticos',
-                    icon: 'flight_takeoff',
-                    priceTypeId: 3,
-                    bgClass: 'bg-blue-100 dark:bg-blue-900/30',
-                    iconClass: 'text-blue-600 dark:text-blue-400'
-                },
-                {
-                    key: 'suministros',
-                    title: 'Suministros',
-                    icon: 'inventory_2',
-                    priceTypeId: 2,
-                    bgClass: 'bg-amber-100 dark:bg-amber-900/30',
-                    iconClass: 'text-amber-600 dark:text-amber-400'
-                },
-                {
-                    key: 'mano_obra',
-                    title: 'Mano de Obra',
-                    icon: 'engineering',
-                    priceTypeId: 2,
-                    bgClass: 'bg-purple-100 dark:bg-purple-900/30',
-                    iconClass: 'text-purple-600 dark:text-purple-400'
-                },
+                        key: 'viaticos',
+                        title: 'Viáticos',
+                        icon: 'flight_takeoff',
+                        priceTypeId: 3,
+                        bgClass: 'bg-blue-100 dark:bg-blue-900/30',
+                        iconClass: 'text-blue-600 dark:text-blue-400'
+                    },
+                    {
+                        key: 'suministros',
+                        title: 'Suministros',
+                        icon: 'inventory_2',
+                        priceTypeId: 2,
+                        bgClass: 'bg-amber-100 dark:bg-amber-900/30',
+                        iconClass: 'text-amber-600 dark:text-amber-400'
+                    },
+                    {
+                        key: 'mano_obra',
+                        title: 'Mano de Obra',
+                        icon: 'engineering',
+                        priceTypeId: 2,
+                        bgClass: 'bg-purple-100 dark:bg-purple-900/30',
+                        iconClass: 'text-purple-600 dark:text-purple-400'
+                    },
                 ],
 
                 // Column Resizing
@@ -241,6 +256,19 @@
                                 }
                             });
                         }
+                    } else {
+                        // Si no hay existingQuote, inicializa los campos con los valores del proyecto
+                        if (projectFromPHP) {
+                            this.quote.client_id = projectFromPHP.client_id || null;
+                            this.quote.sub_client_id = projectFromPHP.sub_client_id || null;
+                            this.quote.service_code = projectFromPHP.service_code || '';
+                            this.quote.request_number = projectFromPHP.service_code || '';
+                            this.quote.project_id = projectFromPHP.id || null;
+                        }
+                    }
+
+                    if (!existingQuote && suggestedRequestNumber) {
+                        this.quote.request_number = suggestedRequestNumber;
                     }
                 },
 
@@ -421,7 +449,7 @@
                     }
                     this.searchModal.loading = true;
                     try {
-                        // Construir URL con parámetros de búsqueda 
+                        // Construir URL con parámetros de búsqueda
                         // NOTA: Eliminamos el filtro price_type_id para permitir búsqueda global
                         let url = `/api/pricelists/search?q=${encodeURIComponent(this.searchModal.query)}&limit=30`;
 
@@ -578,7 +606,7 @@
                     this.items[sectionKey].splice(index, 1);
                 },
 
-                recalculate() { },
+                recalculate() {},
 
                 // Calculations
                 getSectionSubtotal(sectionKey) {

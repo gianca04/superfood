@@ -6,7 +6,10 @@ use App\Filament\Resources\QuoteResource;
 use App\Models\Client;
 use App\Models\PriceType;
 use App\Models\QuoteCategory;
+use App\Models\Project;
 use Filament\Resources\Pages\Page;
+
+use Filament\Resources\Pages\CreateRecord; // Si es para crear un registro
 use Illuminate\Support\Collection;
 
 class CreateQuote extends Page
@@ -23,6 +26,11 @@ class CreateQuote extends Page
     public Collection $quoteCategories;
     public Collection $clients;
     public Collection $priceTypes;
+    public ?int $projectId = null;
+    public ?int $subClientId = null;
+    public ?string $serviceCode = null;
+    public ?object $project = null;
+    public ?string $suggestedRequestNumber = null;
 
     public function mount(): void
     {
@@ -34,5 +42,19 @@ class CreateQuote extends Page
             ->orderBy('business_name')
             ->get();
         $this->priceTypes = PriceType::select('id', 'name')->orderBy('id')->get();
+        $projectId = request()->query('project_id');
+        $this->project = $projectId ? Project::find($projectId) : null;
+        $this->subClientId = request()->query('sub_client_id');
+        $this->serviceCode = request()->query('service_code');
+        // Generar el número sugerido solo si hay proyecto
+        $this->suggestedRequestNumber = $projectId ? \App\Models\Quote::generateNextRequestNumber($projectId) : null;
+    }
+
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        if ($projectId = request()->query('project_id')) {
+            $data['project_id'] = $projectId;
+        }
+        return $data;
     }
 }

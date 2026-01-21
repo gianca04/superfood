@@ -51,6 +51,7 @@ class Quote extends Model
     protected $fillable = [
         'service_name',
         'request_number',
+        'project_id',
         'employee_id',
         'sub_client_id',
         'quote_category_id',
@@ -138,6 +139,11 @@ class Quote extends Model
         return $this->details();
     }
 
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class, 'project_id');
+    }
+
     /**
      * Obtiene las visitas asociadas a esta cotización.
      *
@@ -178,6 +184,29 @@ class Quote extends Model
                         ->orWhere('last_name', 'LIKE', "%{$search}%");
                 });
         });
+    }
+
+    public static function generateNextRequestNumber($projectId)
+    {
+        $project = Project::find($projectId);
+        if (!$project) return 'COT-00000-A';
+
+        $baseNumber = $project->service_code ?? $project->request_number ?? sprintf('%05d', $project->id);
+
+        // Si ya empieza con 'COT-', no lo agregamos de nuevo
+        if (stripos($baseNumber, 'COT-') === 0) {
+            $base = $baseNumber;
+        } else {
+            $base = 'COT-' . $baseNumber;
+        }
+
+        // Contamos cuántas cotizaciones existen para este proyecto
+        $count = self::where('project_id', $projectId)->count();
+
+        // Convertimos el número a letra (0 = A, 1 = B, 2 = C...)
+        $letter = chr(65 + $count);
+
+        return "{$base}-{$letter}";
     }
 
     /**
