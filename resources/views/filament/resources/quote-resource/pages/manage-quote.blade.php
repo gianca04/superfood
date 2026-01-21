@@ -6,7 +6,8 @@
 
     {{-- Main Container with Alpine --}}
     {{-- Pasamos los datos desde PHP directamente, eliminando llamadas API innecesarias --}}
-    <div x-data="quoteManager(@js($quoteCategories), @js($clients), @js($priceTypes), @js($record ?? null))" class="space-y-4">
+    <div x-data="quoteManager(@js($quoteCategories), @js($clients), @js($priceTypes), @js($record ?? null))"
+        class="space-y-4">
 
         {{-- Collapsible Sidebar (Top Panel) --}}
         @include('filament.resources.quote-resource.components.quote-sidebar')
@@ -53,29 +54,29 @@
 
                 // Sections
                 sections: [{
-                        key: 'viaticos',
-                        title: 'Viáticos',
-                        icon: 'flight_takeoff',
-                        priceTypeId: 3,
-                        bgClass: 'bg-blue-100 dark:bg-blue-900/30',
-                        iconClass: 'text-blue-600 dark:text-blue-400'
-                    },
-                    {
-                        key: 'suministros',
-                        title: 'Suministros',
-                        icon: 'inventory_2',
-                        priceTypeId: 2,
-                        bgClass: 'bg-amber-100 dark:bg-amber-900/30',
-                        iconClass: 'text-amber-600 dark:text-amber-400'
-                    },
-                    {
-                        key: 'mano_obra',
-                        title: 'Mano de Obra',
-                        icon: 'engineering',
-                        priceTypeId: 2,
-                        bgClass: 'bg-purple-100 dark:bg-purple-900/30',
-                        iconClass: 'text-purple-600 dark:text-purple-400'
-                    },
+                    key: 'viaticos',
+                    title: 'Viáticos',
+                    icon: 'flight_takeoff',
+                    priceTypeId: 3,
+                    bgClass: 'bg-blue-100 dark:bg-blue-900/30',
+                    iconClass: 'text-blue-600 dark:text-blue-400'
+                },
+                {
+                    key: 'suministros',
+                    title: 'Suministros',
+                    icon: 'inventory_2',
+                    priceTypeId: 2,
+                    bgClass: 'bg-amber-100 dark:bg-amber-900/30',
+                    iconClass: 'text-amber-600 dark:text-amber-400'
+                },
+                {
+                    key: 'mano_obra',
+                    title: 'Mano de Obra',
+                    icon: 'engineering',
+                    priceTypeId: 2,
+                    bgClass: 'bg-purple-100 dark:bg-purple-900/30',
+                    iconClass: 'text-purple-600 dark:text-purple-400'
+                },
                 ],
 
                 // Column Resizing
@@ -420,16 +421,34 @@
                     }
                     this.searchModal.loading = true;
                     try {
-                        // Construir URL con parámetros de búsqueda y filtro de tipo de precio
+                        // Construir URL con parámetros de búsqueda 
+                        // NOTA: Eliminamos el filtro price_type_id para permitir búsqueda global
                         let url = `/api/pricelists/search?q=${encodeURIComponent(this.searchModal.query)}&limit=30`;
 
-                        // Agregar filtro por price_type_id si está seleccionado
-                        if (this.searchModal.filter) {
-                            url += `&price_type_id=${this.searchModal.filter}`;
-                        }
+                        // if (this.searchModal.filter) {
+                        //     url += `&price_type_id=${this.searchModal.filter}`;
+                        // }
+
+                        console.log('🔍 Searching URL:', url);
 
                         const response = await fetch(url);
-                        this.searchModal.results = await response.json();
+
+                        if (!response.ok) {
+                            console.error('❌ Network response not ok:', response.statusText);
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+
+                        const text = await response.text();
+                        console.log('📄 Raw response:', text);
+
+                        try {
+                            this.searchModal.results = JSON.parse(text);
+                            console.log('✅ Parsed results:', this.searchModal.results);
+                        } catch (e) {
+                            console.error('❌ JSON Parse error:', e);
+                            this.searchModal.results = [];
+                        }
+
                     } catch (error) {
                         console.error('Search error:', error);
                         this.searchModal.results = [];
@@ -559,7 +578,7 @@
                     this.items[sectionKey].splice(index, 1);
                 },
 
-                recalculate() {},
+                recalculate() { },
 
                 // Calculations
                 getSectionSubtotal(sectionKey) {
