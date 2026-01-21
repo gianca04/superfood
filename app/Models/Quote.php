@@ -144,6 +144,11 @@ class Quote extends Model
         return $this->belongsTo(Project::class, 'project_id');
     }
 
+    public function quoteWarehouse(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(QuoteWarehouse::class, 'quote_id');
+    }
+
     /**
      * Obtiene las visitas asociadas a esta cotización.
      *

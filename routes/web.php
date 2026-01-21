@@ -120,6 +120,9 @@ Route::middleware(['auth'])->group(function () {
 
     //aca estarán la importacion de proyectos en csv
 
+    // Ruta para actualizar estado de almacén (Kanban)
+    Route::post('/warehouse/update-status', [App\Http\Controllers\WarehouseStatusController::class, 'updateStatus'])
+        ->name('warehouse.update-status');
 });
 
 Route::get('/crear-symlink', function () {
