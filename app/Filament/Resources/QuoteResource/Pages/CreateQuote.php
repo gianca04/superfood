@@ -31,6 +31,7 @@ class CreateQuote extends Page
     public ?string $serviceCode = null;
     public ?object $project = null;
     public ?string $suggestedRequestNumber = null;
+    public ?int $suggestedProjectId = null; // <-- Agrega esta línea
 
     public function mount(): void
     {
@@ -46,8 +47,18 @@ class CreateQuote extends Page
         $this->project = $projectId ? Project::find($projectId) : null;
         $this->subClientId = request()->query('sub_client_id');
         $this->serviceCode = request()->query('service_code');
-        // Generar el número sugerido solo si hay proyecto
-        $this->suggestedRequestNumber = $projectId ? \App\Models\Quote::generateNextRequestNumber($projectId) : null;
+
+        if ($projectId) {
+            // Si viene de un proyecto existente
+            $this->suggestedRequestNumber = \App\Models\Quote::generateNextRequestNumber($projectId);
+            $this->suggestedProjectId = $projectId;
+        } else {
+            // Si es creación normal, calcula el siguiente ID
+            $lastProject = Project::orderByDesc('id')->first();
+            $nextId = $lastProject ? $lastProject->id + 1 : 1;
+            $this->suggestedRequestNumber = 'COT-' . $nextId . '-A';
+            $this->suggestedProjectId = $nextId;
+        }
     }
 
     protected function mutateFormDataBeforeCreate(array $data): array

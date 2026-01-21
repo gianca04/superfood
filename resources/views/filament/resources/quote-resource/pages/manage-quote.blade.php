@@ -44,6 +44,7 @@
             <span x-text="quote.project_id"></span>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     {{-- Alpine Component (inline fallback if not using modules) --}}
     <script>
@@ -726,25 +727,38 @@
                         const result = await response.json();
 
                         if (response.ok) {
-                            console.log('✅ Cotización guardada exitosamente:', result);
+                            // Notificación SweetAlert2
+                            Swal.fire({
+                                icon: 'success',
+                                title: this.quote.id ? '¡Cotización actualizada!' : '¡Cotización creada!',
+                                text: this.quote.id ?
+                                    'La cotización se ha actualizado correctamente.' :
+                                    'La cotización se ha guardado correctamente.',
+                                timer: 1800,
+                                showConfirmButton: false
+                            });
 
-                            // Si es una actualización, solo notificar. Si es creación, redirigir.
-                            if (this.quote.id) {
-                                alert('¡Cotización actualizada exitosamente!');
-                                // Opcional: recargar datos o mantener estado
-                            } else {
-                                // Redirect to edit page
-                                window.location.href = `/dashboard/quotes/${result.id}/edit`;
+                            // Redirigir si es creación
+                            if (!this.quote.id) {
+                                setTimeout(() => {
+                                    window.location.href = `/dashboard/quotes/${result.id}/edit`;
+                                }, 1800);
                             }
-
+                            // Si es edición, puedes recargar datos o mantener el estado
                         } else {
-                            console.error('❌ Error al guardar cotización:', result);
-                            alert('Error al guardar: ' + (result.message || 'Error desconocido'));
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: result.message || 'Error desconocido al guardar la cotización'
+                            });
                         }
 
                     } catch (error) {
-                        console.error('💥 Error de red al guardar cotización:', error);
-                        alert('Error de conexión al guardar la cotización');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error de conexión',
+                            text: 'Error de conexión al guardar la cotización'
+                        });
                     } finally {
                         this.saving = false;
                     }
@@ -761,7 +775,7 @@
                         quote_category_id: null,
                         energy_sci_manager: '',
                         ceco: '',
-                        status: 'POR HACER',
+                        status: 'Pendiente',
                         quote_date: new Date().toISOString().split('T')[0],
                         execution_date: '',
                     };

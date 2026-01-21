@@ -58,14 +58,16 @@
             <div class="mb-4">
                 <label class="block mb-1 text-xs font-medium text-gray-500">N° Solicitud</label>
                 <input class="text-sm sidebar-input bg-gray-50 font-bold text-emerald-700" type="text"
-                    x-model="quote.request_number" readonly />
+                    x-model="quote.request_number"
+                    :value="quote.request_number || '{{ $suggestedRequestNumber ?? '' }}'" readonly />
                 {{-- Campo oculto para el POST --}}
-                <input type="hidden" name="request_number" :value="quote.request_number">
-                <input type="hidden" name="project_id" :value="quote.project_id">
+                <input type="hidden" name="request_number"
+                    :value="quote.request_number || '{{ $suggestedRequestNumber ?? '' }}'">
+                <input type="hidden" name="project_id" :value="quote.project_id || '{{ $suggestedProjectId ?? '' }}'">
                 {{-- Mostrar el project_id en la vista para depuración/visualización --}}
                 <div class="mt-1 text-xs text-gray-400">
                     <span>Project ID:</span>
-                    <span x-text="quote.project_id"></span>
+                    <span x-text="quote.project_id || '{{ $suggestedProjectId ?? '' }}'"></span>
                 </div>
             </div>
             {{-- Primera fila: Nombre del Servicio (campo amplio) --}}
@@ -235,6 +237,7 @@
         </div>
     </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
     document.addEventListener('alpine:init', () => {

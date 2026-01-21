@@ -137,22 +137,16 @@ class ProjectResource extends Resource
                                             ->columnSpan(2)
                                             ->prefixIcon('heroicon-m-briefcase')
                                             ->label('Cliente') // Título para el campo 'Cliente'
-                                            ->options(
-                                                function (callable $get) {
-                                                    return Client::whereIn('id', [127, 164])  // Filtra solo los IDs especificados
-                                                        ->select('id', 'business_name', 'document_number')
-                                                        ->when($get('search'), function ($query, $search) {
-                                                            $query->where('business_name', 'like', "%{$search}%")
-                                                                ->orWhere('document_number', 'like', "%{$search}%");
-                                                        })
-                                                        ->get()
-                                                        ->mapWithKeys(function ($client) {
-                                                            return [$client->id => $client->business_name . ' - ' . $client->document_number];
-                                                        })
-                                                        ->toArray();
-                                                }
-                                            )
+                                            ->preload()
                                             ->searchable() // Activa la búsqueda asincrónica
+                                            ->options(
+                                                Client::whereIn('id', [127, 164])
+                                                    ->get()
+                                                    ->mapWithKeys(fn($client) => [
+                                                        $client->id => "{$client->business_name} - {$client->document_number}"
+                                                    ])
+                                            )
+                                            ->getOptionLabelUsing(fn($value): ?string => Client::find($value)?->business_name)
                                             ->reactive() // Hace el campo reactivo
                                             ->afterStateUpdated(fn($state, callable $set) => $set('sub_client_id', null))
                                             ->helperText('Selecciona el cliente para esta cotización.')

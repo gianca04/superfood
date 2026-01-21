@@ -87,26 +87,13 @@ class QuoteController extends Controller
                     $validated['employee_id'] = Auth::user()->employee->id;
                 }
 
-                // Generar request_number automáticamente: COT-YYYY-XXXX
-                $year = date('Y');
-                $lastQuote = Quote::whereYear('created_at', $year)
-                    ->whereNotNull('request_number')
-                    ->orderByDesc('id')
-                    ->first();
-                // esto tendrá relacion con proyecto
-
-                if ($lastQuote && preg_match('/COT-' . $year . '-(\d+)/', $lastQuote->request_number, $matches)) {
-                    $nextNumber = (int) $matches[1] + 1;
-                } else {
-                    $nextNumber = 1;
-                }
-
                 // Guardar project_id si viene en el request
                 if ($request->has('project_id')) {
                     $validated['project_id'] = $request->input('project_id');
                 }
 
-                $quote = Quote::create($validated);
+                // Crear la cotización (y el proyecto si es necesario)
+                $quote = \App\Models\Quote::createWithProject($validated);
 
                 // 3. Procesar los detalles (items)
                 $items = $request->input('items', []);
@@ -132,9 +119,23 @@ class QuoteController extends Controller
                     ]);
                 }
 
+                // Notificación SweetAlert para creación exitosa
+                session()->flash('swal', [
+                    'title' => '¡Cotización creada!',
+                    'text' => 'La cotización se ha guardado correctamente.',
+                    'icon' => 'success',
+                    'timer' => 2000,
+                    'showConfirmButton' => false,
+                ]);
+
                 return response()->json($quote->load(['employee', 'subClient', 'quoteCategory', 'details']), 201);
             });
         } catch (\Exception $e) {
+            session()->flash('swal', [
+                'title' => 'Error',
+                'text' => 'Error al guardar la cotización: ' . $e->getMessage(),
+                'icon' => 'error',
+            ]);
             return response()->json([
                 'message' => 'Error al guardar la cotización',
                 'error' => $e->getMessage()
@@ -206,9 +207,21 @@ class QuoteController extends Controller
                     }
                 }
 
+                session()->flash('swal', [
+                    'title' => '¡Cotización actualizada!',
+                    'text' => 'La cotización se ha actualizado correctamente.',
+                    'icon' => 'success',
+                    'timer' => 2000,
+                    'showConfirmButton' => false,
+                ]);
                 return response()->json($quote->load(['employee', 'subClient', 'quoteCategory', 'details']));
             });
         } catch (\Exception $e) {
+            session()->flash('swal', [
+                'title' => 'Error',
+                'text' => 'Error al actualizar la cotización: ' . $e->getMessage(),
+                'icon' => 'error',
+            ]);
             return response()->json([
                 'message' => 'Error al actualizar la cotización',
                 'error' => $e->getMessage()
@@ -225,7 +238,13 @@ class QuoteController extends Controller
     public function destroy(Quote $quote): JsonResponse
     {
         $quote->delete();
-
+        session()->flash('swal', [
+            'title' => '¡Cotización eliminada!',
+            'text' => 'La cotización se ha eliminado correctamente.',
+            'icon' => 'success',
+            'timer' => 2000,
+            'showConfirmButton' => false,
+        ]);
         return response()->json(['message' => 'Cotización eliminada exitosamente']);
     }
 

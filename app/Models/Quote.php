@@ -191,9 +191,34 @@ class Quote extends Model
         });
     }
 
+    public static function createWithProject(array $data)
+    {
+        // Si no hay project_id, creamos un nuevo proyecto
+        if (empty($data['project_id'])) {
+            // Creamos el proyecto con los datos mínimos requeridos
+            $project = new \App\Models\Project();
+            $project->sub_client_id = $data['sub_client_id'] ?? null;
+            $project->service_code = null; // Se asigna después
+            $project->save();
+
+            // Asignamos el service_code tipo COT-$ID
+            $project->service_code = 'COT-' . $project->id;
+            $project->save();
+
+            $data['project_id'] = $project->id;
+        }
+
+        // Generamos el request_number para la cotización
+        $data['request_number'] = self::generateNextRequestNumber($data['project_id']);
+
+        // Creamos la cotización
+        return self::create($data);
+    }
+
+    // Modifica generateNextRequestNumber para que funcione igual
     public static function generateNextRequestNumber($projectId)
     {
-        $project = Project::find($projectId);
+        $project = \App\Models\Project::find($projectId);
         if (!$project) return 'COT-00000-A';
 
         $baseNumber = $project->service_code ?? $project->request_number ?? sprintf('%05d', $project->id);
