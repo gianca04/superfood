@@ -568,17 +568,19 @@
                     console.log('🗑️ Cliente y SubCliente limpiados');
                 },
 
-                // Cargar todos los subclientes de un cliente desde API
-                async loadSubClients(clientId) {
+                // Cargar todos los subclientes de un cliente desde API (con búsqueda)
+                async loadSubClients(clientId, search = '') {
                     this.loadingSubClients = true;
-                    console.log('📦 Cargando subclientes para client_id:', clientId);
+                    console.log('📦 Cargando subclientes para client_id:', clientId, 'con búsqueda:', search);
 
                     try {
-                        const response = await fetch(`/api/sub-clients?client_id=${clientId}`);
+                        let url = `/api/sub-clients?client_id=${clientId}`;
+                        if (search && search.length > 0) {
+                            url += `&q=${encodeURIComponent(search)}`;
+                        }
+                        const response = await fetch(url);
                         const data = await response.json();
-                        // La API devuelve paginación, tomamos los datos
                         this.subClients = data.data || data;
-                        // Inicializar filteredSubClients con todos
                         this.filteredSubClients = [...this.subClients];
                         console.log('✅ Subclientes cargados:', this.subClients.length);
                     } catch (error) {
@@ -590,17 +592,11 @@
                     }
                 },
 
-                // Filtrar subclientes localmente mientras se escribe
-                filterSubClients() {
+                // Filtrar subclientes localmente y remotamente mientras se escribe
+                async filterSubClients() {
                     const query = this.subClientSearch.toLowerCase().trim();
-                    if (!query) {
-                        this.filteredSubClients = [...this.subClients];
-                    } else {
-                        this.filteredSubClients = this.subClients.filter(sc =>
-                            sc.name.toLowerCase().includes(query) ||
-                            (sc.ceco && sc.ceco.toLowerCase().includes(query))
-                        );
-                    }
+                    if (!this.quote.client_id) return;
+                    await this.loadSubClients(this.quote.client_id, query);
                     this.subClientDropdownOpen = true;
                 },
 

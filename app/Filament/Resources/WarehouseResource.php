@@ -19,10 +19,10 @@ use Illuminate\Support\Facades\Notification;
 class WarehouseResource extends Resource
 {
     protected static ?string $model = Warehouse::class;
-protected static ?string $modelLabel = 'Almacén';
+    protected static ?string $modelLabel = 'Almacén';
     protected static ?string $pluralModelLabel = 'Almacenes';
 
-    protected static ?string $navigationIcon = 'heroicon-o-wrench-screwdriver';
+    protected static ?string $navigationIcon = 'heroicon-o-archive-box';
 
     public static function form(Form $form): Form
     {

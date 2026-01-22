@@ -27,19 +27,28 @@ class SubClientController extends Controller
             $query->where('client_id', $request->client_id);
         }
 
-        // Filtro opcional por búsqueda solo en name
-        if ($request->has('q') && $request->q) {
-            $query->where('name', 'like', '%' . $request->q . '%');
+        // Búsqueda por nombre o ceco
+        if ($request->filled('q')) {
+            $q = $request->input('q');
+            $query->where(function ($sub) use ($q) {
+                $sub->where('name', 'like', "%$q%")
+                    ->orWhere('ceco', 'like', "%$q%");
+            });
         }
 
-        $subClients = $query->select([
-            'id',
-            'client_id',
-            'name',
-            'ceco'
-        ])->paginate(20);
+        // Paginación (por defecto 30)
+        $perPage = $request->input('per_page', 30);
+        $subClients = $query->orderBy('name')->paginate($perPage);
 
-        return response()->json($subClients);
+        return response()->json([
+            'data' => $subClients->items(),
+            'meta' => [
+                'has_more' => $subClients->hasMorePages(),
+                'current_page' => $subClients->currentPage(),
+                'per_page' => $subClients->perPage(),
+                'total' => $subClients->total(),
+            ],
+        ]);
     }
 
     /**

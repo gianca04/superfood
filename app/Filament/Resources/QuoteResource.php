@@ -21,7 +21,7 @@ class QuoteResource extends Resource
     protected static ?string $pluralModelLabel = 'Cotizaciones';
     protected static ?string $singularModelLabel = 'Cotización';
     protected static ?string $navigationGroup = 'Control de operaciones';
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
     public static function form(Form $form): Form
     {
