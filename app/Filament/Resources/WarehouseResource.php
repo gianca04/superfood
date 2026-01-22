@@ -28,10 +28,10 @@ protected static ?string $modelLabel = 'Almacén';
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
+                Forms\Components\TextInput::make('Nombre')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\Textarea::make('location')
+                Forms\Components\Textarea::make('Ubicación')
                     ->columnSpanFull(),
                 Forms\Components\Select::make('manager_id')
                     ->columns(2)
@@ -119,7 +119,7 @@ protected static ?string $modelLabel = 'Almacén';
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                Tables\Columns\TextColumn::make('Nombre')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('manager.id')
                     ->numeric()

@@ -19,7 +19,7 @@ class QuoteObserver
      */
     public function updated(Quote $quote): void
     {
-        if ($quote->isDirty('status') && $quote->status === 'APROBADO') {
+        if ($quote->isDirty('status') && $quote->status === 'Aprobado') {
             \App\Models\QuoteWarehouse::firstOrCreate(
                 ['quote_id' => $quote->id],
                 ['status' => 'pending']

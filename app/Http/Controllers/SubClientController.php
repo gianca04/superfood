@@ -63,14 +63,12 @@ class SubClientController extends Controller
             $query->where('name', 'like', '%' . $request->q . '%');
         }
 
-        // Limitar resultados para autocompletado (máximo optimizado)
-        $limit = min($request->get('limit', 10), 25); // Máximo 25 para mejor performance
-
+        // No limitar resultados para devolver todos los subclientes
         $subClients = $query->select([
             'id',
             'name',
             'ceco'
-        ])->limit($limit)->get();
+        ])->get();
 
         return response()->json($subClients);
     }
