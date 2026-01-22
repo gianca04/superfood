@@ -858,6 +858,7 @@ class ProjectResource extends Resource
                     ->label('Correlativo')
                     ->alignJustify()
                     ->badge()
+                    ->searchable()
                     ->extraAttributes(['class' => 'font-bold'])
                     ->sortable(),
 

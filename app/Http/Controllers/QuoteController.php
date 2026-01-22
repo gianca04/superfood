@@ -109,12 +109,7 @@ class QuoteController extends Controller
                         'item_type' => $item['item_type'],
                         'quantity' => $quantity,
                         'unit_price' => $unitPrice,
-                        //'subtotal' => $subtotal, // El modelo o la base de datos pueden no tener columna subtotal si es calculado, pero el modelo QuoteDetail tiene append.
-                        // Verificamos QuoteDetail: fillable tiene 'subtotal', así que lo guardamos explícitamente si la tabla lo soporta.
-                        // Si la columna existe en BD, guardamos. Si es solo append, no hace falta.
-                        // Asumiremos que se guarda para persistencia histórica.
                         'subtotal' => $subtotal,
-                        // 'budget_code' and 'description' removed as they don't exist in DB
                         'comment' => $item['comment'] ?? null,
                     ]);
                 }
@@ -179,6 +174,11 @@ class QuoteController extends Controller
                     } elseif (Auth::check() && Auth::user()->employee) {
                         $validated['employee_id'] = Auth::user()->employee->id;
                     }
+                }
+
+                // Mantener project_id si no se envía
+                if (!isset($validated['project_id']) || $validated['project_id'] === null) {
+                    $validated['project_id'] = $quote->project_id;
                 }
 
                 // Actualizar la cotización
