@@ -19,7 +19,6 @@ class PricelistSearchController extends Controller
     {
         $query = $request->get('q', '');
         $priceTypeId = $request->get('price_type_id');
-        $limit = $request->get('limit', 15);
 
         $pricelists = Pricelist::query()
             ->with(['unit', 'priceType'])
@@ -49,7 +48,6 @@ class PricelistSearchController extends Controller
                     }
                 });
             })
-            ->limit($limit)
             ->get()
             ->map(fn($item) => [
                 'id' => $item->id,
