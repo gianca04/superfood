@@ -605,7 +605,17 @@ class ComplianceResource extends Resource
             ->filters([
                 SelectFilter::make('project_id')
                     ->label('Proyecto')
-                    ->relationship('project', 'name')
+                    ->options(function () {
+                        return Project::query()
+                            ->whereNotNull('name')
+                            ->where('name', '!=', '')
+                            ->orderBy('name')
+                            ->limit(50)
+                            ->get()
+                            ->mapWithKeys(fn ($project) => [
+                                $project->id => ($project->service_code ?? '') . ' - ' . $project->name
+                            ]);
+                    })
                     ->searchable()
                     ->preload(),
                 SelectFilter::make('state')
