@@ -31,6 +31,11 @@ class QuotesRelationManager extends RelationManager
                     ]))->openUrlInNewTab(),
             ])
             ->actions([
+                Tables\Actions\Action::make('export_excel')
+                    ->label('Excel')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->url(fn($record) => url("/quotes/{$record->id}/excel"))
+                    ->openUrlInNewTab(),
                 // Puedes agregar acciones personalizadas aquí si lo deseas
             ])
             ->bulkActions([

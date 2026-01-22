@@ -6,7 +6,7 @@
     <div x-data="quoteIndex()" x-init="fetchQuotes(), initPagination()" class="quote-cards-container">
         {{-- Header con estadísticas --}}
         <div class="mb-8">
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-4">
                 <div
                     class="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-lg quote-stat-card dark:bg-gray-800 dark:border-gray-700">
                     <span
@@ -45,7 +45,7 @@
                     </div>
                 </div>
                 <div
-                    class="flex items-center col-span-1 gap-4 p-4 border border-blue-200 rounded-lg quote-stat-card bg-blue-50 dark:bg-blue-900/30 dark:border-blue-800 sm:col-span-3">
+                    class="flex items-center gap-4 p-4 border border-blue-200 rounded-lg quote-stat-card bg-blue-50 dark:bg-blue-900/30 dark:border-blue-800">
                     <span
                         class="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-full dark:bg-blue-900/40">
                         <span
