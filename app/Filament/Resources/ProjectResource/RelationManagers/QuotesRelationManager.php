@@ -31,12 +31,25 @@ class QuotesRelationManager extends RelationManager
                     ]))->openUrlInNewTab(),
             ])
             ->actions([
-                Tables\Actions\Action::make('export_excel')
-                    ->label('Excel')
-                    ->icon('heroicon-o-document-arrow-down')
-                    ->url(fn($record) => url("/quotes/{$record->id}/excel"))
-                    ->openUrlInNewTab(),
-                // Puedes agregar acciones personalizadas aquí si lo deseas
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\Action::make('preview')
+                        ->label('Previsualizar')
+                        ->icon('heroicon-o-eye')
+                        ->url(fn($record) => url("/quotes/{$record->id}/preview"))
+                        ->openUrlInNewTab(),
+                    Tables\Actions\Action::make('edit')
+                        ->label('Editar')
+                        ->icon('heroicon-o-pencil-square')
+                        ->url(fn($record) => QuoteResource::getUrl('edit', ['record' => $record->id]))
+                        ->openUrlInNewTab(),
+                    Tables\Actions\Action::make('export_excel')
+                        ->label('Exportar Excel')
+                        ->icon('heroicon-o-document-arrow-down')
+                        ->url(fn($record) => url("/quotes/{$record->id}/excel"))
+                        ->openUrlInNewTab(),
+                ])
+                ->icon('heroicon-o-ellipsis-vertical')
+                ->tooltip('Opciones'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

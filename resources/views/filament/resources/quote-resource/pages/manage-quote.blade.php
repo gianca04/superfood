@@ -172,6 +172,7 @@
                 subClientSearch: '',
                 subClientDropdownOpen: false,
                 filteredSubClients: [],
+                subClientSearchTimeout: null, // Debounce timeout para búsqueda de subclientes
 
                 // Searchable select para clientes
                 clientSearch: '',
@@ -592,12 +593,23 @@
                     }
                 },
 
-                // Filtrar subclientes localmente y remotamente mientras se escribe
-                async filterSubClients() {
+                // Filtrar subclientes localmente y remotamente mientras se escribe (con debounce)
+                filterSubClients() {
+                    // Limpiar timeout anterior si existe
+                    if (this.subClientSearchTimeout) {
+                        clearTimeout(this.subClientSearchTimeout);
+                    }
+                    
                     const query = this.subClientSearch.toLowerCase().trim();
                     if (!this.quote.client_id) return;
-                    await this.loadSubClients(this.quote.client_id, query);
+                    
+                    // Abrir dropdown inmediatamente
                     this.subClientDropdownOpen = true;
+                    
+                    // Debounce: esperar 400ms después de que el usuario termine de escribir
+                    this.subClientSearchTimeout = setTimeout(async () => {
+                        await this.loadSubClients(this.quote.client_id, query);
+                    }, 400);
                 },
 
                 // Seleccionar subcliente desde el dropdown

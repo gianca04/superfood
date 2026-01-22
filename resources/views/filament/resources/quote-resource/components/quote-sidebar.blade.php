@@ -99,7 +99,7 @@
                 {{-- Cliente --}}
                 <div>
                     <label class="block mb-1 text-xs font-medium text-gray-500">Cliente</label>
-                    <div class="searchable-select">
+                    <div class="searchable-select" @click.away="clientDropdownOpen = false">
                         <input type="text" x-model="clientSearch" @focus="clientDropdownOpen = true"
                             @click="clientDropdownOpen = true" @input="filterClients()"
                             :disabled="!!projectFromPHP?.sub_client_id" placeholder="Buscar..."
@@ -121,7 +121,7 @@
                             </template>
                         </div>
                         <div x-show="clientDropdownOpen && filteredClients.length > 0" x-transition
-                            @click.away="clientDropdownOpen = false" class="searchable-select-dropdown">
+                            class="searchable-select-dropdown">
                             <template x-for="client in filteredClients" :key="client.id">
                                 <div @click="selectClientFromDropdown(client)"
                                     :class="{ 'selected': quote.client_id == client.id }"
@@ -144,7 +144,7 @@
                 {{-- SubCliente / Tienda --}}
                 <div>
                     <label class="block mb-1 text-xs font-medium text-gray-500">Tienda / SubCliente</label>
-                    <div class="searchable-select">
+                    <div class="searchable-select" @click.away="subClientDropdownOpen = false">
                         <input type="text" x-model="subClientSearch" @focus="subClientDropdownOpen = true"
                             @click="subClientDropdownOpen = true" @input="filterSubClients()"
                             :disabled="!!projectFromPHP?.sub_client_id || !quote.client_id || loadingSubClients"
@@ -170,7 +170,7 @@
                             </template>
                         </div>
                         <div x-show="subClientDropdownOpen && filteredSubClients.length > 0" x-transition
-                            @click.away="subClientDropdownOpen = false" class="searchable-select-dropdown">
+                            class="searchable-select-dropdown">
                             <template x-for="subClient in filteredSubClients" :key="subClient.id">
                                 <div @click="selectSubClientFromDropdown(subClient)"
                                     :class="{ 'selected': quote.sub_client_id == subClient.id }"
