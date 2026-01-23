@@ -195,7 +195,7 @@ class VisitsRelationManager extends RelationManager
                                     ->label('Descripción del reporte')
                                     ->helperText('Proporciona una descripción detallada del trabajo realizado.')
                                     ->toolbarButtons([
-                                        'attachFiles',
+
                                         'bold',
                                         'bulletList',
                                         'h2',
@@ -212,7 +212,7 @@ class VisitsRelationManager extends RelationManager
                                     ->helperText('Proporciona sugerencias o comentarios adicionales sobre el trabajo realizado.')
                                     ->maxLength(5000)
                                     ->toolbarButtons([
-                                        'attachFiles',
+
                                         'bold',
                                         'bulletList',
                                         'h2',
@@ -237,7 +237,7 @@ class VisitsRelationManager extends RelationManager
                                     ->helperText('Detalla las herramientas utilizadas durante el trabajo.')
                                     ->maxLength(5000)
                                     ->toolbarButtons([
-                                        'attachFiles',
+
                                         'bold',
                                         'bulletList',
                                         'h2',
@@ -254,7 +254,7 @@ class VisitsRelationManager extends RelationManager
                                     ->helperText('Detalla los materiales utilizados durante el trabajo.')
                                     ->maxLength(5000)
                                     ->toolbarButtons([
-                                        'attachFiles',
+
                                         'bold',
                                         'bulletList',
                                         'h2',

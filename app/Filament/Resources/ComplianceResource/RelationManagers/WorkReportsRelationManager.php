@@ -140,7 +140,7 @@ class WorkReportsRelationManager extends RelationManager
                                     ->maxLength(5000)
                                     ->columnSpanFull()
                                     ->toolbarButtons([
-                                        'attachFiles',
+
                                         'bold',
                                         'bulletList',
                                         'h2',
@@ -410,7 +410,7 @@ class WorkReportsRelationManager extends RelationManager
                                     // Quitamos columnSpanFull() para que ocupe la segunda columna
                                     ->maxLength(5000)
                                     ->toolbarButtons([
-                                        'attachFiles',
+
                                         'bold',
                                         'bulletList',
                                         'h2',

@@ -88,6 +88,7 @@ class ComplianceResource extends Resource
                     ->description('Seleccione el proyecto para cargar los datos automáticamente')
                     ->icon('heroicon-o-building-office-2')
                     ->collapsible()
+                    ->collapsed()
                     ->schema([
 
                         Forms\Components\Select::make('project_id')
@@ -182,6 +183,7 @@ class ComplianceResource extends Resource
                     ->description('Seleccione y detalle todos los activos intervenidos durante la actividad ejecutada')
                     ->icon('heroicon-o-cube')
                     ->collapsible()
+                    ->collapsed()
                     ->schema([
                         // Grid de activos - 2 columnas
                         Forms\Components\Grid::make(2)
@@ -329,6 +331,7 @@ class ComplianceResource extends Resource
                     ->description('Registre las observaciones generales del mantenimiento realizado')
                     ->icon('heroicon-o-clipboard-document-list')
                     ->collapsible()
+                    ->collapsed()
                     ->schema([
                         Forms\Components\RichEditor::make('maintenance_observations')
                             ->label('')
@@ -356,6 +359,7 @@ class ComplianceResource extends Resource
                     ->description('Complete los datos del responsable y capture las firmas de conformidad')
                     ->icon('heroicon-o-pencil-square')
                     ->collapsible()
+                    ->collapsed()
                     ->schema([
                         Forms\Components\Grid::make(2)
                             ->schema([
@@ -612,7 +616,7 @@ class ComplianceResource extends Resource
                             ->orderBy('name')
                             ->limit(50)
                             ->get()
-                            ->mapWithKeys(fn ($project) => [
+                            ->mapWithKeys(fn($project) => [
                                 $project->id => ($project->service_code ?? '') . ' - ' . $project->name
                             ]);
                     })

@@ -28,16 +28,18 @@ class WarehouseResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('Nombre')
+                Forms\Components\TextInput::make('name')
+                    ->label('Nombre')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\Textarea::make('Ubicación')
+                Forms\Components\Textarea::make('location')
+                    ->label('Ubicación')
                     ->columnSpanFull(),
                 Forms\Components\Select::make('manager_id')
+                    ->label('Encargado de Almacén')
                     ->columns(2)
                     ->reactive()
                     ->prefixIcon('heroicon-m-user')
-                    ->label('Supervisor / Técnico') // Título para el campo 'Empleado'
                     ->options(
                         function (callable $get) {
                             return Employee::query()

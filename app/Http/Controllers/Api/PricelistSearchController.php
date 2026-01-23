@@ -28,7 +28,7 @@ class PricelistSearchController extends Controller
                     // Search by code (sat_line) using prefix match to utilize the INDEX
                     // LIKE 'Value%' allows the DB to use the B-Tree index. 
                     // LIKE '%Value%' forces a full table scan.
-                    $subQuery->where('sat_line', 'LIKE', "{$query}%");
+                    $subQuery->where('sat_line', 'LIKE', "%{$query}%");
 
                     // Search by description using Full Text Search in Boolean Mode
                     // This utilizes the 'pricelists_sat_description_fulltext' index

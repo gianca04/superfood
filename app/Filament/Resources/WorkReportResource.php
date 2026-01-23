@@ -53,7 +53,7 @@ class WorkReportResource extends Resource
         // return $user && ($user->hasRole('Sistemas') || $user->hasRole('Gerencial'));
         return $user && ($user->hasRole('Sistemas'));
     }
-    
+
 
     public static function form(Form $form): Form
     {
@@ -660,7 +660,7 @@ class WorkReportResource extends Resource
                                     ->maxLength(5000)
                                     ->columnSpanFull()
                                     ->toolbarButtons([
-                                        'attachFiles',
+
                                         'bold',
                                         'bulletList',
                                         'h2',
@@ -965,16 +965,13 @@ class WorkReportResource extends Resource
                                     ->maxLength(5000)
                                     ->columnSpanFull()
                                     ->toolbarButtons([
-                                        'attachFiles',
                                         'bold',
-                                        'bulletList',
                                         'h2',
                                         'h3',
-                                        'italic',
                                         'orderedList',
+                                        'bulletList',
                                         'redo',
-                                        'strike',
-                                        'underline',
+                                        'underli ne',
                                         'undo',
                                     ]),
                             ]),
