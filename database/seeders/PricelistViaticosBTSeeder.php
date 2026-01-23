@@ -50,8 +50,6 @@ class PricelistViaticosBTSeeder extends Seeder
             ['sat_line' => 'VTBT27', 'sat_description' => 'VIATICO CORRECTIVO SUR CHICO ( CHINCHA) - ALIMENTACIÓN, HOSPEDAJE Y PASAJE I/V TERRESTRE', 'unit' => 'POR PERSONA', 'unit_price' => null],
             ['sat_line' => 'VTBT28', 'sat_description' => 'VIATICO CORRECTIVO SUR CHICO ( ICA) - ALIMENTACIÓN, HOSPEDAJE Y PASAJE I/V TERRESTRE', 'unit' => 'POR PERSONA', 'unit_price' => null],
             ['sat_line' => 'VTBT29', 'sat_description' => 'VIATICO CORRECTIVO SUR CHICO ( PISCO) - ALIMENTACIÓN, HOSPEDAJE Y PASAJE I/V TERRESTRE', 'unit' => 'POR PERSONA', 'unit_price' => null],
-
-            // Viáticos Aéreos
             ['sat_line' => 'VABT01', 'sat_description' => 'VIATICO CORRECTIVO NORTE ( CAJAMARCA) - ALIMENTACIÓN, HOSPEDAJE Y PASAJE I/V AÉREO', 'unit' => 'POR PERSONA', 'unit_price' => null],
             ['sat_line' => 'VABT02', 'sat_description' => 'VIATICO CORRECTIVO NORTE ( TRUJILLO) - ALIMENTACIÓN, HOSPEDAJE Y PASAJE I/V AÉREO', 'unit' => 'POR PERSONA', 'unit_price' => null],
             ['sat_line' => 'VABT03', 'sat_description' => 'VIATICO CORRECTIVO NORTE ( CHICLAYO) - ALIMENTACIÓN, HOSPEDAJE Y PASAJE I/V AÉREO', 'unit' => 'POR PERSONA', 'unit_price' => null],

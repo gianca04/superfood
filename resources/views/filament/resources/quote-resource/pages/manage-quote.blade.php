@@ -39,10 +39,10 @@
         @include('filament.resources.quote-resource.components.quote-footer')
 
         {{-- Puedes mostrar el project_id en la vista principal si lo necesitas --}}
-        <div class="mb-2 text-xs text-gray-500">
+        {{-- <div class="mb-2 text-xs text-gray-500">
             <span>Project ID en Alpine:</span>
             <span x-text="quote.project_id"></span>
-        </div>
+        </div> --}}
     </div>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
