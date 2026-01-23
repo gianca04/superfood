@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\StoreQuoteWarehouseDetailRequest;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Controlador para manejar las operaciones CRUD de cotizaciones (Quotes).
@@ -29,20 +30,28 @@ class QuoteWarehouseController extends Controller
             'quoteDetails.pricelist.unit'
         ]);
 
+        // Obtener los detalles atendidos por almacén (quote_warehouse_details)
+        $warehouseDetails = \App\Models\QuoteWarehouseDetail::where('quote_warehouse_id', $quoteWarehouse->id)
+            ->get()
+            ->keyBy('quote_detail_id');
+
         $groupedDetails = $quote->quoteDetails->groupBy('item_type');
 
         $details = [];
         foreach (['VIATICOS', 'SUMINISTRO', 'MANO DE OBRA'] as $type) {
             if ($groupedDetails->has($type)) {
                 foreach ($groupedDetails[$type] as $detail) {
+                    $attended = $warehouseDetails[$detail->id]->attended_quantity ?? 0;
                     $details[] = [
                         'item_type'        => $type,
+                        'quote_detail_id'  => $detail->id,
                         'sat_line'         => $detail->pricelist->sat_line ?? '',
                         'sat_description'  => $detail->pricelist->sat_description ?? '',
                         'quantity'         => $detail->quantity,
                         'unit_price'       => $detail->unit_price,
                         'subtotal'         => $detail->subtotal,
                         'unit_name'        => $detail->pricelist->unit->name ?? '',
+                        'entregado'        => $attended, // <-- Aquí se pasa el dato entregado
                     ];
                 }
             }
@@ -61,24 +70,91 @@ class QuoteWarehouseController extends Controller
     /**
      * Guarda el detalle atendido de almacén.
      */
-    public function store(StoreQuoteWarehouseDetailRequest $request)
+    public function store(\App\Http\Requests\StoreQuoteWarehouseDetailRequest $request)
     {
-        // Validación ya se realiza por el FormRequest
-
         try {
             $quoteWarehouse = \App\Models\QuoteWarehouse::findOrFail($request->input('quote_warehouse_id'));
             $quoteWarehouse->observations = $request->input('observations');
             $quoteWarehouse->save();
 
+            $details = $request->input('details', []);
+            $errores = [];
+            $guardados = 0;
+
+            // Si no hay detalles, solo guardar las observaciones y salir
+            if (empty($details)) {
+                return response()->json([
+                    'success' => true,
+                    'message' => '¡Observaciones guardadas correctamente!',
+                ]);
+            }
+
+            foreach ($details as $i => $detail) {
+                // Solo guardar si a_despachar > 0 y quote_detail_id existe
+                if (
+                    !isset($detail['quote_detail_id']) ||
+                    !isset($detail['a_despachar']) ||
+                    $detail['a_despachar'] <= 0
+                ) {
+                    continue;
+                }
+
+                Log::info('Detalle recibido', [
+                    'quote_warehouse_id' => $quoteWarehouse->id,
+                    'quote_detail_id'    => $detail['quote_detail_id'],
+                    'attended_quantity'  => $detail['a_despachar'],
+                ]);
+
+                try {
+                    // Verificar si ya existe un registro para este quote_detail_id
+                    $detalleExistente = \App\Models\QuoteWarehouseDetail::where('quote_warehouse_id', $quoteWarehouse->id)
+                        ->where('quote_detail_id', $detail['quote_detail_id'])
+                        ->first();
+
+                    if ($detalleExistente) {
+                        // Si ya existe, sumamos el nuevo valor al attended_quantity existente
+                        $detalleExistente->update([
+                            'attended_quantity' => $detalleExistente->attended_quantity + $detail['a_despachar'],
+                        ]);
+                    } else {
+                        // Si no existe, creamos un nuevo registro
+                        \App\Models\QuoteWarehouseDetail::create([
+                            'quote_warehouse_id' => $quoteWarehouse->id,
+                            'quote_detail_id'    => $detail['quote_detail_id'],
+                            'attended_quantity'  => $detail['a_despachar'],
+                        ]);
+                    }
+
+                    $guardados++;
+                } catch (\Exception $e) {
+                    $errores[] = "Error en el detalle #" . ($i + 1) . ": " . $e->getMessage();
+                }
+            }
+
+            // Mensaje si no se guardó ningún detalle
+            if ($guardados === 0 && count($errores) === 0) {
+                return response()->json([
+                    'success' => true,
+                    'message' => '¡Observaciones guardadas correctamente! No se guardó ningún detalle.',
+                ]);
+            }
+
+            if (count($errores)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Algunos detalles no se guardaron correctamente.',
+                    'errors'  => $errores,
+                ], 422);
+            }
+
             return response()->json([
                 'success' => true,
-                'message' => 'Observaciones actualizadas correctamente.',
-                'observations' => $quoteWarehouse->observations,
+                'message' => "¡Despacho guardado correctamente! Se actualizaron $guardados detalles.",
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al actualizar observaciones: ' . $e->getMessage(),
+                'message' => 'Error al guardar: ' . $e->getMessage(),
             ], 500);
         }
     }

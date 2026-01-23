@@ -49,6 +49,7 @@
         }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         /* Custom scrollbar for better aesthetics in table */
         ::-webkit-scrollbar {
@@ -90,14 +91,15 @@
     class="flex flex-col min-h-screen antialiased bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display"
     x-data="{
         quoteWarehouseId: {{ $quoteWarehouse->id }},
+        status: '{{ $quoteWarehouse->status }}', // Agregar el estado de la quote_warehouse
         items: [
             @foreach ($details as $i => $item)
-            {
-                id: {{ $item['id'] ?? $i }},
-                solicitado: {{ $item['quantity'] }},
-                entregado: {{ $item['entregado'] ?? 0 }},
-                despachar: {{ $item['a_despachar'] ?? 0 }}
-            }, @endforeach
+        {
+            quote_detail_id: {{ $item['quote_detail_id'] }},
+            solicitado: {{ $item['quantity'] }},
+            entregado: {{ $item['entregado'] ?? 0 }},
+            despachar: {{ $item['a_despachar'] ?? 0 }}
+        }, @endforeach
         ],
         observaciones: '{{ $quoteWarehouse->observations ?? '' }}',
         get progresoTotal() {
@@ -106,6 +108,14 @@
             return totalSolicitado === 0 ? 0 : Math.round((totalListo / totalSolicitado) * 100);
         },
         async enviarFormulario() {
+            // Solo los items con despachar > 0
+            const details = this.items
+                .filter(i => i.despachar > 0)
+                .map(i => ({
+                    quote_detail_id: i.quote_detail_id,
+                    a_despachar: i.despachar,
+                    quantity: i.solicitado
+                }));
             try {
                 const response = await fetch('{{ route('quoteswarehouse.store') }}', {
                     method: 'POST',
@@ -117,17 +127,32 @@
                     body: JSON.stringify({
                         quote_warehouse_id: this.quoteWarehouseId,
                         observations: this.observaciones,
-                        items: this.items
+                        details: details
                     })
                 });
                 const data = await response.json();
                 if (data.success) {
-                    alert('¡Guardado con éxito!');
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Éxito!',
+                        text: data.message,
+                        confirmButtonColor: '#137fec',
+                    });
                 } else {
-                    alert('Error: ' + (data.message || 'No se pudo guardar'));
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message,
+                        confirmButtonColor: '#d33',
+                    });
                 }
             } catch (error) {
-                alert('No se pudo conectar con el servidor.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudo conectar con el servidor. Inténtalo nuevamente.',
+                    confirmButtonColor: '#d33',
+                });
             }
         }
     }">
@@ -140,9 +165,21 @@
             <div class="flex flex-col justify-between gap-4 md:flex-row md:items-end">
                 <div class="flex flex-col gap-2">
                     <div class="flex items-center gap-3">
-                        <span
-                            class="inline-flex items-center px-2 py-1 text-xs font-medium text-yellow-800 bg-yellow-100 rounded-md ring-1 ring-inset ring-yellow-600/20 dark:bg-yellow-900/30 dark:text-yellow-400">
-                            {{ $quote->status ?? 'En Proceso' }}
+                        <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-md"
+                            :class="{
+                                'text-yellow-800 bg-yellow-100 ring-yellow-600/20 dark:bg-yellow-900/30 dark:text-yellow-400': '{{ $quoteWarehouse->status }}'
+                                === 'Pendiente' || '{{ $quoteWarehouse->status }}'
+                                === 'pending',
+                                'text-green-800 bg-green-100 ring-green-600/20 dark:bg-green-900/30 dark:text-green-400': '{{ $quoteWarehouse->status }}'
+                                === 'Atendido',
+                                'text-blue-800 bg-blue-100 ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400': '{{ $quoteWarehouse->status }}'
+                                === 'Parcial'
+                            }">
+                            @if ($quoteWarehouse->status === 'pending')
+                                Pendiente
+                            @else
+                                {{ $quoteWarehouse->status }}
+                            @endif
                         </span>
                         <h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
                             {{ $quote->request_number ?? 'COT-' . str_pad($quote->id, 5, '0', STR_PAD_LEFT) }}
@@ -178,7 +215,12 @@
                     </button>
                     <button type="button"
                         class="inline-flex items-center justify-center px-4 py-2 text-sm font-bold transition-colors rounded-lg bg-primary/10 text-primary hover:bg-primary/20"
-                        @click="items.forEach(i => i.despachar = i.solicitado)">
+                        @click="
+        items.forEach(i => {
+            const faltante = i.solicitado - i.entregado;
+            i.despachar = faltante > 0 ? faltante : 0;
+        });
+    ">
                         <span class="material-symbols-outlined mr-2 text-[20px] fill-1">check_circle</span>
                         Atender Todo
                     </button>
@@ -203,15 +245,20 @@
                         </thead>
                         <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                             @foreach ($details as $i => $item)
-                                <tr class="transition-colors group hover:bg-slate-50 dark:hover:bg-slate-800/50"
-                                    :class="items[{{ $i }}].entregado + items[{{ $i }}].despachar >=
-                                        items[{{ $i }}].solicitado ? 'bg-slate-50/50 dark:bg-slate-800/30' :
-                                        ''">
+                                @php
+                                    $completado = ($item['entregado'] ?? 0) >= ($item['quantity'] ?? 0);
+                                    $porcentaje =
+                                        ($item['quantity'] ?? 0) > 0
+                                            ? round((($item['entregado'] ?? 0) / ($item['quantity'] ?? 0)) * 100)
+                                            : 0;
+                                @endphp
+                                <tr
+                                    class="transition-colors group hover:bg-slate-50 dark:hover:bg-slate-800/50 {{ $completado ? 'bg-slate-50/50 dark:bg-slate-800/30' : '' }}">
                                     <td :class="items[{{ $i }}].entregado + items[{{ $i }}].despachar >=
                                         items[{{ $i }}].solicitado ?
                                         'font-mono text-xs text-center align-middle text-slate-400 dark:text-slate-500 line-through underline' :
                                         'font-mono text-xs text-center align-middle text-slate-900 dark:text-white'"
-                                        class="font-mono text-xs text-center align-middle text-slate-900 dark:text-white">
+                                        class="font-mono text-xs text-center align-middle {{ $completado ? 'text-slate-400 dark:text-slate-500' : 'text-slate-900 dark:text-white' }}">
                                         {{ $item['sat_line'] ?? '-' }}
                                     </td>
                                     <td class="px-4 py-4 break-words whitespace-normal align-top">
@@ -221,7 +268,7 @@
                                                     .despachar >= items[{{ $i }}].solicitado ?
                                                     'line-through underline text-slate-400 dark:text-slate-500' :
                                                     'text-xs font-medium leading-relaxed text-slate-900 dark:text-white'"
-                                                class="text-xs font-medium leading-relaxed text-slate-900 dark:text-white">
+                                                class="text-xs font-medium leading-relaxed {{ $completado ? 'text-slate-400 dark:text-slate-500' : 'text-slate-900 dark:text-white' }}">
                                                 {{ $item['sat_description'] ?? '-' }}
                                             </span>
                                         </div>
@@ -236,39 +283,76 @@
                                         </span>
                                     </td>
                                     <td class="px-4 py-4 text-center align-top">
-                                        <span class="font-semibold"
-                                            :class="items[{{ $i }}].entregado + items[{{ $i }}]
-                                                .despachar >= items[{{ $i }}].solicitado ?
-                                                'text-green-600' : 'text-slate-900 dark:text-slate-200'">
-                                            <span x-text="0"></span>
-                                        </span>
-                                    </td>
-                                    <td class="px-4 py-4 align-top">
-                                        <div class="relative flex items-center">
-                                            <input type="number" x-model.number="items[{{ $i }}].despachar"
-                                                :max="items[{{ $i }}].solicitado" min="0"
-                                                @input="if(items[{{ $i }}].despachar > items[{{ $i }}].solicitado) items[{{ $i }}].despachar = items[{{ $i }}].solicitado"
-                                                class="block w-full rounded-md border-0 py-1.5 pl-2 pr-8 text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-primary text-xs dark:bg-slate-900 dark:ring-slate-600 dark:text-white font-bold" />
+                                        <div class="flex flex-col items-center gap-1">
                                             <span
-                                                class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                                                <span class="text-[10px] text-slate-400 uppercase">u.</span>
+                                                class="font-semibold {{ $completado ? 'text-green-600' : 'text-slate-900 dark:text-slate-200' }}">
+                                                {{ $item['entregado'] ?? 0 }}
                                             </span>
+                                            <div
+                                                class="flex items-center justify-center w-20 h-2 mx-auto mt-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
+                                                <div class="h-full {{ $completado ? 'bg-green-500' : 'bg-blue-500' }} rounded-full"
+                                                    style="width: {{ $porcentaje }}%"></div>
+                                            </div>
+                                            @if ($completado)
+                                                <span
+                                                    class="inline-flex items-center rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/20 dark:text-green-400 dark:ring-green-500/30 mt-1">
+                                                    <span
+                                                        class="material-symbols-outlined text-[14px] mr-1">check</span>
+                                                    Completado
+                                                </span>
+                                            @endif
                                         </div>
                                     </td>
+                                    <td class="px-4 py-4 align-top">
+                                        @if ($completado)
+                                            <div class="relative flex items-center justify-center opacity-60">
+                                                <span
+                                                    class="inline-flex items-center px-3 py-1 text-xs font-medium text-green-700 rounded-full bg-green-50 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/20 dark:text-green-400 dark:ring-green-500/30">
+                                                    <span
+                                                        class="material-symbols-outlined text-[14px] mr-1">check</span>
+                                                    Completado
+                                                </span>
+                                            </div>
+                                        @else
+                                            <div class="relative flex items-center">
+                                                <input type="number"
+                                                    x-model.number="items[{{ $i }}].despachar"
+                                                    :max="items[{{ $i }}].solicitado - items[{{ $i }}]
+                                                        .entregado"
+                                                    min="0"
+                                                    @input="if(items[{{ $i }}].despachar > (items[{{ $i }}].solicitado - items[{{ $i }}].entregado)) items[{{ $i }}].despachar = items[{{ $i }}].solicitado - items[{{ $i }}].entregado"
+                                                    class="block w-full rounded-md border-0 py-1.5 pl-2 pr-8 text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-primary text-xs dark:bg-slate-900 dark:ring-slate-600 dark:text-white font-bold"
+                                                    :disabled="{{ $completado ? 'true' : 'false' }}" />
+                                                <span
+                                                    class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                                                    <span class="text-[10px] text-slate-400 uppercase">u.</span>
+                                                </span>
+                                            </div>
+                                        @endif
+                                    </td>
                                     <td class="px-4 py-4 text-right align-top">
-                                        <button
-                                            @click="items[{{ $i }}].despachar = items[{{ $i }}].solicitado"
-                                            class="inline-flex items-center justify-center p-1.5 transition-all rounded-full group/btn"
-                                            :class="items[{{ $i }}].despachar >= items[{{ $i }}]
-                                                .solicitado ?
-                                                'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-500' :
-                                                'text-slate-300 dark:text-slate-600 hover:text-green-600 dark:hover:text-green-500'"
-                                            type="button" title="Marcar como listo">
-                                            <span class="material-symbols-outlined text-[22px] group-hover/btn:fill-1"
-                                                :class="items[{{ $i }}].despachar >= items[{{ $i }}]
-                                                    .solicitado ?
-                                                    'text-green-600 dark:text-green-500' : ''">check_circle</span>
-                                        </button>
+                                        @if ($completado)
+                                            <div
+                                                class="inline-flex items-center justify-center p-2 text-green-600 dark:text-green-500">
+                                                <span
+                                                    class="material-symbols-outlined text-[28px] fill-1">check_circle</span>
+                                            </div>
+                                        @else
+                                            <button
+                                                @click="items[{{ $i }}].despachar = items[{{ $i }}].solicitado - items[{{ $i }}].entregado"
+                                                class="inline-flex items-center justify-center p-1.5 transition-all rounded-full group/btn"
+                                                :class="items[{{ $i }}].despachar + items[{{ $i }}]
+                                                    .entregado >= items[{{ $i }}].solicitado ?
+                                                    'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-500' :
+                                                    'text-slate-300 dark:text-slate-600 hover:text-green-600 dark:hover:text-green-500'"
+                                                type="button" title="Marcar como listo">
+                                                <span
+                                                    class="material-symbols-outlined text-[22px] group-hover/btn:fill-1"
+                                                    :class="items[{{ $i }}].despachar + items[{{ $i }}]
+                                                        .entregado >= items[{{ $i }}].solicitado ?
+                                                        'text-green-600 dark:text-green-500' : ''">check_circle</span>
+                                            </button>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach
@@ -305,32 +389,7 @@
                     <!-- Botón Confirmar -->
                     <button type="button"
                         class="flex min-w-[200px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-primary hover:bg-primary-dark text-white gap-2 pl-5 text-base font-bold leading-normal shadow-lg shadow-primary/20 transition-all transform hover:-translate-y-0.5"
-                        @click="
-                            const details = items.map(i => ({
-                                a_despachar: i.despachar,
-                                quantity: i.solicitado
-                            }));
-                            fetch('{{ route('quoteswarehouse.store') }}', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
-                                },
-                                body: JSON.stringify({
-                                    quote_warehouse_id: quoteWarehouseId,
-                                    observations: observaciones ?? '',
-                                    details: details
-                                })
-                            })
-                            .then(res => res.json())
-                            .then(data => {
-                                if(data.success){
-                                    alert('Observaciones guardadas correctamente');
-                                } else {
-                                    alert('Error: ' + (data.message || 'No se pudo guardar'));
-                                }
-                            });
-                        ">
+                        @click="enviarFormulario()">
                         <span class="material-symbols-outlined text-[24px]">local_shipping</span>
                         <span class="truncate">Confirmar</span>
                     </button>
