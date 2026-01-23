@@ -49,7 +49,6 @@ class QuoteDetail extends Model
         'pricelist_id',
         'subtotal',
         'item_type',
-        'description',
         'quantity',
         'unit_price',
         'comment',

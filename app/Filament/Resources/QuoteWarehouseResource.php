@@ -16,7 +16,11 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class QuoteWarehouseResource extends Resource
 {
     protected static ?string $model = QuoteWarehouse::class;
-
+    protected static ?string $title = 'Almacén de cotizaciones';
+    protected static ?string $modelLabel = 'Almacén de cotizaciones';
+    protected static ?string $pluralModelLabel = 'Almacén de cotizaciones';
+    protected static ?string $singularModelLabel = 'Almacén de cotizaciones';
+    protected static ?string $navigationGroup = 'Control de operaciones';
     protected static ?string $navigationIcon = 'heroicon-o-building-storefront';
 
     public static function form(Form $form): Form

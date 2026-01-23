@@ -7,6 +7,7 @@ use App\Http\Controllers\WorkReportExcelController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EvidenceReportController;
 use App\Http\Controllers\QuoteExportController;
+use App\Http\Controllers\QuoteWarehouseController;
 use App\Http\Controllers\WorkReportConsolidatedController;
 use Illuminate\Support\Facades\Artisan;
 use Livewire\Livewire;
@@ -82,6 +83,12 @@ Route::prefix('quotes')->middleware('auth')->group(function () {
     Route::get('/{quote}/pdf', [QuoteExportController::class, 'exportPdf'])->name('quotes.pdf');
     Route::get('/{quote}/excel', [QuoteExportController::class, 'exportExcel'])->name('quotes.excel');
 });
+
+// Rutas de almacen de cotizaciones (requieren autenticación)
+Route::prefix('quoteswarehouse')->middleware('auth')->group(function () {
+    Route::get('preview/{quoteWarehouse}', [QuoteWarehouseController::class, 'preview'])->name('quoteswarehouse.preview');
+});
+
 
 
 Livewire::setUpdateRoute(function ($handle) {

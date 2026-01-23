@@ -27,20 +27,26 @@ class ListQuoteWarehouses extends ListRecords
             'attended' => 'Atendido',
         ];
 
-        // Fetch all quotes that are APPROVED
-        $quotes = \App\Models\Quote::query()
-            ->where('status', 'APROBADO')
-            ->with(['quoteWarehouse', 'subClient'])
+        // Obtener todos los registros de quote_warehouse relacionados a cotizaciones aprobadas
+        $quoteWarehouses = \App\Models\QuoteWarehouse::with(['quote.subClient'])
+            ->whereHas('quote', function ($q) {
+                $q->where('status', 'Aprobado');
+            })
             ->get();
 
-        // Group quotes by their warehouse status
-        // If no warehouse record exists, it defaults to 'pending'
+        // Agrupar los registros de quote_warehouse por su status
         $kanbanData = [];
         foreach ($statuses as $statusKey => $statusLabel) {
-            $kanbanData[$statusKey] = $quotes->filter(function ($quote) use ($statusKey) {
-                $currentStatus = $quote->quoteWarehouse?->status ?? 'pending';
-                return $currentStatus === $statusKey;
-            });
+            if ($statusKey === 'pending') {
+                // Mostrar tanto 'pending' como 'Pendiente'
+                $kanbanData[$statusKey] = $quoteWarehouses->filter(function ($qw) {
+                    return in_array($qw->status, ['pending', 'Pendiente']);
+                });
+            } else {
+                $kanbanData[$statusKey] = $quoteWarehouses->filter(function ($qw) use ($statusKey) {
+                    return $qw->status === $statusKey;
+                });
+            }
         }
 
         return [

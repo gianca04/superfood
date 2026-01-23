@@ -17,15 +17,6 @@ class QuoteObserver
     /**
      * Handle the Quote "updated" event.
      */
-    public function updated(Quote $quote): void
-    {
-        if ($quote->isDirty('status') && $quote->status === 'Aprobado') {
-            \App\Models\QuoteWarehouse::firstOrCreate(
-                ['quote_id' => $quote->id],
-                ['status' => 'pending']
-            );
-        }
-    }
 
     /**
      * Handle the Quote "deleted" event.

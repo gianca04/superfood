@@ -78,14 +78,6 @@ class Quote extends Model
     ];
 
     /**
-     * The "booted" method of the model.
-     */
-    protected static function booted(): void
-    {
-        static::observe(\App\Observers\QuoteObserver::class);
-    }
-
-    /**
      * Obtiene el empleado cotizador asignado a esta cotización.
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\Employee, \App\Models\Quote>

@@ -6,6 +6,7 @@ use App\Models\Quote;
 use App\Http\Requests\StoreQuoteRequest;
 use App\Http\Requests\UpdateQuoteRequest;
 use App\Models\QuoteCategory;
+use App\Models\QuoteWarehouse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -93,7 +94,7 @@ class QuoteController extends Controller
                 }
 
                 // Crear la cotización (y el proyecto si es necesario)
-                $quote = \App\Models\Quote::createWithProject($validated);
+                $quote = Quote::createWithProject($validated);
 
                 // 3. Procesar los detalles (items)
                 $items = $request->input('items', []);
@@ -112,6 +113,22 @@ class QuoteController extends Controller
                         'subtotal' => $subtotal,
                         'comment' => $item['comment'] ?? null,
                     ]);
+                }
+
+                // Crear registro en quote_warehouse si el status es 'Aprobado' o 'APROBADO'
+                if (
+                    isset($validated['status']) &&
+                    (strtolower($validated['status']) === 'aprobado')
+                ) {
+                    $exists = QuoteWarehouse::where('quote_id', $quote->id)->exists();
+                    if (!$exists) {
+                        QuoteWarehouse::create([
+                            'quote_id'    => $quote->id,
+                            'employee_id' => Auth::user()->employee->id ?? null,
+                            'status'      => 'Pendiente',
+                            'observations' => null,
+                        ]);
+                    }
                 }
 
                 // Notificación SweetAlert para creación exitosa
@@ -203,6 +220,22 @@ class QuoteController extends Controller
                             'unit_price' => $unitPrice,
                             'subtotal' => $subtotal,
                             'comment' => $item['comment'] ?? null,
+                        ]);
+                    }
+                }
+
+                // Crear registro en quote_warehouse si el status es 'Aprobado' o 'APROBADO'
+                if (
+                    isset($validated['status']) &&
+                    (strtolower($validated['status']) === 'aprobado')
+                ) {
+                    $exists = QuoteWarehouse::where('quote_id', $quote->id)->exists();
+                    if (!$exists) {
+                        QuoteWarehouse::create([
+                            'quote_id'    => $quote->id,
+                            'employee_id' => Auth::user()->employee->id ?? null,
+                            'status'      => 'Pendiente',
+                            'observations' => null,
                         ]);
                     }
                 }
