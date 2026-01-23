@@ -294,4 +294,12 @@ class Project extends Model
         $now = now()->toDateString();
         return $this->start_date <= $now && $this->end_date >= $now;
     }
+
+    /**
+     * Relación: Un proyecto tiene muchos consumos.
+     */
+    public function consumptions()
+    {
+        return $this->hasMany(ProjectConsumption::class);
+    }
 }

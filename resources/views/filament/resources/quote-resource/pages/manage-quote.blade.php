@@ -61,7 +61,7 @@
                     service_name: '',
                     client_id: projectFromPHP?.client_id || null,
                     sub_client_id: projectFromPHP?.sub_client_id || subClientId || null,
-                    quote_category_id: null,
+                    quote_category_id: categoriesFromPHP.find(c => c.name === 'II.EE. Baja Tensión')?.id || null,
                     energy_sci_manager: 'Raul Quispe',
                     ceco: '',
                     status: 'Pendiente',
@@ -221,13 +221,26 @@
                         }
 
                         // Inicializar campos de búsqueda de cliente/subcliente
+                        // Inicializar campos de búsqueda de cliente/subcliente
                         if (this.quote.client_id) {
                             const client = this.allClients.find(c => c.id === this.quote.client_id);
                             if (client) {
                                 this.clientSearch = client.business_name;
-                                // Cargar subclientes
+
+                                // [FIX] Usar datos del subcliente precargados si existen
+                                if (existingQuote.sub_client) {
+                                    console.log('✅ Subcliente precargado:', existingQuote.sub_client.name);
+                                    this.subClientSearch = existingQuote.sub_client.name;
+                                    // Asegurar que CECO esté seteado
+                                    if (!this.quote.ceco) {
+                                        this.quote.ceco = existingQuote.sub_client.ceco || '';
+                                    }
+                                }
+
+                                // Cargar subclientes (para el dropdown)
                                 this.loadSubClients(client.id).then(() => {
-                                    if (this.quote.sub_client_id) {
+                                    // Si por alguna razón no se llenó con el precargado (caso raro), intentar buscar en la lista
+                                    if (this.quote.sub_client_id && !this.subClientSearch) {
                                         const subClient = this.subClients.find(sc => sc.id === this.quote
                                             .sub_client_id);
                                         if (subClient) {

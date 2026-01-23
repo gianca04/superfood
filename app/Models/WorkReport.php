@@ -65,4 +65,12 @@ class WorkReport extends Model
     {
         return $this->hasMany(Photo::class, 'work_report_id');
     }
+
+    /**
+     * Relación: Un reporte de trabajo puede tener muchos consumos asociados.
+     */
+    public function projectConsumptions()
+    {
+        return $this->hasMany(ProjectConsumption::class, 'work_report_id');
+    }
 }

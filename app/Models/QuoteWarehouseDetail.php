@@ -74,4 +74,12 @@ class QuoteWarehouseDetail extends Model
     {
         return $this->belongsTo(QuoteDetail::class, 'quote_detail_id');
     }
+
+    /**
+     * Relación: Un detalle de almacén puede tener muchos consumos traza.
+     */
+    public function projectConsumptions()
+    {
+        return $this->hasMany(ProjectConsumption::class, 'quote_warehouse_detail_id');
+    }
 }
