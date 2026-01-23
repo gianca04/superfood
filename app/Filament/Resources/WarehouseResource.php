@@ -32,9 +32,6 @@ class WarehouseResource extends Resource
                     ->label('Nombre')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\Textarea::make('location')
-                    ->label('Ubicación')
-                    ->columnSpanFull(),
                 Forms\Components\Select::make('manager_id')
                     ->label('Encargado de Almacén')
                     ->columns(2)
@@ -110,9 +107,12 @@ class WarehouseResource extends Resource
                             }
                         }
                     }),
-
-
+                Forms\Components\Textarea::make('location')
+                    ->label('Ubicación')
+                    ->columnSpanFull(),
                 Forms\Components\Toggle::make('is_active')
+                    ->label('Activo')
+                    ->default(true)
                     ->required(),
             ]);
     }
