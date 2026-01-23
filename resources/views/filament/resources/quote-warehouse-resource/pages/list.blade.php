@@ -3,6 +3,7 @@
 <html class="light" lang="en">
 
 <head>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Atención de Suministros - Tabla de Control</title>
@@ -47,6 +48,7 @@
             },
         }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <style>
         /* Custom scrollbar for better aesthetics in table */
         ::-webkit-scrollbar {
@@ -85,7 +87,50 @@
 </head>
 
 <body
-    class="flex flex-col min-h-screen antialiased bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display">
+    class="flex flex-col min-h-screen antialiased bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display"
+    x-data="{
+        quoteWarehouseId: {{ $quoteWarehouse->id }},
+        items: [
+            @foreach ($details as $i => $item)
+            {
+                id: {{ $item['id'] ?? $i }},
+                solicitado: {{ $item['quantity'] }},
+                entregado: {{ $item['entregado'] ?? 0 }},
+                despachar: {{ $item['a_despachar'] ?? 0 }}
+            }, @endforeach
+        ],
+        observaciones: '{{ $quoteWarehouse->observations ?? '' }}',
+        get progresoTotal() {
+            let totalSolicitado = this.items.reduce((acc, item) => acc + item.solicitado, 0);
+            let totalListo = this.items.reduce((acc, item) => acc + Math.min(item.entregado + item.despachar, item.solicitado), 0);
+            return totalSolicitado === 0 ? 0 : Math.round((totalListo / totalSolicitado) * 100);
+        },
+        async enviarFormulario() {
+            try {
+                const response = await fetch('{{ route('quoteswarehouse.store') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        quote_warehouse_id: this.quoteWarehouseId,
+                        observations: this.observaciones,
+                        items: this.items
+                    })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert('¡Guardado con éxito!');
+                } else {
+                    alert('Error: ' + (data.message || 'No se pudo guardar'));
+                }
+            } catch (error) {
+                alert('No se pudo conectar con el servidor.');
+            }
+        }
+    }">
     <!-- Top Navigation -->
 
     <!-- Main Content -->
@@ -131,8 +176,9 @@
                         <span class="material-symbols-outlined mr-2 text-[20px]">print</span>
                         Imprimir
                     </button>
-                    <button
-                        class="inline-flex items-center justify-center px-4 py-2 text-sm font-bold transition-colors rounded-lg bg-primary/10 text-primary hover:bg-primary/20">
+                    <button type="button"
+                        class="inline-flex items-center justify-center px-4 py-2 text-sm font-bold transition-colors rounded-lg bg-primary/10 text-primary hover:bg-primary/20"
+                        @click="items.forEach(i => i.despachar = i.solicitado)">
                         <span class="material-symbols-outlined mr-2 text-[20px] fill-1">check_circle</span>
                         Atender Todo
                     </button>
@@ -157,15 +203,24 @@
                         </thead>
                         <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                             @foreach ($details as $i => $item)
-                                <tr class="transition-colors group hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                                    <td
-                                        class="px-4 py-4 font-mono text-xs align-top text-slate-700 dark:text-slate-200">
+                                <tr class="transition-colors group hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                                    :class="items[{{ $i }}].entregado + items[{{ $i }}].despachar >=
+                                        items[{{ $i }}].solicitado ? 'bg-slate-50/50 dark:bg-slate-800/30' :
+                                        ''">
+                                    <td :class="items[{{ $i }}].entregado + items[{{ $i }}].despachar >=
+                                        items[{{ $i }}].solicitado ?
+                                        'font-mono text-xs text-center align-middle text-slate-400 dark:text-slate-500 line-through underline' :
+                                        'font-mono text-xs text-center align-middle text-slate-900 dark:text-white'"
+                                        class="font-mono text-xs text-center align-middle text-slate-900 dark:text-white">
                                         {{ $item['sat_line'] ?? '-' }}
                                     </td>
-
                                     <td class="px-4 py-4 break-words whitespace-normal align-top">
                                         <div class="flex flex-col">
                                             <span
+                                                :class="items[{{ $i }}].entregado + items[{{ $i }}]
+                                                    .despachar >= items[{{ $i }}].solicitado ?
+                                                    'line-through underline text-slate-400 dark:text-slate-500' :
+                                                    'text-xs font-medium leading-relaxed text-slate-900 dark:text-white'"
                                                 class="text-xs font-medium leading-relaxed text-slate-900 dark:text-white">
                                                 {{ $item['sat_description'] ?? '-' }}
                                             </span>
@@ -174,7 +229,6 @@
                                     <td class="px-4 py-4 text-center align-top">
                                         <span class="text-xs text-slate-400">{{ $item['unit_name'] ?? '-' }}</span>
                                     </td>
-
                                     <td class="px-4 py-4 text-center align-top">
                                         <span
                                             class="inline-flex items-center rounded-md bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-xs font-medium text-slate-600 dark:text-slate-300">
@@ -182,21 +236,19 @@
                                         </span>
                                     </td>
                                     <td class="px-4 py-4 text-center align-top">
-                                        <div class="flex flex-col items-center gap-1">
-                                            <span
-                                                class="text-xs font-semibold text-slate-900 dark:text-slate-200">0</span>
-                                            <div
-                                                class="w-12 h-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
-                                                <div class="w-0 h-full bg-blue-500"></div>
-                                            </div>
-                                        </div>
+                                        <span class="font-semibold"
+                                            :class="items[{{ $i }}].entregado + items[{{ $i }}]
+                                                .despachar >= items[{{ $i }}].solicitado ?
+                                                'text-green-600' : 'text-slate-900 dark:text-slate-200'">
+                                            <span x-text="0"></span>
+                                        </span>
                                     </td>
                                     <td class="px-4 py-4 align-top">
                                         <div class="relative flex items-center">
-                                            <input
-                                                class="block w-full rounded-md border-0 py-1.5 pl-2 pr-8 text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-primary text-xs dark:bg-slate-900 dark:ring-slate-600 dark:text-white font-bold"
-                                                max="{{ $item['quantity'] }}" min="0" type="number"
-                                                value="{{ $item['quantity'] }}" />
+                                            <input type="number" x-model.number="items[{{ $i }}].despachar"
+                                                :max="items[{{ $i }}].solicitado" min="0"
+                                                @input="if(items[{{ $i }}].despachar > items[{{ $i }}].solicitado) items[{{ $i }}].despachar = items[{{ $i }}].solicitado"
+                                                class="block w-full rounded-md border-0 py-1.5 pl-2 pr-8 text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-primary text-xs dark:bg-slate-900 dark:ring-slate-600 dark:text-white font-bold" />
                                             <span
                                                 class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
                                                 <span class="text-[10px] text-slate-400 uppercase">u.</span>
@@ -205,10 +257,17 @@
                                     </td>
                                     <td class="px-4 py-4 text-right align-top">
                                         <button
-                                            class="inline-flex items-center justify-center p-1.5 transition-all rounded-full group/btn hover:bg-green-50 dark:hover:bg-green-900/20 text-slate-300 dark:text-slate-600 hover:text-green-600 dark:hover:text-green-500"
-                                            title="Marcar como listo">
-                                            <span
-                                                class="material-symbols-outlined text-[22px] group-hover/btn:fill-1">check_circle</span>
+                                            @click="items[{{ $i }}].despachar = items[{{ $i }}].solicitado"
+                                            class="inline-flex items-center justify-center p-1.5 transition-all rounded-full group/btn"
+                                            :class="items[{{ $i }}].despachar >= items[{{ $i }}]
+                                                .solicitado ?
+                                                'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-500' :
+                                                'text-slate-300 dark:text-slate-600 hover:text-green-600 dark:hover:text-green-500'"
+                                            type="button" title="Marcar como listo">
+                                            <span class="material-symbols-outlined text-[22px] group-hover/btn:fill-1"
+                                                :class="items[{{ $i }}].despachar >= items[{{ $i }}]
+                                                    .solicitado ?
+                                                    'text-green-600 dark:text-green-500' : ''">check_circle</span>
                                         </button>
                                     </td>
                                 </tr>
@@ -223,7 +282,7 @@
                 <span>Mostrando {{ count($details) }} ítems</span>
                 <div class="flex gap-2">
                     <span class="font-medium text-slate-700 dark:text-slate-300">Progreso Total:</span>
-                    <span class="font-bold text-primary">0%</span>
+                    <span class="font-bold text-primary" x-text="progresoTotal + '%'"></span>
                 </div>
             </div>
             <!-- NUEVO: Observaciones -->
@@ -232,7 +291,7 @@
                     class="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                     Observaciones
                 </label>
-                <textarea id="warehouse-observations" name="warehouse_observations" rows="3"
+                <textarea id="warehouse-observations" name="warehouse_observations" rows="3" x-model="observaciones"
                     class="block w-full p-3 text-sm bg-white border rounded-lg resize-y border-slate-300 dark:border-slate-600 dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary focus:border-primary"
                     placeholder="Ingrese aquí observaciones generales para el despacho..."></textarea>
             </div>
@@ -243,8 +302,35 @@
                         class="flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600 gap-2 text-base font-bold leading-normal transition-colors">
                         Cancelar
                     </button>
-                    <button
-                        class="flex min-w-[200px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-primary hover:bg-primary-dark text-white gap-2 pl-5 text-base font-bold leading-normal shadow-lg shadow-primary/20 transition-all transform hover:-translate-y-0.5">
+                    <!-- Botón Confirmar -->
+                    <button type="button"
+                        class="flex min-w-[200px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-primary hover:bg-primary-dark text-white gap-2 pl-5 text-base font-bold leading-normal shadow-lg shadow-primary/20 transition-all transform hover:-translate-y-0.5"
+                        @click="
+                            const details = items.map(i => ({
+                                a_despachar: i.despachar,
+                                quantity: i.solicitado
+                            }));
+                            fetch('{{ route('quoteswarehouse.store') }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
+                                },
+                                body: JSON.stringify({
+                                    quote_warehouse_id: quoteWarehouseId,
+                                    observations: observaciones ?? '',
+                                    details: details
+                                })
+                            })
+                            .then(res => res.json())
+                            .then(data => {
+                                if(data.success){
+                                    alert('Observaciones guardadas correctamente');
+                                } else {
+                                    alert('Error: ' + (data.message || 'No se pudo guardar'));
+                                }
+                            });
+                        ">
                         <span class="material-symbols-outlined text-[24px]">local_shipping</span>
                         <span class="truncate">Confirmar</span>
                     </button>

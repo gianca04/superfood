@@ -3,7 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Quote;
+use App\Models\QuoteWarehouseDetail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\StoreQuoteWarehouseDetailRequest;
 
 /**
  * Controlador para manejar las operaciones CRUD de cotizaciones (Quotes).
@@ -53,6 +57,29 @@ class QuoteWarehouseController extends Controller
             'description'  => $detail->pricelist->sat_description ?? '',
         ]);
     }
-    //Buscar por descripcion y sat_line
 
+    /**
+     * Guarda el detalle atendido de almacén.
+     */
+    public function store(StoreQuoteWarehouseDetailRequest $request)
+    {
+        // Validación ya se realiza por el FormRequest
+
+        try {
+            $quoteWarehouse = \App\Models\QuoteWarehouse::findOrFail($request->input('quote_warehouse_id'));
+            $quoteWarehouse->observations = $request->input('observations');
+            $quoteWarehouse->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Observaciones actualizadas correctamente.',
+                'observations' => $quoteWarehouse->observations,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al actualizar observaciones: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
 }

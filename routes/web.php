@@ -87,9 +87,8 @@ Route::prefix('quotes')->middleware('auth')->group(function () {
 // Rutas de almacen de cotizaciones (requieren autenticación)
 Route::prefix('quoteswarehouse')->middleware('auth')->group(function () {
     Route::get('preview/{quoteWarehouse}', [QuoteWarehouseController::class, 'preview'])->name('quoteswarehouse.preview');
+    Route::post('store', [QuoteWarehouseController::class, 'store'])->name('quoteswarehouse.store');
 });
-
-
 
 Livewire::setUpdateRoute(function ($handle) {
     return Route::post('/superfood/public/livewire/update', $handle);

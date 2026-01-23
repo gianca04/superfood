@@ -13,7 +13,7 @@
                 <div :class="isFullscreen ? 'fixed inset-0 w-screen h-screen max-w-none max-h-none rounded-none' :
                     'w-full max-w-6xl h-[92vh] rounded-xl'"
                     class="relative flex flex-col overflow-hidden transition-all duration-300 bg-white border border-gray-200 shadow-2xl dark:bg-gray-900 dark:border-gray-700"
-                    @click.away="closePreview()">
+                    {{-- @click.away="closePreview()" --}} {{-- Eliminado para que no se cierre al hacer clic fuera --}}>
 
                     <div
                         class="flex items-center justify-between p-4 border-b dark:border-gray-800 bg-gray-50 dark:bg-gray-800">
@@ -119,10 +119,16 @@
 
                 init() {
                     this.loadSortable();
-                    // Escuchar tecla ESC
-                    window.addEventListener('keydown', (e) => {
-                        if (e.key === 'Escape' && this.showPreview) this.closePreview();
-                    });
+                    // Eliminar el cierre con tecla ESC
+                    // window.addEventListener('keydown', (e) => {
+                    //     if (e.key === 'Escape' && this.showPreview) {
+                    //         if (this.isFullscreen) {
+                    //             this.isFullscreen = false;
+                    //         } else {
+                    //             this.closePreview();
+                    //         }
+                    //     }
+                    // });
                 },
 
                 openPreview(url) {
