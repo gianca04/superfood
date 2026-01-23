@@ -25,27 +25,17 @@ class PricelistSearchController extends Controller
             ->when($priceTypeId, fn($q) => $q->where('price_type_id', $priceTypeId))
             ->when($query, function ($q) use ($query) {
                 $q->where(function ($subQuery) use ($query) {
-                    // Search by code (sat_line) using prefix match to utilize the INDEX
-                    // LIKE 'Value%' allows the DB to use the B-Tree index. 
-                    // LIKE '%Value%' forces a full table scan.
-                    $subQuery->where('sat_line', 'LIKE', "%{$query}%");
+                    // Search by code (sat_line) using prefix match
+                    $subQuery->where('sat_line', 'LIKE', "{$query}%");
 
-                    // Search by description using Full Text Search in Boolean Mode
-                    // This utilizes the 'pricelists_sat_description_fulltext' index
-                    $terms = array_filter(explode(' ', trim($query)));
-                    if (count($terms) > 0) {
-                        $booleanQuery = '';
+                    // Search by description using LIKE %term% for each word
+                    // This allows partial matching like 'caja' finding 'MONTAJ_CAJAS'
+                    $subQuery->orWhere(function ($descQuery) use ($query) {
+                        $terms = array_filter(explode(' ', trim($query)));
                         foreach ($terms as $term) {
-                            // +term* requires each word (or prefix) to be present
-                            $booleanQuery .= '+' . $term . '* ';
+                            $descQuery->where('sat_description', 'LIKE', "%{$term}%");
                         }
-                        $booleanQuery = trim($booleanQuery);
-
-                        $subQuery->orWhereRaw("MATCH(sat_description) AGAINST(? IN BOOLEAN MODE)", [$booleanQuery]);
-                    } else {
-                        // Fallback if no terms found (unlikely due to surrounding checks)
-                        $subQuery->orWhere('sat_description', 'LIKE', "%{$query}%");
-                    }
+                    });
                 });
             })
             ->get()
