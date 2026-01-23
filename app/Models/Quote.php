@@ -215,6 +215,16 @@ class Quote extends Model
         return self::create($data);
     }
 
+
+    /**
+     * Scope to include the total calculated by the database function.
+     */
+    public function scopeWithTotal($query)
+    {
+        return $query->addSelect(['quotes.*', \Illuminate\Support\Facades\DB::raw('calculate_quote_total(quotes.id) as total_cost')]);
+    }
+
+
     // Modifica generateNextRequestNumber para que funcione igual
     public static function generateNextRequestNumber($projectId)
     {

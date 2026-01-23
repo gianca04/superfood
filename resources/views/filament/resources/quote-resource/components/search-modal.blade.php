@@ -1,15 +1,16 @@
 {{-- Search Drawer Component (Panel Lateral con Multi-selección y Tabs por PriceType) --}}
 {{-- Usage: @include('filament.resources.quote-resource.components.search-modal') --}}
 
-{{-- Overlay --}}
+{{-- Overlay container (No animation here to avoid delays in children) --}}
 <div x-show="searchModal.open" x-cloak @keydown.escape.window="closeSearchModal()"
-    class="fixed inset-0 z-50 overflow-hidden" x-transition:enter="transition ease-out duration-300"
-    x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-    x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100"
-    x-transition:leave-end="opacity-0">
+    class="fixed inset-0 z-50 overflow-hidden">
 
-    {{-- Backdrop --}}
-    <div class="absolute inset-0 bg-gray-900/50 backdrop-blur-sm" @click="closeSearchModal()"></div>
+    {{-- Backdrop (Starts immediately with x-show) --}}
+    <div x-show="searchModal.open" x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 backdrop-blur-none" x-transition:enter-end="opacity-100 backdrop-blur-sm"
+        x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 backdrop-blur-sm"
+        x-transition:leave-end="opacity-0 backdrop-blur-none" class="absolute inset-0 bg-gray-900/50 backdrop-blur-sm"
+        @click="closeSearchModal()"></div>
 
     {{-- Drawer Panel (viene de la derecha) --}}
     <div class="fixed inset-y-0 right-0 flex max-w-full" x-show="searchModal.open"

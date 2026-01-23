@@ -627,7 +627,24 @@ class ProjectResource extends Resource
                                         Forms\Components\TextInput::make('amount')
                                             ->numeric()
                                             ->prefix('S/ ')
-                                            ->label('Monto de la visita'),
+                                            ->label('Monto del Proyecto')
+                                            ->formatStateUsing(function ($state, $livewire) {
+                                                if ($state) return $state;
+
+                                                $project = null;
+                                                // Filament v3 access to record might vary, but usually getRecord works on pages.
+                                                // Safer to check if method exists.
+                                                if (method_exists($livewire, 'getRecord')) {
+                                                    $project = $livewire->getRecord();
+                                                }
+
+                                                if (!$project instanceof \App\Models\Project) return null;
+
+                                                // Use the latestQuote relationship and the scopeWithTotal
+                                                $quote = $project->latestQuote()->withTotal()->first();
+
+                                                return $quote ? $quote->total_cost : null;
+                                            }),
 
                                         Forms\Components\Textarea::make('description')
                                             ->label('Comentarios de la visita')

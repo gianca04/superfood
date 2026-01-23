@@ -62,7 +62,7 @@
                     client_id: projectFromPHP?.client_id || null,
                     sub_client_id: projectFromPHP?.sub_client_id || subClientId || null,
                     quote_category_id: null,
-                    energy_sci_manager: '',
+                    energy_sci_manager: 'Raul Quispe',
                     ceco: '',
                     status: 'Pendiente',
                     quote_date: new Date().toISOString().split('T')[0], // Fecha actual por defecto
@@ -791,7 +791,7 @@
                         client_id: null,
                         sub_client_id: null,
                         quote_category_id: null,
-                        energy_sci_manager: '',
+                        energy_sci_manager: 'Raul Quispe',
                         ceco: '',
                         status: 'Pendiente',
                         quote_date: new Date().toISOString().split('T')[0],

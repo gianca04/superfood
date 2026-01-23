@@ -120,6 +120,11 @@ class Project extends Model
     {
         return $this->hasMany(\App\Models\Quote::class, 'project_id');
     }
+
+    public function latestQuote(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(\App\Models\Quote::class, 'project_id')->latestOfMany();
+    }
     /**
      * The attributes that should be cast to native types.
      *
