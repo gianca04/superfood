@@ -13,21 +13,19 @@ class StoreQuoteWarehouseDetailRequest extends FormRequest
 
     public function rules()
     {
-        // Suponiendo que recibes un array de detalles bajo 'details'
-        // y cada detalle tiene 'a_despachar' y 'quantity'
         return [
-            'details' => ['required', 'array'],
+            'details' => ['array'], // No es requerido, pero si está presente debe ser un array
             'details.*.a_despachar' => [
-                'required',
+                'nullable', // No es requerido
                 'numeric',
                 'min:0',
-                // El valor máximo será validado en withValidator
             ],
             'details.*.quantity' => [
-                'required',
+                'nullable', // No es requerido
                 'numeric',
                 'min:0',
             ],
+            'observations' => ['nullable', 'string'], // Observations no es requerido, pero si está presente debe ser texto
         ];
     }
 
@@ -52,12 +50,12 @@ class StoreQuoteWarehouseDetailRequest extends FormRequest
     public function messages()
     {
         return [
-            'details.*.a_despachar.required' => 'Debes ingresar la cantidad a despachar.',
+            'details.array' => 'El campo detalles debe ser un arreglo.',
             'details.*.a_despachar.numeric' => 'La cantidad a despachar debe ser un número.',
             'details.*.a_despachar.min' => 'La cantidad a despachar no puede ser negativa.',
-            'details.*.quantity.required' => 'La cantidad solicitada es obligatoria.',
             'details.*.quantity.numeric' => 'La cantidad solicitada debe ser un número.',
             'details.*.quantity.min' => 'La cantidad solicitada no puede ser negativa.',
+            'observations.string' => 'Las observaciones deben ser texto.',
         ];
     }
 }
