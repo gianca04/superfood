@@ -39,10 +39,7 @@
         @include('filament.resources.quote-resource.components.quote-footer')
 
         {{-- Puedes mostrar el project_id en la vista principal si lo necesitas --}}
-        {{-- <div class="mb-2 text-xs text-gray-500">
-            <span>Project ID en Alpine:</span>
-            <span x-text="quote.project_id"></span>
-        </div> --}}
+
     </div>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -76,29 +73,29 @@
 
                 // Sections
                 sections: [{
-                        key: 'viaticos',
-                        title: 'Viáticos',
-                        icon: 'flight_takeoff',
-                        priceTypeId: 3,
-                        bgClass: 'bg-blue-100 dark:bg-blue-900/30',
-                        iconClass: 'text-blue-600 dark:text-blue-400'
-                    },
-                    {
-                        key: 'suministros',
-                        title: 'Suministros',
-                        icon: 'inventory_2',
-                        priceTypeId: 2,
-                        bgClass: 'bg-amber-100 dark:bg-amber-900/30',
-                        iconClass: 'text-amber-600 dark:text-amber-400'
-                    },
-                    {
-                        key: 'mano_obra',
-                        title: 'Mano de Obra',
-                        icon: 'engineering',
-                        priceTypeId: 2,
-                        bgClass: 'bg-purple-100 dark:bg-purple-900/30',
-                        iconClass: 'text-purple-600 dark:text-purple-400'
-                    },
+                    key: 'viaticos',
+                    title: 'Viáticos',
+                    icon: 'flight_takeoff',
+                    priceTypeId: 3,
+                    bgClass: 'bg-blue-100 dark:bg-blue-900/30',
+                    iconClass: 'text-blue-600 dark:text-blue-400'
+                },
+                {
+                    key: 'suministros',
+                    title: 'Suministros',
+                    icon: 'inventory_2',
+                    priceTypeId: 2,
+                    bgClass: 'bg-amber-100 dark:bg-amber-900/30',
+                    iconClass: 'text-amber-600 dark:text-amber-400'
+                },
+                {
+                    key: 'mano_obra',
+                    title: 'Mano de Obra',
+                    icon: 'engineering',
+                    priceTypeId: 2,
+                    bgClass: 'bg-purple-100 dark:bg-purple-900/30',
+                    iconClass: 'text-purple-600 dark:text-purple-400'
+                },
                 ],
 
                 // Column Resizing
@@ -599,13 +596,13 @@
                     if (this.subClientSearchTimeout) {
                         clearTimeout(this.subClientSearchTimeout);
                     }
-                    
+
                     const query = this.subClientSearch.toLowerCase().trim();
                     if (!this.quote.client_id) return;
-                    
+
                     // Abrir dropdown inmediatamente
                     this.subClientDropdownOpen = true;
-                    
+
                     // Debounce: esperar 400ms después de que el usuario termine de escribir
                     this.subClientSearchTimeout = setTimeout(async () => {
                         await this.loadSubClients(this.quote.client_id, query);
@@ -649,7 +646,7 @@
                     this.items[sectionKey].splice(index, 1);
                 },
 
-                recalculate() {},
+                recalculate() { },
 
                 // Calculations
                 getSectionSubtotal(sectionKey) {

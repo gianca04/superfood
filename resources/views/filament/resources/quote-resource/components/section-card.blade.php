@@ -4,16 +4,24 @@
 
 <div class="card-section">
     {{-- Header --}}
-    <div class="flex items-center justify-between px-3 py-2 border-b border-gray-100 dark:border-gray-700">
-        <div class="flex items-center gap-2">
-            <span class="text-base material-symbols-outlined" :class="section.iconClass" x-text="section.icon"></span>
-            <h3 class="text-sm font-semibold text-gray-800 dark:text-white" x-text="section.title"></h3>
+    <div
+        class="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 rounded-t-2xl">
+        <div class="flex items-center gap-3">
+            <div class="flex items-center justify-center w-8 h-8 rounded-xl" :class="section.bgClass">
+                <span class="text-base material-symbols-outlined" :class="section.iconClass"
+                    x-text="section.icon"></span>
+            </div>
+            <h3 class="text-sm font-bold text-gray-800 dark:text-white uppercase tracking-tight" x-text="section.title">
+            </h3>
         </div>
-        <div class="flex items-center gap-2">
-            <span class="text-xs text-gray-400" x-text="items[section.key].length + ' items'"></span>
-            <span
-                class="text-xs font-semibold text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded"
-                x-text="'S/ ' + getSectionSubtotal(section.key).toFixed(2)"></span>
+        <div class="flex items-center gap-3">
+            <span class="text-[10px] uppercase font-bold text-gray-400"
+                x-text="items[section.key].length + ' items'"></span>
+            <div
+                class="bg-emerald-50 dark:bg-emerald-900/40 px-3 py-1 rounded-xl border border-emerald-100 dark:border-emerald-800 shadow-sm">
+                <span class="text-xs font-black text-emerald-700 dark:text-emerald-400"
+                    x-text="'S/ ' + getSectionSubtotal(section.key).toLocaleString('es-PE', {minimumFractionDigits: 2})"></span>
+            </div>
         </div>
     </div>
 
@@ -129,19 +137,20 @@
                         <td class="px-1 py-1 align-top border-r border-gray-100 dark:border-gray-700/50">
                             <input x-model.number="item.quantity" @input="recalculate()" type="number" min="0.01"
                                 step="0.01"
-                                class="w-full px-1 py-1 text-xs font-medium text-center text-blue-600 border border-gray-200 rounded dark:border-gray-600 bg-blue-50/50 dark:bg-blue-900/20 dark:text-blue-400" />
+                                class="w-full px-2 py-1.5 text-xs font-bold text-center text-blue-700 border border-blue-100 rounded-xl dark:border-blue-900/50 bg-blue-50/50 dark:bg-blue-900/20 dark:text-blue-400 shadow-inner" />
                         </td>
 
                         {{-- P.U. --}}
                         <td class="px-1 py-1 align-top border-r border-gray-100 dark:border-gray-700/50">
                             <input x-model.number="item.unit_price" @input="recalculate()" type="number" min="0"
                                 step="0.01"
-                                class="w-full px-1 py-1 font-mono text-xs text-right border border-gray-200 rounded dark:border-gray-600" />
+                                class="w-full px-2 py-1.5 font-mono text-xs text-right border border-gray-100 rounded-xl dark:border-gray-800 dark:bg-gray-900 shadow-inner" />
                         </td>
 
                         {{-- Subtotal --}}
-                        <td class="px-2 py-2 font-mono font-semibold text-right text-gray-900 align-top border-r border-gray-100 dark:text-white dark:border-gray-700/50"
-                            x-text="(item.quantity * item.unit_price).toFixed(2)"></td>
+                        <td class="px-2 py-2 font-mono font-black text-right text-gray-900 align-top border-r border-gray-100 dark:text-white dark:border-gray-700/50"
+                            x-text="(item.quantity * item.unit_price).toLocaleString('es-PE', {minimumFractionDigits: 2})">
+                        </td>
 
                         {{-- Actions --}}
                         <td class="px-1 py-1 text-center align-top">
@@ -163,11 +172,11 @@
     </div>
 
     {{-- Add Button --}}
-    <div class="px-3 py-2 border-t border-gray-100 dark:border-gray-700">
+    <div class="px-4 py-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50/30">
         <button @click="openSearchModal(section.key)"
-            class="flex items-center gap-1 text-xs text-gray-500 transition-colors hover:text-emerald-600 dark:text-gray-400 dark:hover:text-emerald-400">
-            <span class="text-sm material-symbols-outlined">add</span>
-            <span x-text="'Agregar item'"></span>
+            class="group flex items-center justify-center w-full sm:w-auto gap-2 px-4 py-2 text-xs font-bold text-gray-500 transition-all hover:text-emerald-600 hover:bg-emerald-50 dark:text-gray-400 dark:hover:text-emerald-400 dark:hover:bg-emerald-900/20 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 hover:border-emerald-300">
+            <span class="text-sm material-symbols-outlined transition-transform group-hover:scale-110">add_circle</span>
+            <span>Agregar nuevo item</span>
         </button>
     </div>
 </div>

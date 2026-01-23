@@ -21,31 +21,32 @@
             <div class="flex flex-col h-full bg-white dark:bg-gray-900 shadow-xl">
 
                 {{-- Drawer Header --}}
-                <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+                <div class="px-6 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
                     <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <span
-                                class="material-symbols-outlined text-emerald-600 dark:text-emerald-400 text-lg">search</span>
+                        <div class="flex items-center gap-3">
+
                             <div>
-                                <h3 class="font-semibold text-sm text-gray-800 dark:text-white">Buscar en Preciario</h3>
-                                <p class="text-xs text-gray-400" x-text="'Agregando a: ' + getCurrentSectionTitle()">
+                                <h3 class="font-black text-sm text-gray-800 dark:text-white uppercase tracking-tight">
+                                    Preciario</h3>
+                                <p class="text-[10px] uppercase font-bold text-gray-400 tracking-wider"
+                                    x-text="'Agregando a: ' + getCurrentSectionTitle()">
                                 </p>
                             </div>
                         </div>
                         <button @click="closeSearchModal()"
-                            class="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                            <span class="material-symbols-outlined text-lg">close</span>
+                            class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all active:scale-95">
+                            <span class="material-symbols-outlined text-xl">close</span>
                         </button>
                     </div>
 
                     {{-- Search Input --}}
-                    <div class="relative mt-3">
+                    <div class="relative mt-5">
                         <span
-                            class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-lg">search</span>
+                            class="material-symbols-outlined absolute left-4 top-3 text-gray-400 text-lg">search</span>
                         <input x-ref="searchInput" x-model="searchModal.query" @input.debounce.300ms="searchPricelist()"
-                            class="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
+                            class="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-gray-900 border-gray-100 dark:border-gray-800 rounded-2xl text-sm text-gray-800 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all shadow-inner"
                             type="text" placeholder="Buscar por código o descripción..." autofocus />
-                        <div x-show="searchModal.loading" class="absolute right-3 top-2.5">
+                        <div x-show="searchModal.loading" class="absolute right-4 top-3">
                             <span
                                 class="material-symbols-outlined animate-spin text-emerald-500 text-lg">progress_activity</span>
                         </div>
@@ -92,10 +93,10 @@
                                     <div class="flex items-start gap-3">
                                         {{-- Checkbox --}}
                                         <div class="flex-shrink-0 pt-0.5">
-                                            <div :class="isItemSelected(result.id) ? 'bg-emerald-500 border-emerald-500' : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600'"
-                                                class="w-5 h-5 rounded border-2 flex items-center justify-center transition-colors">
+                                            <div :class="isItemSelected(result.id) ? 'bg-emerald-500 border-emerald-500 shadow-lg shadow-emerald-500/30' : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600'"
+                                                class="w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all duration-200">
                                                 <span x-show="isItemSelected(result.id)"
-                                                    class="material-symbols-outlined text-white text-sm">check</span>
+                                                    class="material-symbols-outlined text-white text-base font-bold">check</span>
                                             </div>
                                         </div>
                                         {{-- Content --}}
@@ -147,10 +148,10 @@
                                     <div class="flex items-start gap-3">
                                         {{-- Checkbox --}}
                                         <div class="flex-shrink-0 pt-0.5">
-                                            <div :class="isItemSelected(item.id) ? 'bg-emerald-500 border-emerald-500' : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600'"
-                                                class="w-5 h-5 rounded border-2 flex items-center justify-center transition-colors">
+                                            <div :class="isItemSelected(item.id) ? 'bg-emerald-500 border-emerald-500 shadow-lg shadow-emerald-500/30' : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600'"
+                                                class="w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all duration-200">
                                                 <span x-show="isItemSelected(item.id)"
-                                                    class="material-symbols-outlined text-white text-sm">check</span>
+                                                    class="material-symbols-outlined text-white text-base font-bold">check</span>
                                             </div>
                                         </div>
                                         {{-- Content --}}
@@ -217,9 +218,11 @@
                 </div>
 
                 {{-- Drawer Footer --}}
-                <div class="px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                    <div class="flex items-center justify-between gap-3">
-                        <span class="text-xs text-gray-400">
+                <div
+                    class="px-6 py-4 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-[0_-10px_20px_-5px_rgba(0,0,0,0.05)]">
+                    <div class="flex items-center justify-between gap-4">
+                        <span
+                            class="text-[10px] uppercase font-bold text-gray-400 tracking-widest px-2 py-1 bg-gray-50 dark:bg-gray-800 rounded-lg">
                             <template x-if="searchModal.query.length >= 2">
                                 <span x-text="searchModal.results.length + ' resultados'"></span>
                             </template>
@@ -228,16 +231,16 @@
                             </template>
                         </span>
 
-                        <div class="flex gap-2">
+                        <div class="flex gap-3">
                             <button @click="closeSearchModal()"
-                                class="px-3 py-2 text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
-                                Cerrar
+                                class="px-4 py-2 text-xs font-bold text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-800 rounded-xl transition-all">
+                                Cancelar
                             </button>
                             <button @click="addSelectedItems()" :disabled="searchModal.selectedItems.length === 0"
-                                :class="searchModal.selectedItems.length === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-emerald-700'"
-                                class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 rounded-lg transition-colors flex items-center gap-1.5">
-                                <span class="material-symbols-outlined text-sm">add</span>
-                                Agregar (<span x-text="searchModal.selectedItems.length"></span>)
+                                :class="searchModal.selectedItems.length === 0 ? 'opacity-50 grayscale cursor-not-allowed' : 'hover:bg-emerald-700 hover:scale-105 shadow-emerald-500/20 shadow-lg active:scale-95'"
+                                class="px-6 py-2.5 text-xs font-black text-white bg-emerald-600 rounded-xl transition-all flex items-center gap-2">
+                                <span class="material-symbols-outlined text-base">add_circle</span>
+                                AGREGAR (<span x-text="searchModal.selectedItems.length"></span>)
                             </button>
                         </div>
                     </div>

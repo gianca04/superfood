@@ -4,11 +4,12 @@
 .form-input-clean {
     border-color: transparent;
     background-color: transparent;
-    border-radius: 0.375rem;
+    border-radius: 1rem;
+    /* rounded-2xl */
     transition: all 0.15s ease;
     font-size: 0.875rem;
     width: 100%;
-    padding: 0.375rem 0.5rem;
+    padding: 0.5rem 0.75rem;
 }
 
 .form-input-clean:hover {
@@ -29,10 +30,11 @@
 .sidebar-input {
     width: 100%;
     font-size: 0.875rem;
-    border-radius: 0.375rem;
+    border-radius: 0.75rem;
+    /* rounded-xl */
     border: 1px solid rgb(229 231 235);
     background-color: rgb(249 250 251);
-    padding: 0.5rem 0.75rem;
+    padding: 0.6rem 0.85rem;
 }
 
 .dark .sidebar-input {
@@ -50,10 +52,10 @@
 /* === Card Sections === */
 .card-section {
     background-color: white;
-    border-radius: 0.75rem;
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+    border-radius: 2rem;
+    /* rounded-3xl */
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
     overflow: visible;
-    /* Cambiado de hidden para permitir dropdowns */
 }
 
 .dark .card-section {
@@ -131,7 +133,7 @@ input[type=number]::-webkit-outer-spin-button {
 /* === Filter Tabs === */
 .filter-tab {
     padding: 0.375rem 0.75rem;
-    border-radius: 0.5rem;
+    border-radius: 1rem;
     font-size: 0.75rem;
     font-weight: 600;
     transition: all 0.15s ease;
@@ -173,10 +175,11 @@ input[type=number]::-webkit-outer-spin-button {
 .searchable-select-input {
     width: 100%;
     font-size: 0.875rem;
-    border-radius: 0.375rem;
+    border-radius: 0.75rem;
+    /* rounded-xl */
     border: 1px solid rgb(229 231 235);
     background-color: rgb(249 250 251);
-    padding: 0.5rem 2rem 0.5rem 0.75rem;
+    padding: 0.6rem 2.25rem 0.6rem 0.85rem;
     transition: all 0.15s ease;
 }
 
@@ -229,13 +232,14 @@ input[type=number]::-webkit-outer-spin-button {
     position: absolute;
     z-index: 9999;
     width: 100%;
-    margin-top: 0.25rem;
-    max-height: 12rem;
+    margin-top: 0.5rem;
+    max-height: 15rem;
     overflow-y: auto;
     background-color: white;
     border: 1px solid rgb(229 231 235);
-    border-radius: 0.5rem;
-    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    border-radius: 1.5rem;
+    /* rounded-3xl */
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 }
 
 .dark .searchable-select-dropdown {
