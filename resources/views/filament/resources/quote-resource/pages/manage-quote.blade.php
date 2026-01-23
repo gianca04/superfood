@@ -58,7 +58,7 @@
                     request_number: suggestedRequestNumber || projectFromPHP?.service_code ||
                         '', // Si quieres igualar al service_code
                     employee_id: null,
-                    service_name: '',
+                    service_name: existingQuote?.service_name || projectFromPHP?.name || '',
                     client_id: projectFromPHP?.client_id || null,
                     sub_client_id: projectFromPHP?.sub_client_id || subClientId || null,
                     quote_category_id: categoriesFromPHP.find(c => c.name === 'II.EE. Baja Tensión')?.id || null,
@@ -675,11 +675,8 @@
                     return this.sections.reduce((sum, s) => sum + this.getSectionSubtotal(s.key), 0);
                 },
 
-                getIGV() {
-                    return this.getSubtotal() * this.igvRate;
-                },
                 getTotal() {
-                    return this.getSubtotal() + this.getIGV();
+                    return this.getSubtotal();
                 },
 
                 // Save

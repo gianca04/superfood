@@ -17,26 +17,18 @@
             {{-- Mobile Totals (Visible only on very small screens) --}}
             <div class="sm:hidden text-right">
                 <div class="text-[10px] uppercase tracking-wider text-gray-400">Total</div>
-                <div class="font-mono text-base font-bold text-emerald-600 dark:text-emerald-400"
+                <div class="text-base font-bold text-emerald-600 dark:text-emerald-400"
                     x-text="'S/ ' + getTotal().toFixed(2)"></div>
             </div>
         </div>
 
         {{-- Totals y Save --}}
         <div class="flex flex-wrap items-center justify-between sm:justify-end gap-x-6 gap-y-2">
-            <div class="hidden sm:block text-right">
-                <div class="text-[10px] uppercase tracking-wider text-gray-400">Subtotal</div>
-                <div class="font-mono text-sm font-semibold text-gray-700 dark:text-gray-200"
-                    x-text="'S/ ' + getSubtotal().toFixed(2)"></div>
-            </div>
-            <div class="hidden sm:block text-right">
-                <div class="text-[10px] uppercase tracking-wider text-gray-400">IGV (18%)</div>
-                <div class="font-mono text-sm font-semibold text-gray-700 dark:text-gray-200"
-                    x-text="'S/ ' + getIGV().toFixed(2)"></div>
-            </div>
+
+
             <div class="hidden sm:block text-right">
                 <div class="text-[10px] uppercase tracking-wider text-gray-400">Total</div>
-                <div class="font-mono text-lg font-bold text-emerald-600 dark:text-emerald-400"
+                <div class="text-lg font-bold text-emerald-600 dark:text-emerald-400"
                     x-text="'S/ ' + getTotal().toFixed(2)"></div>
             </div>
 

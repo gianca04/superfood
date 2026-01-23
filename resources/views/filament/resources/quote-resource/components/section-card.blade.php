@@ -118,14 +118,14 @@
                         {{-- Descripción (Textarea) --}}
                         <td class="px-1 py-1 align-top border-r border-gray-100 dark:border-gray-700/50">
                             <textarea x-model="item.description" rows="1"
-                                class="w-full px-1 py-1 text-xs border-0 bg-transparent focus:ring-1 focus:ring-emerald-500 rounded resize-vertical min-h-[28px]"
+                                class="w-full px-1 py-1 text-xs border-0 bg-transparent focus:ring-1 focus:ring-emerald-500 rounded resize-none min-h-[28px]"
                                 style="field-sizing: content; min-height: 1.5lh;"></textarea>
                         </td>
 
                         {{-- Comentario (Textarea) --}}
                         <td class="px-1 py-1 align-top border-r border-gray-100 dark:border-gray-700/50">
                             <textarea x-model="item.comment" rows="1" placeholder="—"
-                                class="w-full px-1 py-1 text-xs border-0 bg-transparent text-gray-500 focus:ring-1 focus:ring-emerald-500 rounded resize-vertical min-h-[28px]"
+                                class="w-full px-1 py-1 text-xs border-0 bg-transparent text-gray-500 focus:ring-1 focus:ring-emerald-500 rounded resize-none min-h-[28px]"
                                 style="field-sizing: content; min-height: 1.5lh;"></textarea>
                         </td>
 
@@ -141,15 +141,13 @@
                         </td>
 
                         {{-- P.U. --}}
-                        <td class="px-1 py-1 align-top border-r border-gray-100 dark:border-gray-700/50">
-                            <input x-model.number="item.unit_price" @input="recalculate()" type="number" min="0"
-                                step="0.01"
-                                class="w-full px-2 py-1.5 font-mono text-xs text-right border border-gray-100 rounded-xl dark:border-gray-800 dark:bg-gray-900 shadow-inner" />
+                        <td class="px-2 py-2 text-right text-gray-900 align-top border-r border-gray-100 dark:text-gray-300 dark:border-gray-700/50"
+                            x-text="'S/ ' + parseFloat(item.unit_price).toLocaleString('es-PE', {minimumFractionDigits: 2})">
                         </td>
 
                         {{-- Subtotal --}}
-                        <td class="px-2 py-2 font-mono font-black text-right text-gray-900 align-top border-r border-gray-100 dark:text-white dark:border-gray-700/50"
-                            x-text="(item.quantity * item.unit_price).toLocaleString('es-PE', {minimumFractionDigits: 2})">
+                        <td class="px-2 py-2 font-black text-right text-gray-900 align-top border-r border-gray-100 dark:text-white dark:border-gray-700/50"
+                            x-text="'S/ ' + (item.quantity * item.unit_price).toLocaleString('es-PE', {minimumFractionDigits: 2})">
                         </td>
 
                         {{-- Actions --}}

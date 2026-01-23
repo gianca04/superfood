@@ -28,6 +28,7 @@ class QuotesRelationManager extends RelationManager
                         'project_id' => $this->getOwnerRecord()->id,
                         'sub_client_id' => $this->getOwnerRecord()->sub_client_id,
                         'service_code' => $this->getOwnerRecord()->service_code,
+                        'name' => $this->getOwnerRecord()->name,
                     ]))->openUrlInNewTab(),
             ])
             ->actions([
@@ -48,8 +49,8 @@ class QuotesRelationManager extends RelationManager
                         ->url(fn($record) => url("/quotes/{$record->id}/excel"))
                         ->openUrlInNewTab(),
                 ])
-                ->icon('heroicon-o-ellipsis-vertical')
-                ->tooltip('Opciones'),
+                    ->icon('heroicon-o-ellipsis-vertical')
+                    ->tooltip('Opciones'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

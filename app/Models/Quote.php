@@ -198,6 +198,7 @@ class Quote extends Model
             // Creamos el proyecto con los datos mínimos requeridos
             $project = new \App\Models\Project();
             $project->sub_client_id = $data['sub_client_id'] ?? null;
+            $project->name = $data['service_name'] ?? null;
             $project->service_code = null; // Se asigna después
             $project->save();
 
