@@ -179,7 +179,7 @@ class Quote extends Model
     {
         return $query->where(function ($q) use ($search) {
             $q->where('request_number', 'LIKE', "%{$search}%")
-                ->orWhere('service_name', 'LIKE', "%{$search}%") // <-- NUEVA LÍNEA PARA EL SERVICIO
+                ->orWhere('service_name', 'LIKE', "%{$search}%")
                 ->orWhereHas('subClient', function ($sq) use ($search) {
                     $sq->where('name', 'LIKE', "%{$search}%");
                 })
@@ -223,6 +223,10 @@ class Quote extends Model
     public function scopeWithTotal($query)
     {
         return $query->addSelect(['quotes.*', \Illuminate\Support\Facades\DB::raw('calculate_quote_total(quotes.id) as total_cost')]);
+    }
+    public function scopeCountApproved($query)
+    {
+        return $query->where('status', 'Aprobado')->count();
     }
 
 

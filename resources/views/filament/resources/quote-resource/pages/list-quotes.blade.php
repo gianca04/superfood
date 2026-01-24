@@ -73,10 +73,10 @@
             <select x-model="filterStatus" @change="fetchQuotes()"
                 class="px-4 py-2 border border-gray-300 rounded-lg quote-select-filter dark:bg-gray-800 dark:border-gray-700">
                 <option value="">Todos los estados</option>
-                <option value="POR HACER">Por Hacer</option>
-                <option value="ENVIADO">Enviado</option>
-                <option value="APROBADO">Aprobado</option>
-                <option value="RECHAZADA">Rechazada</option>
+                <option value="Pendiente">Por Hacer</option>
+                <option value="Enviado">Enviado</option>
+                <option value="Aprobado">Aprobado</option>
+                <option value="Anulado">Anulado</option>
             </select>
 
             {{-- Select para filtrar por cotizador --}}
@@ -177,7 +177,8 @@
                         {{-- Cotizador --}}
                         <div class="flex items-center gap-2 mt-1">
                             <span class="text-xs text-purple-500 material-symbols-outlined">person</span>
-                            <span class="text-[10px] font-medium text-gray-500 italic" x-text="quote.employee
+                            <span class="text-[10px] font-medium text-gray-500 italic"
+                                x-text="quote.employee
                                         ? ((quote.employee.first_name ? quote.employee.first_name : '') +
                                            (quote.employee.last_name ? ' ' + quote.employee.last_name : '') || 'Sin nombre')
                                         : 'No asignado'"></span>
@@ -185,15 +186,15 @@
                     </div>
 
                     {{-- 5. Botonera de Acciones (Compact Grid) --}}
-                    <div class="flex items-center justify-between p-3 gap-2 bg-gray-50 border-t border-gray-100">
+                    <div class="flex items-center justify-between gap-2 p-3 border-t border-gray-100 bg-gray-50">
                         <div class="flex gap-2">
                             <a :href="'/dashboard/quotes/' + quote.id + '/edit'"
-                                class="flex items-center justify-center w-8 h-8 text-gray-600 bg-white border border-gray-200 rounded-lg hover:text-blue-600 hover:border-blue-300 hover:shadow-sm transition-all"
+                                class="flex items-center justify-center w-8 h-8 text-gray-600 transition-all bg-white border border-gray-200 rounded-lg hover:text-blue-600 hover:border-blue-300 hover:shadow-sm"
                                 title="Editar">
                                 <span class="text-sm material-symbols-outlined">edit</span>
                             </a>
                             <a :href="'/quotes/' + quote.id + '/preview'" target="_blank"
-                                class="flex items-center justify-center w-8 h-8 text-gray-600 bg-white border border-gray-200 rounded-lg hover:text-gray-900 hover:border-gray-400 hover:shadow-sm transition-all"
+                                class="flex items-center justify-center w-8 h-8 text-gray-600 transition-all bg-white border border-gray-200 rounded-lg hover:text-gray-900 hover:border-gray-400 hover:shadow-sm"
                                 title="Ver">
                                 <span class="text-sm material-symbols-outlined">visibility</span>
                             </a>
@@ -201,17 +202,17 @@
 
                         <div class="flex gap-2">
                             <a :href="'/quotes/' + quote.id + '/pdf'" target="_blank"
-                                class="flex items-center justify-center w-8 h-8 text-white bg-blue-600 rounded-lg hover:bg-blue-700 hover:shadow-md transition-all"
+                                class="flex items-center justify-center w-8 h-8 text-white transition-all bg-blue-600 rounded-lg hover:bg-blue-700 hover:shadow-md"
                                 title="Descargar PDF">
                                 <span class="text-sm material-symbols-outlined">picture_as_pdf</span>
                             </a>
                             <a :href="'/quotes/' + quote.id + '/excel'" target="_blank"
-                                class="flex items-center justify-center w-8 h-8 text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 hover:shadow-md transition-all"
+                                class="flex items-center justify-center w-8 h-8 text-white transition-all rounded-lg bg-emerald-600 hover:bg-emerald-700 hover:shadow-md"
                                 title="Descargar Excel">
                                 <span class="text-sm material-symbols-outlined">grid_on</span>
                             </a>
                             <button @click="deleteQuote(quote.id)"
-                                class="flex items-center justify-center w-8 h-8 text-white bg-red-500 rounded-lg hover:bg-red-600 hover:shadow-md transition-all"
+                                class="flex items-center justify-center w-8 h-8 text-white transition-all bg-red-500 rounded-lg hover:bg-red-600 hover:shadow-md"
                                 title="Eliminar">
                                 <span class="text-sm material-symbols-outlined">delete</span>
                             </button>
@@ -345,7 +346,8 @@
                             const response = await fetch(`/quotes/${quoteId}`, {
                                 method: 'DELETE',
                                 headers: {
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                        ?.getAttribute('content') || '',
                                     'Accept': 'application/json',
                                     'Content-Type': 'application/json'
                                 }
@@ -405,10 +407,10 @@
 
                 getStatusClass(status) {
                     const classes = {
-                        'APROBADO': 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300',
-                        'POR HACER': 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300',
-                        'ENVIADO': 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
-                        'RECHAZADA': 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
+                        'Aprobado': 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300',
+                        'Pendiente': 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300',
+                        'Enviado': 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
+                        'Anulado': 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
                     };
                     return classes[status] ||
                         'bg-gray-100 text-gray-800 dark:bg-gray-900/40 dark:text-gray-300';

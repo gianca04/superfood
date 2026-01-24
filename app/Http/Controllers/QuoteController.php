@@ -294,8 +294,8 @@ class QuoteController extends Controller
         $totalAmount = $quotes->sum(function ($quote) {
             return $quote->total_amount;
         });
-        $approved = $quotes->where('status', 'APROBADO')->count();
-        $pending = $quotes->where('status', 'POR HACER')->count();
+        $approved = $quotes->where('status', 'Aprobado')->count();
+        $pending = $quotes->where('status', 'Pendiente')->count();
 
         // Cotizadores únicos para el filtro
         $employees = $quotes->pluck('employee')->filter()->unique('id')->map(function ($emp) {
@@ -391,6 +391,20 @@ class QuoteController extends Controller
             'total_general'     => number_format($quote->total_amount, 2),
             'items'             => $itemsData,
             'categories'   => QuoteCategory::select('id', 'name')->get(),
+        ]);
+    }
+    public function getStats()
+    {
+        $totalQuotes = Quote::count();
+        $totalAmount = Quote::sum('total_amount');
+        $approvedCount = Quote::where('status', 'Aprobado')->count();
+        $pendingCount = Quote::where('status', 'Pendiente')->count();
+
+        return response()->json([
+            'total_quotes' => $totalQuotes,
+            'total_amount' => $totalAmount,
+            'approved' => $approvedCount,
+            'pending' => $pendingCount,
         ]);
     }
 }
