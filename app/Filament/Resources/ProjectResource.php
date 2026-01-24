@@ -707,6 +707,8 @@ class ProjectResource extends Resource
 
                                 Forms\Components\Select::make('has_quote')
                                     ->label('¿Tiene cotización?')
+                                    ->default('NO')
+                                    ->native(false)
                                     ->options([
                                         'SI' => 'SI',
                                         'NO' => 'NO',
@@ -714,6 +716,8 @@ class ProjectResource extends Resource
 
                                 Forms\Components\Select::make('has_report')
                                     ->label('¿Tiene informe?')
+                                    ->default('NO')
+                                    ->native(false)
                                     ->options([
                                         'SI' => 'SI',
                                         'NO' => 'NO',
@@ -766,6 +770,7 @@ class ProjectResource extends Resource
                             ->schema([
                                 Forms\Components\Select::make('fracttal_status')
                                     ->label('Estado en Fracttal')
+                                    ->native(false)
                                     ->options([
                                         'Sin OT' => 'Sin OT',
                                         'En Proceso' => 'En Proceso',
@@ -784,6 +789,7 @@ class ProjectResource extends Resource
                             ]),
 
                         Forms\Components\Tabs\Tab::make('Seguimiento')
+                            ->columns(2)
                             ->schema([
                                 Forms\Components\Select::make('status')
                                     ->label('Estado del servicio')

@@ -177,32 +177,45 @@
                         {{-- Cotizador --}}
                         <div class="flex items-center gap-2 mt-1">
                             <span class="text-xs text-purple-500 material-symbols-outlined">person</span>
-                            <span class="text-[10px] font-medium text-gray-500 italic"
-                                x-text="quote.employee
+                            <span class="text-[10px] font-medium text-gray-500 italic" x-text="quote.employee
                                         ? ((quote.employee.first_name ? quote.employee.first_name : '') +
                                            (quote.employee.last_name ? ' ' + quote.employee.last_name : '') || 'Sin nombre')
                                         : 'No asignado'"></span>
                         </div>
                     </div>
 
-                    {{-- 5. Botonera de Acciones (2x2 Grid) --}}
-                    <div class="grid grid-cols-2 gap-1.5 p-3 bg-gray-50 border-t border-gray-100">
-                        <a :href="'/dashboard/quotes/' + quote.id + '/edit'"
-                            class="text-gray-700 bg-white border border-gray-200 btn-action-small hover:bg-gray-100">
-                            <span class="text-xs material-symbols-outlined">edit</span> Editar
-                        </a>
-                        <a :href="'/quotes/' + quote.id + '/preview'" target="_blank"
-                            class="text-white bg-gray-800 btn-action-small hover:bg-black">
-                            <span class="text-xs material-symbols-outlined">visibility</span> Ver
-                        </a>
-                        <a :href="'/quotes/' + quote.id + '/pdf'" target="_blank"
-                            class="text-white bg-blue-600 btn-action-small hover:bg-blue-700">
-                            <span class="text-xs material-symbols-outlined">picture_as_pdf</span> PDF
-                        </a>
-                        <a :href="'/quotes/' + quote.id + '/excel'" target="_blank"
-                            class="text-white btn-action-small bg-emerald-700 hover:bg-emerald-800">
-                            <span class="text-xs material-symbols-outlined">grid_on</span> Excel
-                        </a>
+                    {{-- 5. Botonera de Acciones (Compact Grid) --}}
+                    <div class="flex items-center justify-between p-3 gap-2 bg-gray-50 border-t border-gray-100">
+                        <div class="flex gap-2">
+                            <a :href="'/dashboard/quotes/' + quote.id + '/edit'"
+                                class="flex items-center justify-center w-8 h-8 text-gray-600 bg-white border border-gray-200 rounded-lg hover:text-blue-600 hover:border-blue-300 hover:shadow-sm transition-all"
+                                title="Editar">
+                                <span class="text-sm material-symbols-outlined">edit</span>
+                            </a>
+                            <a :href="'/quotes/' + quote.id + '/preview'" target="_blank"
+                                class="flex items-center justify-center w-8 h-8 text-gray-600 bg-white border border-gray-200 rounded-lg hover:text-gray-900 hover:border-gray-400 hover:shadow-sm transition-all"
+                                title="Ver">
+                                <span class="text-sm material-symbols-outlined">visibility</span>
+                            </a>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <a :href="'/quotes/' + quote.id + '/pdf'" target="_blank"
+                                class="flex items-center justify-center w-8 h-8 text-white bg-blue-600 rounded-lg hover:bg-blue-700 hover:shadow-md transition-all"
+                                title="Descargar PDF">
+                                <span class="text-sm material-symbols-outlined">picture_as_pdf</span>
+                            </a>
+                            <a :href="'/quotes/' + quote.id + '/excel'" target="_blank"
+                                class="flex items-center justify-center w-8 h-8 text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 hover:shadow-md transition-all"
+                                title="Descargar Excel">
+                                <span class="text-sm material-symbols-outlined">grid_on</span>
+                            </a>
+                            <button @click="deleteQuote(quote.id)"
+                                class="flex items-center justify-center w-8 h-8 text-white bg-red-500 rounded-lg hover:bg-red-600 hover:shadow-md transition-all"
+                                title="Eliminar">
+                                <span class="text-sm material-symbols-outlined">delete</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </template>
@@ -232,6 +245,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         function quoteIndex() {
             return {
@@ -306,6 +320,60 @@
                 async printQuote(quoteId) {
                     // Al usar 'D' en el controlador mPDF, el navegador iniciará la descarga automáticamente
                     window.open(`/quotes/${quoteId}/pdf`, '_blank');
+                },
+
+                async deleteQuote(quoteId) {
+                    const result = await Swal.fire({
+                        title: '¿Estás seguro?',
+                        text: "No podrás revertir esto",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Sí, eliminar',
+                        cancelButtonText: 'Cancelar',
+                        buttonsStyling: false,
+                        customClass: {
+                            confirmButton: 'bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded shadow-lg transform transition-all hover:scale-105 active:scale-95 mx-2',
+                            cancelButton: 'bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded shadow-lg transform transition-all hover:scale-105 active:scale-95 mx-2',
+                            popup: 'rounded-xl shadow-2xl dark:bg-gray-800 dark:text-white',
+                            title: 'text-xl font-bold text-gray-800 dark:text-white',
+                            htmlContainer: 'text-gray-600 dark:text-gray-300'
+                        }
+                    });
+
+                    if (result.isConfirmed) {
+                        try {
+                            const response = await fetch(`/quotes/${quoteId}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                    'Accept': 'application/json',
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+
+                            if (response.ok) {
+                                Swal.fire(
+                                    '¡Eliminado!',
+                                    'La cotización ha sido eliminada.',
+                                    'success'
+                                );
+                                this.fetchQuotes(); // Recargar la lista
+                            } else {
+                                Swal.fire(
+                                    'Error',
+                                    'Hubo un problema al eliminar la cotización.',
+                                    'error'
+                                );
+                            }
+                        } catch (error) {
+                            console.error('Error deleting quote:', error);
+                            Swal.fire(
+                                'Error',
+                                'Error de conexión.',
+                                'error'
+                            );
+                        }
+                    }
                 },
 
                 initPagination() {
