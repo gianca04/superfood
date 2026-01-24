@@ -91,7 +91,7 @@
     class="flex flex-col min-h-screen antialiased bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display"
     x-data="{
         quoteWarehouseId: {{ $quoteWarehouse->id }},
-        status: '{{ $quoteWarehouse->status }}', // Agregar el estado de la quote_warehouse
+        status: '{{ $quoteWarehouse->status }}',
         items: [
             @foreach ($details as $i => $item)
         {
@@ -108,7 +108,7 @@
             return totalSolicitado === 0 ? 0 : Math.round((totalListo / totalSolicitado) * 100);
         },
         async enviarFormulario() {
-            // Solo los items con despachar > 0
+            // Construir los datos a enviar
             const details = this.items
                 .filter(i => i.despachar > 0)
                 .map(i => ({
@@ -116,6 +116,13 @@
                     a_despachar: i.despachar,
                     quantity: i.solicitado
                 }));
+            const payload = {
+                quote_warehouse_id: this.quoteWarehouseId,
+                observations: this.observaciones,
+                progreso_total: this.progresoTotal, // Enviar progresoTotal
+                details: details
+            };
+    
             try {
                 const response = await fetch('{{ route('quoteswarehouse.store') }}', {
                     method: 'POST',
@@ -124,19 +131,21 @@
                         'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
                         'Accept': 'application/json'
                     },
-                    body: JSON.stringify({
-                        quote_warehouse_id: this.quoteWarehouseId,
-                        observations: this.observaciones,
-                        details: details
-                    })
+                    body: JSON.stringify(payload)
                 });
                 const data = await response.json();
                 if (data.success) {
+                    let message = data.message;
+                    if (data.estadoMensaje) {
+                        message += `\n${data.estadoMensaje}`; // Agregar mensaje de cambio de estado
+                    }
                     Swal.fire({
                         icon: 'success',
                         title: '¡Éxito!',
-                        text: data.message,
+                        text: message,
                         confirmButtonColor: '#137fec',
+                    }).then(() => {
+                        location.reload(); // Recargar la página para reflejar los cambios
                     });
                 } else {
                     Swal.fire({
@@ -380,21 +389,24 @@
                     placeholder="Ingrese aquí observaciones generales para el despacho..."></textarea>
             </div>
             <!-- Bottom Actions -->
-            <div class="flex items-center justify-between pt-2">
-                <div class="flex gap-4">
-                    <button
-                        class="flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600 gap-2 text-base font-bold leading-normal transition-colors">
-                        Cancelar
-                    </button>
-                    <!-- Botón Confirmar -->
-                    <button type="button"
-                        class="flex min-w-[200px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-primary hover:bg-primary-dark text-white gap-2 pl-5 text-base font-bold leading-normal shadow-lg shadow-primary/20 transition-all transform hover:-translate-y-0.5"
-                        @click="enviarFormulario()">
-                        <span class="material-symbols-outlined text-[24px]">local_shipping</span>
-                        <span class="truncate">Confirmar</span>
-                    </button>
+            <form @submit.prevent="enviarFormulario()">
+                <input type="hidden" name="progreso_total" :value="progresoTotal">
+                <div class="flex items-center justify-between pt-2">
+                    <div class="flex gap-4">
+                        <button
+                            class="flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600 gap-2 text-base font-bold leading-normal transition-colors">
+                            Cancelar
+                        </button>
+                        <!-- Botón Confirmar -->
+                        <button type="button"
+                            class="flex min-w-[200px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-primary hover:bg-primary-dark text-white gap-2 pl-5 text-base font-bold leading-normal shadow-lg shadow-primary/20 transition-all transform hover:-translate-y-0.5"
+                            @click="enviarFormulario()">
+                            <span class="material-symbols-outlined text-[24px]">local_shipping</span>
+                            <span class="truncate">Confirmar</span>
+                        </button>
+                    </div>
                 </div>
-            </div>
+            </form>
         </div>
     </main>
 </body>

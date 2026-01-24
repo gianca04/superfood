@@ -75,6 +75,28 @@ class QuoteWarehouseController extends Controller
         try {
             $quoteWarehouse = \App\Models\QuoteWarehouse::findOrFail($request->input('quote_warehouse_id'));
             $quoteWarehouse->observations = $request->input('observations');
+
+            // Obtener el progreso total enviado desde la vista
+            $progresoTotal = $request->input('progreso_total', 0);
+            Log::info('Progreso total recibido:', ['progreso_total' => $progresoTotal]);
+
+            // Variable para almacenar el mensaje de cambio de estado
+            $estadoMensaje = null;
+
+            // Validar que el progreso total se reciba correctamente
+            if ($progresoTotal > 0 && $progresoTotal < 100) {
+                if ($quoteWarehouse->status !== 'Parcial') {
+                    $estadoMensaje = 'El estado ha cambiado a Parcial.';
+                }
+                $quoteWarehouse->status = 'Parcial';
+            } elseif ($progresoTotal === 100) {
+                if ($quoteWarehouse->status !== 'Atendido') {
+                    $estadoMensaje = 'El estado ha cambiado a Atendido.';
+                    $quoteWarehouse->attended_at = now(); // Guardar la fecha y hora actual solo si es la primera vez
+                }
+                $quoteWarehouse->status = 'Atendido';
+            }
+
             $quoteWarehouse->save();
 
             $details = $request->input('details', []);
@@ -86,6 +108,7 @@ class QuoteWarehouseController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => '¡Observaciones guardadas correctamente!',
+                    'estadoMensaje' => $estadoMensaje,
                 ]);
             }
 
@@ -136,6 +159,7 @@ class QuoteWarehouseController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => '¡Observaciones guardadas correctamente! No se guardó ningún detalle.',
+                    'estadoMensaje' => $estadoMensaje,
                 ]);
             }
 
@@ -144,12 +168,14 @@ class QuoteWarehouseController extends Controller
                     'success' => false,
                     'message' => 'Algunos detalles no se guardaron correctamente.',
                     'errors'  => $errores,
+                    'estadoMensaje' => $estadoMensaje,
                 ], 422);
             }
 
             return response()->json([
                 'success' => true,
                 'message' => "¡Despacho guardado correctamente! Se actualizaron $guardados detalles.",
+                'estadoMensaje' => $estadoMensaje,
             ]);
         } catch (\Exception $e) {
             return response()->json([
