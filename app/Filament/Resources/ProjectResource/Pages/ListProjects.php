@@ -52,7 +52,6 @@ class ListProjects extends ListRecords
                         ->content(fn(Get $get) => $this->previewCsv($get))
                         ->hidden(fn(Get $get) => !$get('archivo_csv')),
                 ])
-                // ESTO ES LO QUE FALTA:
                 ->action(function (array $data) {
                     $this->importCsv($data);
                 }),
@@ -195,42 +194,41 @@ class ListProjects extends ListRecords
             }
         }
 
-
         // Tabla HTML
         $html = '<div style="overflow-x:auto;border:1px solid #e5e7eb;border-radius:8px">';
         $html .= '
-<table style="
-    width:100%;
-    border-collapse:separate;
-    border-spacing:0;
-    font-size:13px;
-">
-';
+        <table style="
+            width:100%;
+            border-collapse:separate;
+            border-spacing:0;
+            font-size:13px;
+        ">
+        ';
         $html .= '
-<thead>
-<tr style="background:#f3f4f6">
-    <th style="padding:10px;border:1px solid #e5e7eb">Service Code</th>
-    <th style="border:1px solid #e5e7eb">Request #</th>
-    <th style="border:1px solid #e5e7eb">Inicio</th>
-    <th style="border:1px solid #e5e7eb">Proyecto</th>
-    <th style="border:1px solid #e5e7eb">Cliente</th>
-    <th style="border:1px solid #e5e7eb">Subcliente</th>
-    <th style="border:1px solid #e5e7eb">Monto</th>
-    <th style="border:1px solid #e5e7eb">OT</th>
-    <th style="border:1px solid #e5e7eb">Tipo</th>
-    <th style="border:1px solid #e5e7eb">Cot.</th>
-    <th style="border:1px solid #e5e7eb">Rep.</th>
-    <th style="border:1px solid #e5e7eb">Fracttal</th>
-    <th style="border:1px solid #e5e7eb">OC</th>
-    <th style="border:1px solid #e5e7eb">MIGO</th>
-    <th style="border:1px solid #e5e7eb">Estado</th>
-    <th style="border:1px solid #e5e7eb">Cot. Enviada</th>
-    <th style="border:1px solid #e5e7eb">Comentarios</th>
-    <th style="border:1px solid #e5e7eb">¿Acta de conformidad?</th>
-    <th style="border:1px solid #e5e7eb">Acción</th>
-</tr>
-</thead>
-<tbody>';
+        <thead>
+        <tr style="background:#f3f4f6">
+            <th style="padding:10px;border:1px solid #e5e7eb">Service Code</th>
+            <th style="border:1px solid #e5e7eb">Request #</th>
+            <th style="border:1px solid #e5e7eb">Inicio</th>
+            <th style="border:1px solid #e5e7eb">Proyecto</th>
+            <th style="border:1px solid #e5e7eb">Cliente</th>
+            <th style="border:1px solid #e5e7eb">Subcliente</th>
+            <th style="border:1px solid #e5e7eb">Monto</th>
+            <th style="border:1px solid #e5e7eb">OT</th>
+            <th style="border:1px solid #e5e7eb">Tipo</th>
+            <th style="border:1px solid #e5e7eb">Cot.</th>
+            <th style="border:1px solid #e5e7eb">Rep.</th>
+            <th style="border:1px solid #e5e7eb">Fracttal</th>
+            <th style="border:1px solid #e5e7eb">OC</th>
+            <th style="border:1px solid #e5e7eb">MIGO</th>
+            <th style="border:1px solid #e5e7eb">Estado</th>
+            <th style="border:1px solid #e5e7eb">Cot. Enviada</th>
+            <th style="border:1px solid #e5e7eb">Comentarios</th>
+            <th style="border:1px solid #e5e7eb">¿Acta de conformidad?</th>
+            <th style="border:1px solid #e5e7eb">Acción</th>
+        </tr>
+        </thead>
+        <tbody>';
 
         $limit = 300;
         $count = 0;
