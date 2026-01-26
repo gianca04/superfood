@@ -3,13 +3,13 @@
 namespace App\Filament\Resources\QuoteWarehouseResource\Pages;
 
 use App\Filament\Resources\QuoteWarehouseResource;
+use App\Models\QuoteWarehouse;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
 class ListQuoteWarehouses extends ListRecords
 {
     protected static string $resource = QuoteWarehouseResource::class;
-
     protected static string $view = 'filament.pages.warehouse-kanban';
 
     protected function getHeaderActions(): array
@@ -27,25 +27,22 @@ class ListQuoteWarehouses extends ListRecords
             'attended' => 'Atendido',
         ];
 
-        // Obtener todos los registros de quote_warehouse relacionados a cotizaciones aprobadas
-        $quoteWarehouses = \App\Models\QuoteWarehouse::with(['quote.subClient'])
+        // Traemos los registros paginados (12 por página)
+        $quoteWarehouses = QuoteWarehouse::with(['quote.subClient', 'details'])
             ->whereHas('quote', function ($q) {
                 $q->where('status', 'Aprobado');
             })
-            ->get();
+            ->latest()
+            ->paginate(12);
 
-        // Agrupar los registros de quote_warehouse por su status
-        $kanbanData = [];
-        foreach ($statuses as $statusKey => $statusLabel) {
-            $kanbanData[$statusKey] = $quoteWarehouses->filter(function ($qw) use ($statusKey) {
-                // Filtrar registros que coincidan con el estado en inglés o español
-                return in_array($qw->status, [$statusKey, ucfirst($statusKey), $this->getSpanishStatus($statusKey)]);
-            });
-        }
+        // Agregamos el progreso calculado a cada elemento de la colección paginada
+        $quoteWarehouses->getCollection()->transform(function ($qw) {
+            $qw->progress = $qw->calculateProgress();
+            return $qw;
+        });
 
         return [
-            'statuses' => $statuses,
-            'kanbanData' => $kanbanData,
+            'records' => $quoteWarehouses,
         ];
     }
 

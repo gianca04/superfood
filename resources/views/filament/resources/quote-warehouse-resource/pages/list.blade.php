@@ -3,6 +3,22 @@
 <html class="light" lang="en">
 
 <head>
+    <style>
+        @media print {
+
+            button,
+            .no-print {
+                display: none !important;
+            }
+
+            body {
+                margin: 0;
+                padding: 0;
+                background: white;
+                color: black;
+            }
+        }
+    </style>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
@@ -105,7 +121,7 @@
         get progresoTotal() {
             let totalSolicitado = this.items.reduce((acc, item) => acc + item.solicitado, 0);
             let totalListo = this.items.reduce((acc, item) => acc + Math.min(item.entregado + item.despachar, item.solicitado), 0);
-            return totalSolicitado === 0 ? 0 : Math.round((totalListo / totalSolicitado) * 100);
+            return totalSolicitado === 0 ? 0 : Math.round((totalListo / totalSolicitado) * 100); // Redondear al entero más cercano
         },
         async enviarFormulario() {
             // Construir los datos a enviar
@@ -122,7 +138,7 @@
                 progreso_total: this.progresoTotal, // Enviar progresoTotal
                 details: details
             };
-    
+
             try {
                 const response = await fetch('{{ route('quoteswarehouse.store') }}', {
                     method: 'POST',
@@ -217,11 +233,6 @@
                 </div>
                 <!-- Secondary Actions -->
                 <div class="flex gap-3">
-                    <button
-                        class="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold border rounded-lg shadow-sm bg-surface-light dark:bg-surface-dark border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
-                        <span class="material-symbols-outlined mr-2 text-[20px]">print</span>
-                        Imprimir
-                    </button>
                     <button type="button"
                         class="inline-flex items-center justify-center px-4 py-2 text-sm font-bold transition-colors rounded-lg bg-primary/10 text-primary hover:bg-primary/20"
                         @click="

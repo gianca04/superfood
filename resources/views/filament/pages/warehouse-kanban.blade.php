@@ -1,9 +1,111 @@
 <x-filament-panels::page>
     @vite(['resources/css/app.css'])
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-    <div class="grid min-h-screen grid-cols-1 gap-6 overflow-x-auto md:grid-cols-3" x-data="warehouseKanban()">
-        <!-- Modal para previsualización -->
+
+    <div x-data="warehouseKanban()">
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+            @foreach ($records as $quoteWarehouse)
+                @php
+                    $quote = $quoteWarehouse->quote;
+                    $statusColor = match (strtolower($quoteWarehouse->status)) {
+                        'atendido' => 'emerald',
+                        'parcial' => 'yellow',
+                        'pendiente' => 'red',
+                        default => 'gray',
+                    };
+                    $progress = $quoteWarehouse->progress;
+                    $progressColor = match (true) {
+                        $progress < 50 => 'red',
+                        $progress >= 50 && $progress < 80 => 'yellow',
+                        $progress >= 80 => 'green',
+                        default => 'gray',
+                    };
+
+                    // Calcular los ítems atendidos
+                    $itemsAtendidos = $quote->quoteDetails
+                        ->filter(function ($detail) use ($quoteWarehouse) {
+                            $attendedQuantity = $quoteWarehouse
+                                ->details()
+                                ->where('quote_detail_id', $detail->id)
+                                ->sum('attended_quantity');
+                            return $attendedQuantity >= $detail->quantity;
+                        })
+                        ->count();
+                @endphp
+
+                <div
+                    class="group relative bg-white dark:bg-[#1a2634] rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all duration-200 p-4 flex flex-col gap-3 h-auto">
+                    <div class="flex items-center justify-between">
+                        <span
+                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-{{ $statusColor }}-100 text-{{ $statusColor }}-700 dark:bg-{{ $statusColor }}-900/30 dark:text-{{ $statusColor }}-400">
+                            <span class="size-2 rounded-full bg-{{ $statusColor }}-500"></span>
+                            {{ ucfirst($quoteWarehouse->status) }}
+                        </span>
+                        <span class="font-mono text-xs text-slate-400">#{{ $quoteWarehouse->quote_id }}</span>
+                    </div>
+
+                    <div class="flex flex-col">
+                        <h3 class="text-base font-bold leading-tight truncate text-slate-900 dark:text-white">
+                            {{ $quote?->subClient?->name ?? 'Sin Cliente' }}
+                        </h3>
+                        <span class="text-xs text-slate-500 dark:text-slate-400">
+                            {{ $quote?->quote_date?->format('d/m/Y') ?? 'N/A' }}
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="flex flex-col">
+                            <span class="text-[10px] uppercase font-bold text-slate-400">Items atendidos</span>
+                            <span class="text-sm font-semibold text-slate-900 dark:text-white">
+                                {{ $itemsAtendidos }}
+                            </span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-[10px] uppercase font-bold text-slate-400">Total Items</span>
+                            <span class="text-sm font-semibold text-slate-900 dark:text-white">
+                                {{ $quote->quoteDetails->count() }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-1.5 mt-auto">
+                        <div class="w-full h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                            <div class="h-full bg-{{ $progressColor }}-500 rounded-full"
+                                style="width: {{ $progress }}%"></div>
+                        </div>
+                        <div class="flex justify-between text-[10px] font-bold">
+                            <span class="text-{{ $progressColor }}-600">{{ $progress }}%</span>
+                            <span class="uppercase text-slate-400">Progreso</span>
+                        </div>
+                    </div>
+
+                    <!-- Botón de imprimir (abrir en nueva pestaña) -->
+                    <a href="{{ route('quoteswarehouse.pdf', $quoteWarehouse->id) }}" target="_blank"
+                        class="inline-flex items-center justify-center px-4 py-2 text-xs font-semibold border rounded-lg shadow-sm bg-surface-light dark:bg-surface-dark border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+                        <span class="material-symbols-outlined mr-2 text-[20px]">print</span>
+                        Imprimir
+                    </a>
+
+                    <button type="button"
+                        @click.prevent="openPreview('{{ route('quoteswarehouse.preview', [$quoteWarehouse->id]) }}')"
+                        class="block w-full px-4 py-2 text-xs font-black tracking-widest text-center text-white uppercase transition-all rounded-lg shadow-sm bg-primary-600 hover:bg-primary-700">
+                        Atender
+                    </button>
+                </div>
+            @endforeach
+        </div>
+
+        <!-- Paginación -->
+        <div class="mt-8">
+            <div class="flex justify-center">
+                <nav class="inline-flex rounded-md shadow-sm" aria-label="Pagination">
+                    {{ $records->links('pagination::tailwind') }}
+                </nav>
+            </div>
+        </div>
+
         <template x-teleport="body">
+            <!-- Modal para previsualización -->
             <div x-show="showPreview" x-cloak
                 class="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
                 x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
@@ -55,60 +157,6 @@
                 </div>
             </div>
         </template>
-        @foreach ($statuses as $statusKey => $statusLabel)
-            <div class="flex flex-col h-full">
-                <!-- Header -->
-                <div class="p-4 mb-4 bg-white rounded-lg dark:bg-gray-800 dark:border-primary-400">
-                    <h3 class="text-lg font-bold text-gray-700 dark:text-gray-200">{{ $statusLabel }}</h3>
-                    <span class="text-sm text-gray-500 dark:text-gray-400">{{ $kanbanData[$statusKey]->count() }}
-                        cotizaciones</span>
-                </div>
-                <!-- Column -->
-                <div id="kanban-{{ $statusKey }}" data-status="{{ $statusKey }}"
-                    class="kanban-column flex-1 p-4 bg-gray-50 rounded-xl space-y-4 min-h-[500px] border-2 border-dashed border-gray-200 dark:bg-gray-900 dark:border-gray-700">
-                    @foreach ($kanbanData[$statusKey] as $quoteWarehouse)
-                        @php
-                            $quote = $quoteWarehouse->quote;
-                        @endphp
-                        <div data-id="{{ $quoteWarehouse->id }}"
-                            class="p-4 transition-shadow bg-white border border-gray-100 rounded-lg shadow cursor-pointer hover:shadow-md dark:bg-gray-800 dark:border-gray-600">
-                            <div class="flex items-start justify-between mb-2">
-                                <span
-                                    class="px-2 py-1 text-xs font-medium rounded-full bg-primary-50 text-primary-700 dark:bg-primary-900 dark:text-primary-300">
-                                    #{{ $quoteWarehouse->quote_id }}
-                                </span>
-                                <span class="text-xs text-gray-400">{{ $quote?->quote_date?->format('d/m/Y') }}</span>
-                            </div>
-
-                            <button type="button"
-                                @click="openPreview('{{ route('quoteswarehouse.preview', [$quoteWarehouse->id]) }}')"
-                                class="block w-full px-4 py-2 mb-4 text-sm font-bold text-center text-white transition-all rounded-lg shadow-sm bg-primary-600 hover:bg-primary-700">
-                                PREVISUALIZAR PRUEBA
-                            </button>
-
-                            <h4 class="mb-1 font-semibold text-gray-800 dark:text-gray-200">
-                                {{ $quote?->subClient?->name ?? 'Sin Cliente' }}
-                            </h4>
-                            <p class="mb-3 text-sm text-gray-600 line-clamp-2 dark:text-gray-400">
-                                {{ $quote?->service_name ?? 'Sin servicio' }}
-                            </p>
-                            <div
-                                class="flex items-center justify-between pt-2 mt-2 border-t border-gray-100 dark:border-gray-700">
-                                <div class="text-xs text-gray-500">
-                                    {{-- Aquí podrías mostrar el empleado de almacén si lo necesitas --}}
-                                </div>
-                                @if ($quoteWarehouse->attended_at)
-                                    <div class="flex items-center text-xs text-green-600"
-                                        title="Atendido el {{ $quoteWarehouse->attended_at }}">
-                                        <x-heroicon-m-check-circle class="w-4 h-4 mr-1" />
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        @endforeach
     </div>
     <script>
         document.addEventListener('alpine:init', () => {
@@ -119,16 +167,6 @@
 
                 init() {
                     this.loadSortable();
-                    // Eliminar el cierre con tecla ESC
-                    // window.addEventListener('keydown', (e) => {
-                    //     if (e.key === 'Escape' && this.showPreview) {
-                    //         if (this.isFullscreen) {
-                    //             this.isFullscreen = false;
-                    //         } else {
-                    //             this.closePreview();
-                    //         }
-                    //     }
-                    // });
                 },
 
                 openPreview(url) {
@@ -155,54 +193,9 @@
                         this.initSortable();
                     }
                 },
-                toggleFullscreen() { // <--- NUEVO
+                toggleFullscreen() {
                     this.isFullscreen = !this.isFullscreen;
                 },
-
-                initSortable() {
-                    const containers = document.querySelectorAll('.kanban-column');
-                    containers.forEach(container => {
-                        new Sortable(container, {
-                            group: 'kanban',
-                            animation: 150,
-                            ghostClass: 'bg-primary-50',
-                            onEnd: (evt) => this.handleDrop(evt)
-                        });
-                    });
-                },
-
-                handleDrop(evt) {
-                    if (evt.from === evt.to) return;
-                    const newStatus = evt.to.getAttribute('data-status');
-                    const quoteId = evt.item.getAttribute('data-id');
-                    this.updateStatus(quoteId, newStatus);
-                },
-
-                updateStatus(quoteId, status) {
-                    fetch('{{ route('warehouse.update-status') }}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
-                                    .getAttribute('content'),
-                                'Accept': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                quoteId,
-                                status
-                            })
-                        })
-                        .then(res => res.json())
-                        .then(data => { // Corregido: antes tenías 'then data =>' sin paréntesis
-                            if (data.success) {
-                                new FilamentNotification().title('Estado actualizado').success()
-                                    .send();
-                            } else {
-                                new FilamentNotification().title('Error').danger().send();
-                            }
-                        })
-                        .catch(err => console.error('Error en fetch:', err));
-                }
             }));
         });
     </script>

@@ -78,4 +78,43 @@ class QuoteWarehouse extends Model
     {
         return $this->belongsTo(Employee::class, 'employee_id');
     }
+
+    /**
+     * Calcula el progreso total de atención de los ítems relacionados.
+     *
+     * @return int
+     */
+    public function calculateProgress(): int
+    {
+        // Obtener todos los detalles relacionados
+        $details = $this->quote->details;
+
+        // Variables para almacenar los totales
+        $totalSolicitado = 0;
+        $totalAtendido = 0;
+
+        foreach ($details as $detail) {
+            $totalSolicitado += $detail->quantity;
+
+            // Sumar las cantidades atendidas de los detalles de almacén relacionados
+            $attendedQuantity = $this->details()
+                ->where('quote_detail_id', $detail->id)
+                ->sum('attended_quantity');
+
+            $totalAtendido += $attendedQuantity;
+        }
+
+        // Calcular el porcentaje de progreso y redondear al entero más cercano
+        return $totalSolicitado > 0 ? round(($totalAtendido / $totalSolicitado) * 100) : 0;
+    }
+
+    /**
+     * Relación con los detalles de almacén.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function details()
+    {
+        return $this->hasMany(QuoteWarehouseDetail::class, 'quote_warehouse_id');
+    }
 }

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\StoreQuoteWarehouseDetailRequest;
 use Illuminate\Support\Facades\Log;
+use Barryvdh\DomPDF\Facade\Pdf; // Asegúrate de tener instalado barryvdh/laravel-dompdf
 
 /**
  * Controlador para manejar las operaciones CRUD de cotizaciones (Quotes).
@@ -183,5 +184,62 @@ class QuoteWarehouseController extends Controller
                 'message' => 'Error al guardar: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Genera un PDF de la vista de atención de suministros.
+     *
+     * @param \App\Models\QuoteWarehouse $quoteWarehouse
+     * @return \Illuminate\Http\Response
+     */
+    public function generatePdf(\App\Models\QuoteWarehouse $quoteWarehouse)
+    {
+        $quote = $quoteWarehouse->quote;
+        $quote->load(['subClient', 'quoteDetails.pricelist.unit']);
+
+        // Obtener los detalles atendidos por almacén (quote_warehouse_details)
+        $warehouseDetails = \App\Models\QuoteWarehouseDetail::where('quote_warehouse_id', $quoteWarehouse->id)
+            ->get()
+            ->keyBy('quote_detail_id');
+
+        $groupedDetails = $quote->quoteDetails->groupBy('item_type');
+
+        $details = [];
+        foreach (['VIATICOS', 'SUMINISTRO', 'MANO DE OBRA'] as $type) {
+            if ($groupedDetails->has($type)) {
+                foreach ($groupedDetails[$type] as $detail) {
+                    $attended = $warehouseDetails[$detail->id]->attended_quantity ?? 0;
+                    $details[] = [
+                        'item_type'        => $type,
+                        'quote_detail_id'  => $detail->id,
+                        'sat_line'         => $detail->pricelist->sat_line ?? '',
+                        'sat_description'  => $detail->pricelist->sat_description ?? '',
+                        'quantity'         => $detail->quantity,
+                        'unit_price'       => $detail->unit_price,
+                        'subtotal'         => $detail->subtotal,
+                        'unit_name'        => $detail->pricelist->unit->name ?? '',
+                        'entregado'        => $attended,
+                    ];
+                }
+            }
+        }
+
+        // Obtener el logo del cliente si existe
+        $clientLogo = $quote->subClient->logo ?? null;
+
+        // Generar el PDF
+        $pdf = Pdf::loadView('filament.resources.quote-warehouse-resource.pages.pdf', [
+            'quoteWarehouse' => $quoteWarehouse,
+            'quote'          => $quote,
+            'clientName'     => $quote->subClient->name ?? 'Sin Cliente',
+            'quoteDate'      => $quote->quote_date ? $quote->quote_date->format('d/m/Y') : 'N/A',
+            'executionDate'  => $quote->execution_date ? $quote->execution_date->format('d/m/Y') : 'N/A',
+            'status'         => $quoteWarehouse->status,
+            'details'        => $details,
+            'clientLogo'     => $clientLogo ? public_path('storage/' . $clientLogo) : null,
+            'observations'   => $quoteWarehouse->observations, // Agregar observaciones
+        ]);
+
+        return $pdf->stream('Atencion_Suministros.pdf');
     }
 }
