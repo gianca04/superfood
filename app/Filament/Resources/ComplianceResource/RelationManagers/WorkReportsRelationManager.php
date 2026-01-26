@@ -8,7 +8,9 @@ use App\Models\Employee;
 use App\Models\Position;
 use App\Models\Project;
 use App\Models\Quote;
+use App\Models\QuoteWarehouseDetail;
 use App\Models\SubClient;
+use App\Models\WorkReport;
 use Filament\Forms;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Split;
@@ -21,6 +23,8 @@ use Filament\Tables\Table;
 use Filament\Forms\Components\Actions\Action as FormAction;
 use Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Saade\FilamentAutograph\Forms\Components\SignaturePad;
 
 class WorkReportsRelationManager extends RelationManager
@@ -37,6 +41,61 @@ class WorkReportsRelationManager extends RelationManager
             $data['project_id'] = $this->ownerRecord->project_id;
         }
         return $data;
+    }
+    // Hook para creación
+    protected function afterCreate(): void
+    {
+        $report = $this->getRecord();
+        $this->syncProjectConsumptions($report);
+    }
+
+    // Hook para edición
+    protected function afterSave(): void
+    {
+        $report = $this->getRecord();
+        // Limpieza previa para evitar duplicados en la tabla project_consumptions
+        \App\Models\ProjectConsumption::where('work_report_id', $report->id)->delete();
+        $this->syncProjectConsumptions($report);
+    }
+
+    // Hook para eliminación (antes de borrar, para cascada)
+    protected function beforeDelete(): void
+    {
+        $report = $this->getRecord();
+        // Verificar si el reporte tiene datos en materials antes de eliminar consumos
+        if (!empty($report->materials)) {
+            // Si borras el reporte y tiene materials, eliminamos los consumos de la tabla de proyectos
+            \App\Models\ProjectConsumption::where('work_report_id', $report->id)->delete();
+        }
+    }
+
+    protected function syncProjectConsumptions($report): void
+    {
+        // Aseguramos tener el project_id
+        $projectId = $report->project_id ?? $this->getOwnerRecord()->project_id;
+        $materials = $report->materials ?? [];
+
+        if (empty($materials)) {
+            Log::info("No hay materiales para el reporte ID: {$report->id}");
+            return;
+        }
+
+        foreach ($materials as $item) {
+            // Validamos que los datos del repeater no estén vacíos
+            if (empty($item['material_id']) || empty($item['used_quantity'])) {
+                continue;
+            }
+
+            \App\Models\ProjectConsumption::create([
+                'project_id'                => $projectId,
+                'quote_warehouse_detail_id' => $item['material_id'], // Viene del Select del repeater
+                'work_report_id'            => $report->id,
+                'quantity'                  => $item['used_quantity'],
+                'consumed_at'               => $report->report_date ?? now(),
+            ]);
+
+            Log::info("Consumo guardado para proyecto: {$projectId}, material: {$item['material_id']}");
+        }
     }
 
     public function form(Form $form): Form
@@ -183,25 +242,94 @@ class WorkReportsRelationManager extends RelationManager
                                     ->disabled(fn(string $operation): bool => $operation === 'view'),
 
                                 Forms\Components\Repeater::make('materials')
-                                    ->label('Materiales')
-                                    ->helperText('Agrega los materiales utilizados durante el trabajo.')
+                                    ->label('Materiales Utilizados')
                                     ->schema([
-                                        Forms\Components\TextInput::make('material')
-                                            ->label('Material')
-                                            ->placeholder('Ej: Cemento')
-                                            ->required(),
-                                        Forms\Components\TextInput::make('unidad')
-                                            ->label('Unidad')
-                                            ->placeholder('Ej: Sacos'),
-                                        Forms\Components\TextInput::make('cantidad')
-                                            ->label('Cantidad')
-                                            ->placeholder('Ej: 10'),
+                                        Forms\Components\Grid::make(4)
+                                            ->schema([
+                                                // Selector de material usando tu función del modelo
+                                                Forms\Components\Select::make('material_id')
+                                                    ->label('Descripción del Material / Insumo')
+                                                    ->options(function () {
+                                                        // Usamos la función del modelo pasándole el project_id del dueño (Compliance)
+                                                        $project = Project::find($this->getOwnerRecord()->project_id);
+                                                        if (!$project) return [];
+
+                                                        // Instanciamos un modelo temporal para usar tu función getAvailableMaterials
+                                                        $reportModel = new WorkReport(['project_id' => $project->id]);
+
+                                                        return $reportModel->getAvailableMaterials()
+                                                            ->pluck('sat_description', 'id');
+                                                    })
+                                                    ->searchable()
+                                                    ->preload()
+                                                    ->live()
+                                                    ->required()
+                                                    ->columnSpanFull()
+                                                    ->afterStateUpdated(function ($state, callable $set) {
+                                                        if ($state) {
+                                                            // Buscamos los datos técnicos para llenar los campos informativos
+                                                            $material = QuoteWarehouseDetail::with(['quoteDetail.pricelist.unit'])->find($state);
+                                                            if ($material && $material->quoteDetail->pricelist) {
+                                                                $pricelist = $material->quoteDetail->pricelist;
+                                                                $set('sat_line', $pricelist->sat_line);
+                                                                $set('unit_name', $pricelist->unit->name ?? 'N/A');
+                                                                // Calcular el total consumido en el proyecto actual para este material
+                                                                $totalConsumed = \App\Models\ProjectConsumption::where('project_id', $this->getOwnerRecord()->project_id)
+                                                                    ->where('quote_warehouse_detail_id', $state)
+                                                                    ->sum('quantity');
+                                                                $remaining = $material->attended_quantity - $totalConsumed;
+                                                                if ($remaining <= 0) {
+                                                                    Notification::make()->title('El almacén o los materiales entregados se han acabado. Vuelve a pedir a almacén.')->danger()->send();
+                                                                    $set('material_id', null);
+                                                                    $set('sat_line', null);
+                                                                    $set('unit_name', null);
+                                                                    $set('attended_quantity', null);
+                                                                    $set('used_quantity', null);
+                                                                } else {
+                                                                    $set('attended_quantity', $remaining);
+                                                                    $set('used_quantity', $remaining);
+                                                                }
+                                                            }
+                                                        }
+                                                    }),
+
+                                                Forms\Components\TextInput::make('sat_line')
+                                                    ->label('Línea SAT')
+                                                    ->readOnly()
+                                                    ->columnSpan(1),
+
+                                                Forms\Components\TextInput::make('unit_name')
+                                                    ->label('Unidad')
+                                                    ->readOnly()
+                                                    ->columnSpan(1),
+
+                                                Forms\Components\TextInput::make('attended_quantity')
+                                                    ->label('En Almacén')
+                                                    ->numeric()
+                                                    ->readOnly()
+                                                    ->extraAttributes(['class' => 'bg-gray-50 font-bold text-primary-600'])
+                                                    ->columnSpan(1),
+
+                                                Forms\Components\TextInput::make('used_quantity')
+                                                    ->label('Cant. a Reportar')
+                                                    ->numeric()
+                                                    ->required()
+                                                    ->live(onBlur: true)
+                                                    ->suffix(fn($get) => $get('unit_name'))
+                                                    ->columnSpan(1)
+                                                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                                        $max = (float) $get('attended_quantity');
+                                                        if ((float)$state > $max) {
+                                                            $set('used_quantity', $max);
+                                                            Notification::make()->title('Ajustado al máximo disponible')->warning()->send();
+                                                        }
+                                                    }),
+                                            ])
                                     ])
-                                    ->columns(3)
                                     ->columnSpanFull()
                                     ->defaultItems(0)
-                                    ->reorderable(false)
                                     ->addActionLabel('Agregar material')
+                                    ->reorderable(false)
                                     ->disabled(fn(string $operation): bool => $operation === 'view'),
                             ]),
                         // FIN DEL TAB DE HERRAMIENTAS Y MATERIALES
@@ -486,6 +614,8 @@ class WorkReportsRelationManager extends RelationManager
                         $data['compliance_id'] = $this->ownerRecord->id;
                         $data['project_id'] = $this->ownerRecord->project_id;
                         return $data;
+                    })->after(function (WorkReport $record) {
+                        $this->syncProjectConsumptions($record);
                     }),
                 /*
                     Tables\Actions\Action::make('download_all_reports')
@@ -524,6 +654,11 @@ class WorkReportsRelationManager extends RelationManager
                             $data['compliance_id'] = $this->ownerRecord->id;
                             $data['project_id'] = $this->ownerRecord->project_id;
                             return $data;
+                        })->after(function (WorkReport $record) {
+                            // Limpiamos anteriores
+                            \App\Models\ProjectConsumption::where('work_report_id', $record->id)->delete();
+                            // Sincronizamos nuevos
+                            $this->syncProjectConsumptions($record);
                         }),
                     Tables\Actions\Action::make('preview_report')
                         ->label('Previsualizar')

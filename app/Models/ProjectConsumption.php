@@ -69,4 +69,22 @@ class ProjectConsumption extends Model
     {
         return $this->belongsTo(WorkReport::class);
     }
+
+    /**
+     * Valida si se puede consumir la cantidad especificada sin exceder la cantidad atendida.
+     *
+     * @param int $quoteWarehouseDetailId
+     * @param float $quantity
+     * @return bool
+     */
+    public static function canConsume(int $quoteWarehouseDetailId, float $quantity): bool
+    {
+        $detail = QuoteWarehouseDetail::find($quoteWarehouseDetailId);
+        if (!$detail) {
+            return false;
+        }
+
+        $totalConsumed = self::where('quote_warehouse_detail_id', $quoteWarehouseDetailId)->sum('quantity');
+        return ($totalConsumed + $quantity) <= $detail->attended_quantity;
+    }
 }

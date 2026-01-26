@@ -481,9 +481,6 @@ class ProjectResource extends Resource
                                                     }
                                                 }
                                             }),
-
-                                        // FIN DE SELECT DE EMPLEADO
-
                                     ])
                                     ->createItemButtonLabel('Agregar Empleado')
                                     ->columnSpanFull(),
