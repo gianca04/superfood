@@ -201,10 +201,12 @@ class ClientResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make()
                     ->icon('heroicon-o-eye')
-                    ->color('info'),
+                    ->color('info')
+                    ->modalWidth(fn() => strpos(request()->userAgent(), 'Mobile') !== false ? 'screen' : '7xl'),
                 Tables\Actions\EditAction::make()
                     ->icon('heroicon-o-pencil-square')
-                    ->color('primary'),
+                    ->color('primary')
+                    ->modalWidth(fn() => strpos(request()->userAgent(), 'Mobile') !== false ? 'screen' : '7xl'),
                 Tables\Actions\DeleteAction::make()
                     ->icon('heroicon-o-trash')
                     ->color('danger'),

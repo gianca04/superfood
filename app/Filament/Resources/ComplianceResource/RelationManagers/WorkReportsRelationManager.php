@@ -641,6 +641,7 @@ class WorkReportsRelationManager extends RelationManager
                     ->icon('heroicon-o-plus-circle')
                     ->color('success')
                     ->modalHeading('Nuevo Reporte de Trabajo')
+                    ->modalWidth(fn() => strpos(request()->userAgent(), 'Mobile') !== false ? 'screen' : '7xl')
                     ->mutateFormDataUsing(function (array $data): array {
                         // Forzamos los IDs desde el ownerRecord (el Compliance padre)
                         $data['compliance_id'] = $this->ownerRecord->id;
@@ -678,9 +679,11 @@ class WorkReportsRelationManager extends RelationManager
                 Tables\Actions\ActionGroup::make([
                     // Acciones de Vista y Edición
                     Tables\Actions\ViewAction::make()
-                        ->color('info'),
+                        ->color('info')
+                        ->modalWidth(fn() => strpos(request()->userAgent(), 'Mobile') !== false ? 'screen' : '7xl'),
                     Tables\Actions\EditAction::make()
                         ->color('primary')
+                        ->modalWidth(fn() => strpos(request()->userAgent(), 'Mobile') !== false ? 'screen' : '7xl')
                         ->mutateFormDataUsing(function (array $data): array {
                             // Aseguramos que al editar no pierda la relación
                             $data['compliance_id'] = $this->ownerRecord->id;

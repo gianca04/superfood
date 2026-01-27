@@ -96,7 +96,8 @@ class PricelistResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
+                Tables\Actions\ViewAction::make()
+                    ->modalWidth(fn() => strpos(request()->userAgent(), 'Mobile') !== false ? 'screen' : '7xl'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

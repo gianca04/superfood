@@ -434,7 +434,7 @@ class TimesheetsRelationManager extends RelationManager
                     ->label('Editar (Modal)')
                     ->icon('heroicon-o-pencil-square')
                     ->modalHeading('Editar tareo')
-                    ->modalWidth('4xl')
+                    ->modalWidth(fn() => strpos(request()->userAgent(), 'Mobile') !== false ? 'screen' : '7xl')
                     ->color('gray'),
 
                 Tables\Actions\Action::make('edit_advanced')

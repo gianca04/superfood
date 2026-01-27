@@ -146,7 +146,8 @@ class WarehouseResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->modalWidth(fn() => strpos(request()->userAgent(), 'Mobile') !== false ? 'screen' : '7xl'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

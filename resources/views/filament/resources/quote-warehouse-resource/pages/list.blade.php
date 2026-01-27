@@ -404,7 +404,7 @@
                 <input type="hidden" name="progreso_total" :value="progresoTotal">
                 <div class="flex items-center justify-between pt-2">
                     <div class="flex gap-4">
-                        <button
+                        <button @click="$wire.closeModal()"
                             class="flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600 gap-2 text-base font-bold leading-normal transition-colors">
                             Cancelar
                         </button>

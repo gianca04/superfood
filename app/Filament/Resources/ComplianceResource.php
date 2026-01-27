@@ -485,6 +485,7 @@ class ComplianceResource extends Resource
                     ->label('Código de Servicio')
                     ->placeholder('No definido')
                     ->sortable()
+                    ->searchable()
                     ->badge()
                     ->color('gray'),
 
@@ -676,7 +677,8 @@ class ComplianceResource extends Resource
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\EditAction::make()
                         ->label('Editar Registro')
-                        ->color('info'), // Azul para edición es estándar
+                        ->color('info')
+                        ->modalWidth(fn() => strpos(request()->userAgent(), 'Mobile') !== false ? 'screen' : '7xl'), // Azul para edición es estándar
 
                     // Acción Excel
                     Tables\Actions\Action::make('downloadExcel')

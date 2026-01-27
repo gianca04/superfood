@@ -161,8 +161,10 @@ class EmployeesRelationManager extends RelationManager
                     ),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make()
+                    ->modalWidth(fn() => strpos(request()->userAgent(), 'Mobile') !== false ? 'screen' : '7xl'),
+                Tables\Actions\EditAction::make()
+                    ->modalWidth(fn() => strpos(request()->userAgent(), 'Mobile') !== false ? 'screen' : '7xl'),
                 Tables\Actions\DeleteAction::make(),
                 Tables\Actions\Action::make('detach')
                     ->label('Desasociar')

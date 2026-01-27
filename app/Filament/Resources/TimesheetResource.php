@@ -240,8 +240,10 @@ class TimesheetResource extends Resource
                     })
                     ->visible(fn($record) => $record->project_id !== null),
 
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make()
+                    ->modalWidth(fn() => strpos(request()->userAgent(), 'Mobile') !== false ? 'screen' : '7xl'),
+                Tables\Actions\EditAction::make()
+                    ->modalWidth(fn() => strpos(request()->userAgent(), 'Mobile') !== false ? 'screen' : '7xl'),
                 Tables\Actions\Action::make(name: 'generarAsistencias')
                     ->label('Generar Asistencias')
                     ->icon('heroicon-o-user-plus')

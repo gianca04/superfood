@@ -1137,7 +1137,8 @@ class ProjectResource extends Resource
                     // 1. ACCIÓN EDITAR
                     Tables\Actions\EditAction::make()
                         ->label('Editar Registro')
-                        ->color('info'),
+                        ->color('info')
+                        ->modalWidth(fn() => strpos(request()->userAgent(), 'Mobile') !== false ? 'screen' : '7xl'),
                     Tables\Actions\Action::make('aprobar_proyecto')
                         ->label('Marcar como Aprobado')
                         ->icon('heroicon-m-check-badge')
