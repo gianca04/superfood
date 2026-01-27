@@ -103,7 +103,8 @@
             </tr>
             <tr>
                 <th style="width: 150px;">Fecha de inicio</th>
-                {{-- <td style="width: 350px;">{{ $workReport->project->start_date->format('d/m/Y') ?? 'N/A' }}</td> --}}
+                {{-- <td style="width: 350px;">{{ $workReport->project->start_date->format('d/m/Y') ?? 'N/A' }}</td>
+                --}}
                 <th style="width: 150px;">Fecha de fin</th>
                 <td>{{ $project->end_date?->format('d/m/Y') ?? 'N/A' }}</td>
             </tr>
@@ -188,7 +189,6 @@
             </tr>
 
             {{-- TABLA DE HERRAMIENTAS Y MATERIALES --}}
-            {{--
             <table class="basic-info-table">
                 <thead>
                     <tr>
@@ -201,11 +201,16 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse ($toolsAndMaterials as $item)
+                    @forelse ($consumedItems as $item)
                         <tr>
-                            <td>{{ $item['nombre'] }}</td>
-                            <td>{{ $item['unidad'] }}</td>
-                            <td>{{ $item['cantidad'] }}</td>
+                            <td>
+                                {{ $item['description'] }}
+                                @if(!empty($item['sat_line']))
+                                    ({{ $item['sat_line'] }})
+                                @endif
+                            </td>
+                            <td>{{ $item['unit'] }}</td>
+                            <td>{{ $item['quantity'] }}</td>
                         </tr>
                     @empty
                         <tr>
@@ -216,7 +221,6 @@
                     @endforelse
                 </tbody>
             </table>
-            --}}
 
             {{-- TABLA DE PERSONAL --}}
             <table class="basic-info-table">

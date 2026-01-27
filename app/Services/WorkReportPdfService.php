@@ -116,14 +116,48 @@ class WorkReportPdfService
      */
     public function prepareViewData(WorkReport $workReport): array
     {
-        // Procesar herramientas y materiales (JSON -> array estructurado)
-        /*
-        $toolsAndMaterials = $this->processToolsAndMaterials(
-            $workReport->tools ?? [],
-            $workReport->materials ?? []
-        );
-        */
-        $toolsAndMaterials = []; // Temporalmente vacío mientras se comenta la lógica
+        $consumedItems = [];
+
+        // 1. Procesar Herramientas (Primero)
+        $tools = $workReport->tools ?? [];
+        if (!empty($tools) && is_array($tools)) {
+            foreach ($tools as $tool) {
+                if (empty($tool['herramienta'])) continue;
+
+                $consumedItems[] = [
+                    'description' => $tool['herramienta'],
+                    'sat_line' => '',
+                    'unit' => $tool['unidad'] ?? 'Und',
+                    'quantity' => $tool['cantidad'] ?? 0,
+                    'type' => 'tool',
+                ];
+            }
+        }
+
+        // 2. Procesar Materiales (Después)
+        $materials = $workReport->materials ?? [];
+        if (!empty($materials) && is_array($materials)) {
+            $materialIds = array_column($materials, 'material_id');
+            $details = \App\Models\QuoteWarehouseDetail::whereIn('id', $materialIds)
+                ->with(['quoteDetail.pricelist'])
+                ->get()
+                ->keyBy('id');
+
+            foreach ($materials as $m) {
+                if (empty($m['material_id'])) continue;
+
+                $detail = $details->get($m['material_id']);
+                $description = $detail?->quoteDetail?->pricelist?->sat_description ?? 'Suministro';
+
+                $consumedItems[] = [
+                    'description' => $description,
+                    'sat_line' => $m['sat_line'] ?? ($detail?->quoteDetail?->pricelist?->sat_line ?? ''),
+                    'unit' => $m['unit_name'] ?? '',
+                    'quantity' => $m['used_quantity'] ?? 0,
+                    'type' => 'material',
+                ];
+            }
+        }
 
         // Procesar personal con nombres y cargos resueltos
         $personnelData = $this->processPersonnelForPdf($workReport->personnel ?? []);
@@ -134,8 +168,7 @@ class WorkReportPdfService
             'project' => $workReport->project,
             'photos' => $workReport->photos,
             'generatedAt' => now(),
-            // Nuevos campos procesados
-            // 'toolsAndMaterials' => $toolsAndMaterials,
+            'consumedItems' => $consumedItems,
             'personnelList' => $personnelData['personnel'],
             'totalHours' => $personnelData['totalHours'],
         ];
