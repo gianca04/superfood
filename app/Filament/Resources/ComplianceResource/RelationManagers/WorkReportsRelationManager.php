@@ -198,7 +198,7 @@ class WorkReportsRelationManager extends RelationManager
                                 // INICIO DE INPUT DE HORA DE INICIO
                                 Forms\Components\TimePicker::make('start_time')
                                     ->label('Hora de inicio')
-                                    ->native(false)
+                                    
                                     ->seconds(false)
                                     ->displayFormat(format: 'H:i')
                                     ->helperText('Selecciona la hora de inicio del trabajo'),
@@ -207,7 +207,6 @@ class WorkReportsRelationManager extends RelationManager
                                 // INICIO DE INPUT DE HORA DE FINALIZACIÓN
                                 Forms\Components\TimePicker::make('end_time')
                                     ->label('Hora de finalización')
-                                    ->native(false)
                                     ->seconds(false)
                                     ->displayFormat(format: 'H:i')
                                     ->helperText('Selecciona la hora de finalización del trabajo')

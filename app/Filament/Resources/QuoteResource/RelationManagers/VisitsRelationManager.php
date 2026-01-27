@@ -140,7 +140,7 @@ class VisitsRelationManager extends RelationManager
                                 Forms\Components\TimePicker::make('start_time')
                                     ->label('Hora de inicio')
                                     //->default(now()->format('H:i'))
-                                    ->native(false)
+                                    
                                     ->seconds(false)
                                     ->displayFormat(format: 'H:i')
                                     ->helperText('Selecciona la hora de inicio del trabajo'),
@@ -150,7 +150,6 @@ class VisitsRelationManager extends RelationManager
                                 Forms\Components\TimePicker::make('end_time')
                                     ->label('Hora de finalización')
                                     ->default(now()->format('H:i'))
-                                    ->native(false)
                                     ->seconds(false)
                                     ->displayFormat(format: 'H:i')
                                     ->helperText('Selecciona la hora de finalización del trabajo')
