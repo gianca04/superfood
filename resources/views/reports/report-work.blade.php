@@ -311,7 +311,11 @@
             <tr>
                 <td class="logo-cell">
                     @if(file_exists(public_path('images/Logo2.png')))
-                        <img src="{{ asset('images/Logo2.png') }}" alt="SAT Industriales S.A.C" class="logo-img">
+                        @php
+                            $logoPath = public_path('images/Logo2.png');
+                            $logoBase64 = 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
+                        @endphp
+                        <img src="{{ $logoBase64 }}" alt="SAT Industriales S.A.C" class="logo-img">
                     @else
                         <div style="font-size: 14pt; font-weight: bold; color: #00B0B9;">SAT INDUSTRIALES S.A.C
                         </div>

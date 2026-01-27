@@ -71,14 +71,6 @@ class ExcelExportController extends Controller
         $tempBasePath = storage_path('app');
         $currentUser = exec('whoami'); // Obtiene el usuario del sistema (ej: www-data)
 
-        Log::info('🛠️ INICIO DEBUG PDF MERGE', [
-            'id' => $id,
-            'usuario_sistema' => $currentUser,
-            'ruta_base_intentada' => $tempBasePath,
-            'existe_carpeta' => file_exists($tempBasePath) ? 'SI' : 'NO',
-            'es_escribible' => is_writable($tempBasePath) ? 'SI' : 'NO',
-            'permisos_linux' => substr(sprintf('%o', fileperms($tempBasePath)), -4),
-        ]);
         try {
             // --- PASO 1: GENERAR EL ACTA (mPDF) ---
             $actaData = $this->getActaData($id);
@@ -96,8 +88,6 @@ class ExcelExportController extends Controller
                 'margin_bottom' => 10,
                 'tempDir' => $tempBasePath // <--- Forzamos la carpeta temporal aquí
             ];
-
-            Log::info('⚙️ Configurando mPDF con tempDir:', ['dir' => $mpdfConfig['tempDir']]);
 
             $mpdfActa = new \Mpdf\Mpdf($mpdfConfig);
             $mpdfActa->WriteHTML($htmlActa);
@@ -124,17 +114,19 @@ class ExcelExportController extends Controller
 
             $dompdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($htmlReports)
                 ->setPaper('a4', 'portrait')
-                ->setOptions(['isRemoteEnabled' => true, 'isHtml5ParserEnabled' => true]);
+                ->setOptions(['isRemoteEnabled' => false, 'isHtml5ParserEnabled' => true]);
 
             $reportsPath = $tempBasePath . '/temp_reports_' . $id . '_' . time() . '.pdf';
-            Log::info('📄 Intentando crear archivo Reportes:', ['path' => $reportsPath]);
 
             $reportsPath = storage_path('app/temp_reports_' . $id . '_' . time() . '.pdf');
             file_put_contents($reportsPath, $dompdf->output());
-            Log::info('🔗 Iniciando Merge de PDFs...');
             // --- PASO 3: UNIR AMBOS (MERGE usando el mPDF principal) ---
             // Creamos la instancia que servirá de contenedor final
-            $finalMpdf = new \Mpdf\Mpdf(['format' => 'A4']);
+            $finalMpdf = new \Mpdf\Mpdf([
+                'format' => 'A4',
+                'isRemoteEnabled' => false,
+                'isHtml5ParserEnabled' => true
+            ]);
 
             // Importar Acta
             $pageCount = $finalMpdf->setSourceFile($actaPath);
@@ -167,12 +159,6 @@ class ExcelExportController extends Controller
             ]);
         } catch (\Exception $e) {
             // === 🔴 LOG DETALLADO DEL ERROR ===
-            Log::error("❌ CRASH en downloadActaWithReports", [
-                'mensaje' => $e->getMessage(),
-                'archivo' => $e->getFile(),
-                'linea' => $e->getLine(),
-                'trace_resumido' => substr($e->getTraceAsString(), 0, 500)
-            ]);
             return back()->with('error', 'Ocurrió un error al generar el documento combinado.');
         }
     }
@@ -180,10 +166,8 @@ class ExcelExportController extends Controller
     public function downloadActaPdf($id)
     {
         try {
-            Log::info('🔍 Iniciando descarga PDF - ID Compliance: ' . $id);
 
             // Paso 1: Obtener datos
-            Log::info('📊 Obteniendo datos de Compliance...');
             $data = $this->getActaData($id);
 
             // Añadir logo como base64 para mPDF
@@ -194,22 +178,16 @@ class ExcelExportController extends Controller
                 $data['logo_base64'] = null;
             }
 
-            Log::info('✅ Datos obtenidos correctamente', ['keys' => array_keys($data)]);
-
             // Paso 2: Generar HTML desde la vista Blade para PDF
-            Log::info('🎨 Renderizando vista Blade: filament.pdf.acta_conformidad_pdf');
             $html = view('filament.pdf.acta_conformidad_pdf', $data)->render();
-            Log::info('✅ HTML generado correctamente', ['html_length' => strlen($html)]);
 
             // Paso 3: Crear directorio temporal si no existe
             $tempDir = storage_path('app/temp');
             if (!is_dir($tempDir)) {
-                Log::info('📁 Creando directorio temporal: ' . $tempDir);
                 mkdir($tempDir, 0755, true);
             }
 
             // Paso 4: Configurar mPDF
-            Log::info('⚙️ Configurando mPDF...');
             $mpdf = new Mpdf([
                 'mode' => 'utf-8',
                 'format' => 'A4',
@@ -220,32 +198,21 @@ class ExcelExportController extends Controller
                 'default_font' => 'Arial',
                 'tempDir' => $tempDir,
             ]);
-            Log::info('✅ mPDF configurado correctamente');
 
             // Paso 5: Escribir HTML en el PDF
-            Log::info('📝 Escribiendo HTML en PDF...');
             $mpdf->WriteHTML($html);
-            Log::info('✅ HTML escrito en PDF correctamente');
 
             // Paso 6: Obtener nombre del archivo
             $filename = $this->getActaFilename($id);
-            Log::info('📄 Nombre de archivo generado: ' . $filename);
 
             // Paso 7: Generar salida PDF
-            Log::info('🖨️ Generando salida PDF...');
             $pdfOutput = $mpdf->Output('', 'S');
-            Log::info('✅ PDF generado correctamente', ['size' => strlen($pdfOutput) . ' bytes']);
 
             return response($pdfOutput, 200, [
                 'Content-Type' => 'application/pdf',
                 'Content-Disposition' => 'attachment; filename="' . $filename . '.pdf"',
             ]);
         } catch (\Exception $e) {
-            Log::error('❌ Error al generar PDF: ' . $e->getMessage(), [
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
-            ]);
 
             return response()->json([
                 'error' => 'Error al generar PDF',
@@ -259,35 +226,22 @@ class ExcelExportController extends Controller
      */
     public function previewActaPdf($id)
     {
-        Log::info('👁️ Iniciando previsualización PDF - ID: ' . $id);
         $data = $this->getActaData($id);
         $data['id'] = $id;
         $data['isPreview'] = true; // Marcar como previsualización para evitar bucles
-        Log::info('✅ Previsualización preparada');
         return view('filament.pdf.acta_conformidad', $data);
     }
 
     public function downloadActaExcel($id)
     {
         try {
-            Log::info('📊 Iniciando descarga Excel - ID Compliance: ' . $id);
 
-            Log::info('🔨 Generando Spreadsheet...');
             $spreadsheet = $this->generateActaSpreadsheet($id);
-            Log::info('✅ Spreadsheet generado correctamente');
 
-            Log::info('📄 Obteniendo nombre de archivo...');
             $filename = $this->getActaFilename($id);
-            Log::info('✅ Nombre de archivo: ' . $filename);
 
-            Log::info('💾 Descargando Excel...');
             return $this->downloadAsExcel($spreadsheet, $filename);
         } catch (\Exception $e) {
-            Log::error('❌ Error al descargar Excel: ' . $e->getMessage(), [
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
-            ]);
 
             return response()->json([
                 'error' => 'Error al generar Excel',
@@ -308,44 +262,25 @@ class ExcelExportController extends Controller
     private function getActaData($id): array
     {
         try {
-            Log::info('📋 Iniciando getActaData para ID: ' . $id);
 
             // Paso 1: Obtener Compliance
-            Log::info('🔍 Buscando Compliance con relaciones...');
             $compliance = Compliance::with([
                 'project.subClient.client',
                 'project.quote'
             ])->findOrFail($id);
-            Log::info('✅ Compliance encontrado', ['id' => $compliance->id]);
 
             // Paso 2: Extraer datos relacionados
-            Log::info('🔗 Extrayendo datos relacionados...');
             $project = $compliance->project;
             $subClient = $project?->subClient;
             $client = $subClient?->client;
             $quote = $project?->quote;
 
-            Log::info('✅ Datos relacionados extraídos', [
-                'has_project' => !is_null($project),
-                'has_subClient' => !is_null($subClient),
-                'has_client' => !is_null($client),
-                'has_quote' => !is_null($quote),
-            ]);
-
             // Paso 3: Obtener usuario autenticado
-            Log::info('👤 Obteniendo usuario autenticado...');
             $user = Auth::user();
             $employee = $user?->employee;
-            Log::info('✅ Usuario obtenido', [
-                'has_user' => !is_null($user),
-                'has_employee' => !is_null($employee),
-                'user_id' => $user?->id
-            ]);
 
             // Paso 4: Preparar activos
-            Log::info('🏗️ Preparando datos de activos...');
             $rawAssets = $compliance->assets ?? [];
-            Log::info('📦 Assets brutos obtenidos', ['count' => count($rawAssets)]);
 
             $assetsConfig = [
                 'tablero_autosoportado' => 'Tablero Autosoportado',
@@ -365,7 +300,6 @@ class ExcelExportController extends Controller
                     'comments' => $assetData['comments'] ?? '',
                 ];
             }
-            Log::info('✅ Activos preparados', ['total_assets' => count($assets)]);
             $descripcion_servicio = $quote?->service_name;
 
             // Si service_name está vacío o es null, usamos el nombre del proyecto
@@ -373,7 +307,6 @@ class ExcelExportController extends Controller
                 $descripcion_servicio = $project?->name ?? 'No hay información';
             }
             // Paso 5: Construir array de datos
-            Log::info('🔨 Construyendo array de datos finales...');
             $finalData = [
                 'numero' => str_pad($compliance->id, 6, '0', STR_PAD_LEFT),
                 'razon_social' => $client?->business_name ?? '',
@@ -397,15 +330,10 @@ class ExcelExportController extends Controller
                 'empleado_tipo_doc' => $employee?->document_type ?? 'DNI',
                 'empleado_documento' => $employee?->document_number ?? '',
             ];
-            Log::info('✅ Array de datos construido correctamente', ['keys' => array_keys($finalData)]);
 
             return $finalData;
         } catch (\Throwable $e) {
-            Log::error('❌ Error en getActaData: ' . $e->getMessage(), [
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
-            ]);
+
             throw $e;
         }
     }
@@ -413,44 +341,32 @@ class ExcelExportController extends Controller
     private function generateActaSpreadsheet($id)
     {
         try {
-            Log::info('🔍 Iniciando generación de Spreadsheet para ID: ' . $id);
-            Log::info('📋 Obteniendo datos de Compliance...');
+
             $compliance = Compliance::with([
                 'project.subClient.client',
                 'project.quote'
             ])->findOrFail($id);
-            Log::info('✅ Compliance encontrado', ['id' => $compliance->id]);
 
             $project = $compliance->project;
             $subClient = $project?->subClient;
             $client = $subClient?->client;
             $quote = $project?->quote;
-            Log::info('✅ Datos relacionados extraídos');
 
             $user = Auth::user();
             $employee = $user?->employee;
-            Log::info('✅ Usuario autenticado', ['user_id' => $user?->id]);
 
             // 2️⃣ Cargar plantilla
-            Log::info('📁 Buscando plantilla de Excel...');
             $templatePath = app_path('Documents/formatoActaConformidad.xlsx');
-            Log::info('📍 Ruta de plantilla: ' . $templatePath);
 
             if (!file_exists($templatePath)) {
-                Log::error('❌ Plantilla no encontrada en: ' . $templatePath);
                 abort(404, 'Plantilla no encontrada');
             }
-            Log::info('✅ Plantilla encontrada');
 
-            Log::info('📖 Cargando archivo Excel...');
             $spreadsheet = IOFactory::load($templatePath);
-            Log::info('✅ Archivo Excel cargado correctamente');
 
             $sheet = $spreadsheet->getActiveSheet();
-            Log::info('✅ Hoja activa obtenida');
 
             // 3️⃣ Llenar datos
-            Log::info('✏️ Llenando datos en el Spreadsheet...');
             $sheet->setCellValue('L2', 'N° ' . str_pad($compliance->id, 6, '0', STR_PAD_LEFT));
             $sheet->setCellValue('E7', $client?->business_name ?? '');
             $sheet->setCellValueExplicit('J7', $client?->document_number ?? '', DataType::TYPE_STRING);
@@ -461,10 +377,8 @@ class ExcelExportController extends Controller
             $sheet->setCellValue('E12', $quote?->project_description ?? $project?->name ?? '');
             $sheet->setCellValue('E15', $project?->start_date?->format('d/m/Y') ?? '');
             $sheet->setCellValue('K15', $project?->end_date?->format('d/m/Y') ?? '');
-            Log::info('✅ Datos básicos completados');
 
             // 4️⃣ Activos
-            Log::info('🏗️ Procesando activos...');
             $assets = $compliance->assets ?? [];
             $assetsMap = [
                 'tablero_autosoportado' => ['row' => 24, 'name' => 'Tablero Autosoportado'],
@@ -488,10 +402,8 @@ class ExcelExportController extends Controller
                     $sheet->setCellValue("C{$row}", "{$name}           (    )");
                 }
             }
-            Log::info('✅ Activos procesados');
 
             // 5️⃣ Observaciones
-            Log::info('📝 Procesando observaciones...');
             $htmlObservations = $compliance->maintenance_observations ?? '';
             if (!empty($htmlObservations)) {
                 $startRow = 31;
@@ -515,10 +427,8 @@ class ExcelExportController extends Controller
                     }
                 }
             }
-            Log::info('✅ Observaciones completadas');
 
             // 6️⃣ Datos del empleado
-            Log::info('👤 Completando datos de empleado...');
             if ($employee) {
                 $sheet->setCellValue('J57', $employee->first_name . ' ' . $employee->last_name);
                 $sheet->setCellValue('I58', $employee->document_type ?? '');
@@ -528,27 +438,18 @@ class ExcelExportController extends Controller
             $sheet->setCellValue('E57', $compliance->fullname_cliente ?? '');
             $sheet->setCellValue('C58', $compliance->document_type ?? '');
             $sheet->setCellValueExplicit('E58', $compliance->document_number ?? '', DataType::TYPE_STRING);
-            Log::info('✅ Datos de empleado completados');
 
             // 7️⃣ Firmas
-            Log::info('🖋️ Procesando firmas...');
             if (!empty($compliance->client_signature)) {
                 $this->addBase64ImageToCell($sheet, $compliance->client_signature, 'E56', 150, 50);
-                Log::info('✅ Firma del cliente añadida');
             }
             if (!empty($compliance->employee_signature)) {
                 $this->addBase64ImageToCell($sheet, $compliance->employee_signature, 'J56', 150, 50);
-                Log::info('✅ Firma del empleado añadida');
             }
 
-            Log::info('✅ Spreadsheet completado correctamente');
             return $spreadsheet;
         } catch (\Exception $e) {
-            Log::error('❌ Error en generateActaSpreadsheet: ' . $e->getMessage(), [
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
-            ]);
+
             throw $e;
         }
     }
