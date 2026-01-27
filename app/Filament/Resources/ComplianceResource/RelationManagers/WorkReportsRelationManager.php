@@ -77,8 +77,15 @@ class WorkReportsRelationManager extends RelationManager
 
         if (empty($materials)) {
             Log::info("No hay materiales para el reporte ID: {$report->id}");
+            // Si no hay materiales, eliminamos todos los consumos existentes para este reporte
+            \App\Models\ProjectConsumption::where('work_report_id', $report->id)->delete();
             return;
         }
+
+        // Obtener consumos existentes para este reporte, indexados por material_id
+        $existingConsumptions = \App\Models\ProjectConsumption::where('work_report_id', $report->id)
+            ->get()
+            ->keyBy('quote_warehouse_detail_id');
 
         foreach ($materials as $item) {
             // Validamos que los datos del repeater no estén vacíos
@@ -86,15 +93,41 @@ class WorkReportsRelationManager extends RelationManager
                 continue;
             }
 
-            \App\Models\ProjectConsumption::create([
-                'project_id'                => $projectId,
-                'quote_warehouse_detail_id' => $item['material_id'], // Viene del Select del repeater
-                'work_report_id'            => $report->id,
-                'quantity'                  => $item['used_quantity'],
-                'consumed_at'               => $report->report_date ?? now(),
-            ]);
+            $materialId = $item['material_id'];
+            $quantity = $item['used_quantity'];
+            $consumedAt = $report->report_date ?? now();
 
-            Log::info("Consumo guardado para proyecto: {$projectId}, material: {$item['material_id']}");
+            if (isset($existingConsumptions[$materialId])) {
+                // Material ya existe: actualizar solo si la cantidad cambió
+                $consumption = $existingConsumptions[$materialId];
+                if ($consumption->quantity != $quantity || $consumption->consumed_at != $consumedAt) {
+                    $consumption->update([
+                        'quantity' => $quantity,
+                        'consumed_at' => $consumedAt,
+                    ]);
+                    Log::info("Consumo actualizado para proyecto: {$projectId}, material: {$materialId}, nueva cantidad: {$quantity}");
+                }
+                // Marcar como procesado
+                unset($existingConsumptions[$materialId]);
+            } else {
+                // Material nuevo: crear consumo
+                \App\Models\ProjectConsumption::create([
+                    'project_id' => $projectId,
+                    'quote_warehouse_detail_id' => $materialId,
+                    'work_report_id' => $report->id,
+                    'quantity' => $quantity,
+                    'consumed_at' => $consumedAt,
+                ]);
+                Log::info("Consumo creado para proyecto: {$projectId}, material: {$materialId}");
+            }
+        }
+
+        // Eliminar consumos obsoletos (materiales que ya no están en el reporte)
+        if (!empty($existingConsumptions)) {
+            foreach ($existingConsumptions as $obsoleteConsumption) {
+                $obsoleteConsumption->delete();
+                Log::info("Consumo eliminado para material obsoleto: {$obsoleteConsumption->quote_warehouse_detail_id}");
+            }
         }
     }
 
