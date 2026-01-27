@@ -11,9 +11,9 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Container\Attributes\Auth;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
 
 class WarehouseResource extends Resource
@@ -23,7 +23,12 @@ class WarehouseResource extends Resource
     protected static ?string $pluralModelLabel = 'Almacenes';
 
     protected static ?string $navigationIcon = 'heroicon-o-archive-box';
-
+    public static function canAccess(): bool
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        return $user->roles()->whereIn('id', [1, 2, 6])->exists();
+    }
     public static function form(Form $form): Form
     {
         return $form

@@ -74,12 +74,13 @@ class ProjectResource extends Resource
     }
     public static function getEloquentQuery(): Builder
     {
-        // 1. Obtenemos la consulta base
         $query = parent::getEloquentQuery();
 
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        $isSuperUser = $user->roles()->whereIn('id', [1, 3])->exists();
+
+        // Verificación de Superusuario por ID de rol o Nombre (ajusta según prefieras)
+        $isSuperUser = $user->roles()->whereIn('id', [1, 2, 3])->exists();
 
         if ($isSuperUser) {
             return $query;
@@ -92,9 +93,11 @@ class ProjectResource extends Resource
         }
 
         return $query->where(function (Builder $q) use ($employeeId) {
-            $q->whereHas('inspectors', function (Builder $pivotQuery) use ($employeeId) {
-                $pivotQuery->where('employee_id', $employeeId);
-            });
+            // Lógica: Creador del proyecto O Inspector asignado
+            $q->where('employee_id', $employeeId)
+                ->orWhereHas('inspectors', function (Builder $subQuery) use ($employeeId) {
+                    $subQuery->where('employee_id', $employeeId);
+                });
         });
     }
     public static function form(Form $form): Form
@@ -120,6 +123,8 @@ class ProjectResource extends Resource
                                             ->dehydrated()
                                             ->columnSpan(1),
                                     ]),
+                                Forms\Components\Hidden::make('employee_id')
+                                    ->default(fn() => Auth::user()?->employee_id),
 
                                 Grid::make(4)
                                     ->schema([
@@ -921,7 +926,7 @@ class ProjectResource extends Resource
                             ->join('employees', 'visits.quoted_by_id', '=', 'employees.id')
                             ->orderBy('employees.first_name', $direction);
                     })
-                    ->toggleable(isToggledHiddenByDefault: false),
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('status')
                     ->label('Estado')
@@ -992,7 +997,7 @@ class ProjectResource extends Resource
                 TextColumn::make('migo_code')
                     ->label('MIGO')
                     ->placeholder('No definido')
-                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
 
                 // Columnas adicionales del modelo
@@ -1001,7 +1006,7 @@ class ProjectResource extends Resource
                     ->placeholder('No definido')
                     ->suffix(' días')
                     ->numeric()
-                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
 
                 TextColumn::make('task_type')
@@ -1013,35 +1018,35 @@ class ProjectResource extends Resource
                         'CAPEX' => 'warning',
                         default => 'gray',
                     })
-                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
 
                 TextColumn::make('quote_sent_at')
                     ->label('Cotización Enviada')
                     ->placeholder('No definido')
                     ->dateTime('d/m/Y H:i')
-                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
 
                 TextColumn::make('quote_approved_at')
                     ->label('Cotización Aprobada')
                     ->placeholder('No definido')
                     ->dateTime('d/m/Y H:i')
-                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
 
                 TextColumn::make('wo_review_at')
                     ->label('OT en Revisión')
                     ->placeholder('No definido')
                     ->dateTime('d/m/Y H:i')
-                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
 
                 TextColumn::make('wo_completed_at')
                     ->label('OT Finalizado')
                     ->placeholder('No definido')
                     ->dateTime('d/m/Y H:i')
-                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
 
                 TextColumn::make('days_to_completion')
@@ -1049,20 +1054,20 @@ class ProjectResource extends Resource
                     ->placeholder('No definido')
                     ->suffix(' días')
                     ->numeric()
-                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
 
                 TextColumn::make('created_at')
                     ->label('Creado')
                     ->dateTime('d/m/Y H:i')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: false),
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('updated_at')
                     ->label('Actualizado')
                     ->dateTime('d/m/Y H:i')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: false),
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filtersFormColumns(3)
             ->columnToggleFormColumns(3)

@@ -10,16 +10,25 @@ use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Support\Facades\Auth;
 
 class CreateProject extends CreateRecord
 {
     protected static string $resource = ProjectResource::class;
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        // Si hay quote_id en la sesión, úsalo
+        // 1. Lógica para la cotización (Quote)
         if (session()->has('quote_id')) {
             $data['quote_id'] = session('quote_id');
         }
+
+        // 2. Lógica para el creador (Employee)
+        $user = Auth::user();
+
+        if ($user && $user->employee_id) {
+            $data['employee_id'] = $user->employee_id;
+        }
+
         return $data;
     }
     protected function getFormSchema(): array

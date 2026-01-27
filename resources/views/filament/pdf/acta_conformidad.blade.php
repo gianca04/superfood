@@ -393,7 +393,8 @@
                         $logoMime = 'image/png';
                     @endphp
                     @if ($logoData)
-                        <img src="data:{{ $logoMime }};base64,{{ $logoData }}" alt="Logo2" style="height: 80px;">
+                        <img src="data:{{ $logoMime }};base64,{{ $logoData }}" alt="Logo2"
+                            style="height: 80px;">
                     @endif
                 </td>
                 <td class="header-title">
@@ -660,7 +661,7 @@
 
             function cerrarPestana() {
                 window.close();
-                setTimeout(function () {
+                setTimeout(function() {
                     window.history.back();
                 }, 300);
             }

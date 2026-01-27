@@ -366,7 +366,12 @@ class ExcelExportController extends Controller
                 ];
             }
             Log::info('✅ Activos preparados', ['total_assets' => count($assets)]);
+            $descripcion_servicio = $quote?->service_name;
 
+            // Si service_name está vacío o es null, usamos el nombre del proyecto
+            if (empty($descripcion_servicio)) {
+                $descripcion_servicio = $project?->name ?? 'No hay información';
+            }
             // Paso 5: Construir array de datos
             Log::info('🔨 Construyendo array de datos finales...');
             $finalData = [
@@ -378,7 +383,7 @@ class ExcelExportController extends Controller
                 'work_order_number' => $project?->work_order_number ?? '',
                 'request_number' => $project?->request_number ?? '',
                 'service_code' => $project?->service_code ?? '',
-                'descripcion_servicio' => $quote?->project_description ?? $project?->name ?? '',
+                'descripcion_servicio' => $descripcion_servicio,
                 'fecha_inicio' => $project?->start_date?->format('d/m/Y') ?? '',
                 'fecha_fin' => $project?->end_date?->format('d/m/Y') ?? '',
                 'assets' => $assets,
@@ -451,7 +456,8 @@ class ExcelExportController extends Controller
             $sheet->setCellValueExplicit('J7', $client?->document_number ?? '', DataType::TYPE_STRING);
             $sheet->setCellValue('E9', $subClient?->name ?? '');
             $sheet->setCellValue('J9', $subClient?->address ?? '');
-            $sheet->setCellValue('B12', $quote?->correlative ?? 'OT-' . ($project?->id ?? ''));
+            $sheet->setCellValue('B12', $project?->work_order_number ?? '');
+            $sheet->setCellValue('B14', $project?->request_number ?? '');
             $sheet->setCellValue('E12', $quote?->project_description ?? $project?->name ?? '');
             $sheet->setCellValue('E15', $project?->start_date?->format('d/m/Y') ?? '');
             $sheet->setCellValue('K15', $project?->end_date?->format('d/m/Y') ?? '');

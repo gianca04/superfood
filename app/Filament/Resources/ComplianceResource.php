@@ -512,7 +512,8 @@ class ComplianceResource extends Resource
                     ->date('d/m/Y')
                     ->icon('heroicon-o-calendar')
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('project.end_date')
                     ->label('Fin')
@@ -520,7 +521,8 @@ class ComplianceResource extends Resource
                     ->date('d/m/Y')
                     ->icon('heroicon-o-calendar-days')
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('fullname_cliente')
                     ->label('Responsable')
@@ -587,7 +589,8 @@ class ComplianceResource extends Resource
                     ->falseIcon('heroicon-o-x-circle')
                     ->trueColor('success')
                     ->falseColor('danger')
-                    ->toggleable(),
+                    ->toggleable()
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 IconColumn::make('employee_signature')
                     ->label('Firma Empleado')
@@ -596,7 +599,8 @@ class ComplianceResource extends Resource
                     ->falseIcon('heroicon-o-x-circle')
                     ->trueColor('success')
                     ->falseColor('danger')
-                    ->toggleable(),
+                    ->toggleable()
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('created_at')
                     ->label('Creado')

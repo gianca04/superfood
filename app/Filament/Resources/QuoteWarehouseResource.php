@@ -12,6 +12,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 
 class QuoteWarehouseResource extends Resource
 {
@@ -22,7 +23,12 @@ class QuoteWarehouseResource extends Resource
     protected static ?string $singularModelLabel = 'Almacén de cotizaciones';
     protected static ?string $navigationGroup = 'Control de operaciones';
     protected static ?string $navigationIcon = 'heroicon-o-building-storefront';
-
+    public static function canAccess(): bool
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        return $user->roles()->whereIn('id', [1, 2, 6])->exists();
+    }
     public static function form(Form $form): Form
     {
         return $form

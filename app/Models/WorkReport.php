@@ -95,7 +95,6 @@ class WorkReport extends Model
         if (!$this->project_id) {
             return collect();
         }
-
         return DB::table('quote_warehouse_details as qwd')
             ->join('quote_warehouse as qw', 'qwd.quote_warehouse_id', '=', 'qw.id')
             ->join('quotes as q', 'qw.quote_id', '=', 'q.id')

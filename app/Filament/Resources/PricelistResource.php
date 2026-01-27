@@ -12,6 +12,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 
 class PricelistResource extends Resource
 {
@@ -24,6 +25,12 @@ class PricelistResource extends Resource
     protected static ?string $navigationGroup = 'Control de operaciones';
     protected static ?int $navigationSort = 1;
 
+    public static function canAccess(): bool
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        return $user->roles()->whereIn('id', [1, 2])->exists();
+    }
     public static function form(Form $form): Form
     {
         return $form

@@ -63,6 +63,7 @@ class Project extends Model
 
         //Supervisor string:
         'supervisor_name',
+        'employee_id',
     ];
 
     protected $casts = [
@@ -118,12 +119,15 @@ class Project extends Model
 
     public function quotes()
     {
-        return $this->hasMany(\App\Models\Quote::class, 'project_id');
+        return $this->hasMany(Quote::class, 'project_id');
     }
-
+    public function quote()
+    {
+        return $this->hasOne(Quote::class, 'project_id');
+    }
     public function latestQuote(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
-        return $this->hasOne(\App\Models\Quote::class, 'project_id')->latestOfMany();
+        return $this->hasOne(Quote::class, 'project_id')->latestOfMany();
     }
     /**
      * The attributes that should be cast to native types.
@@ -139,28 +143,27 @@ class Project extends Model
         /** @var \App\Models\User $user */
         $user = $user ?? Auth::user();
 
-        // 1. Seguridad base: Si no hay usuario, nadie ve nada.
         if (!$user) {
             return $query->whereRaw('1 = 0');
         }
 
-        // 2. SUPER USUARIOS (Usando Spatie hasRole)
-        // Pasa un array con los NOMBRES de los roles que ven todo.
-        // 'super_admin' es el defecto de Shield, agrega tu rol de gerencia aquí.
+        // 1. Superusuarios ven todo
         if ($user->hasRole(['Administrador', 'Gerencial'])) {
             return $query;
         }
 
-        // 3. RESTO DE USUARIOS (Inspectores, etc.)
         $employeeId = $user->employee_id;
 
         if (!$employeeId) {
             return $query->whereRaw('1 = 0');
         }
 
-        // Filtramos por la asignación en la tabla pivote
-        return $query->whereHas('inspectors', function (Builder $q) use ($employeeId) {
-            $q->where('employee_id', $employeeId);
+        // 2. Filtro: Es el creador O es un inspector asignado
+        return $query->where(function (Builder $q) use ($employeeId) {
+            $q->where('employee_id', $employeeId) // Es el creador
+                ->orWhereHas('inspectors', function (Builder $pivotQuery) use ($employeeId) {
+                    $pivotQuery->where('employee_id', $employeeId); // Está asignado como inspector
+                });
         });
     }
     public function clients()
