@@ -65,7 +65,8 @@ class PricelistResource extends Resource
                 Tables\Columns\TextColumn::make('sat_description')
                     ->searchable()
                     ->sortable()
-                    ->label('DESCRIPCIÓN LINEA SAP DIAR INGENIEROS IIEE BT'),
+                    ->label('Descripción SAP')  // Label más corto
+                    ->limit(50),
                 Tables\Columns\TextColumn::make('priceType.name')
                     ->numeric()
                     ->grow(false)
