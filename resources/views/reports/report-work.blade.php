@@ -391,32 +391,30 @@
 
 
         {{-- MATERIALES/HERRAMIENTAS TABLE --}}
-        {{--
         <table class="data-table">
             <thead>
                 <tr>
-                    <th class="col-name">Materiales/Herramientas</th>
+                    <th class="col-name">Materiales Consumidos</th>
                     <th class="col-unit">Unidad</th>
                     <th class="col-qty">Cantidad</th>
                 </tr>
             </thead>
             <tbody>
-                @if(count($toolsAndMaterials) > 0)
-                    @foreach($toolsAndMaterials as $item)
+                @if(count($consumedItems) > 0)
+                    @foreach($consumedItems as $item)
                         <tr>
-                            <td class="col-name">{{ $item['nombre'] }}</td>
-                            <td class="col-unit">{{ $item['unidad'] }}</td>
-                            <td class="col-qty">{{ $item['cantidad'] }}</td>
+                            <td class="col-name">{{ $item['description'] }} ({{ $item['sat_line'] }})</td>
+                            <td class="col-unit">{{ $item['unit'] }}</td>
+                            <td class="col-qty">{{ $item['quantity'] }}</td>
                         </tr>
                     @endforeach
                 @else
                     <tr>
-                        <td colspan="3" style="text-align: center;">No hay materiales o herramientas registrados.</td>
+                        <td colspan="3" style="text-align: center;">No hay materiales consumidos registrados.</td>
                     </tr>
                 @endif
             </tbody>
         </table>
-        --}}
 
         <!-- PERSONAL TABLE -->
         <table class="data-table">

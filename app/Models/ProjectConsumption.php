@@ -71,12 +71,12 @@ class ProjectConsumption extends Model
     }
 
     /**
-     * Valida si se puede consumir la cantidad especificada sin exceder la cantidad atendida.
-     *
-     * @param int $quoteWarehouseDetailId
-     * @param float $quantity
-     * @return bool
+     * Scope para incluir el registro de pricelist a través de las relaciones.
      */
+    public function scopeWithPricelist($query)
+    {
+        return $query->with('quoteWarehouseDetail.quoteDetail.pricelist');
+    }
     public static function canConsume(int $quoteWarehouseDetailId, float $quantity): bool
     {
         $detail = QuoteWarehouseDetail::find($quoteWarehouseDetailId);

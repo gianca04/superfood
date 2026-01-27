@@ -40,4 +40,12 @@ class Pricelist extends Model
     {
         return $this->hasMany(QuoteDetail::class);
     }
+
+    /**
+     * Scope para incluir los detalles de cotización (items) relacionados.
+     */
+    public function scopeWithItems($query)
+    {
+        return $query->with('quoteDetails');
+    }
 }

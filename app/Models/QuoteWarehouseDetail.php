@@ -82,4 +82,12 @@ class QuoteWarehouseDetail extends Model
     {
         return $this->hasMany(ProjectConsumption::class, 'quote_warehouse_detail_id');
     }
+
+    /**
+     * Scope para incluir el registro de pricelist a través de las relaciones.
+     */
+    public function scopeWithPricelist($query)
+    {
+        return $query->with('quoteDetail.pricelist');
+    }
 }

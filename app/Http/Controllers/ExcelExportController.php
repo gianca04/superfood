@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Compliance;
 use App\Models\Project;
+use App\Models\ProjectConsumption;
 use App\Services\CloudConvertService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -109,6 +110,24 @@ class ExcelExportController extends Controller
             $htmlReports = '';
             foreach ($workReports as $report) {
                 $dataReport = app(\App\Http\Controllers\WorkReportExcelController::class)->prepareDataForBladePdf($report);
+
+                // Agregar información de consumos usando el scope withPricelist
+                $consumptions = ProjectConsumption::where('work_report_id', $report->id)->withPricelist()->get();
+                $consumedItems = [];
+                foreach ($consumptions as $consumption) {
+                    $pricelist = $consumption->quoteWarehouseDetail->quoteDetail->pricelist ?? null;
+                    if ($pricelist) {
+                        $consumedItems[] = [
+                            'sat_line' => $pricelist->sat_line ?? '',
+                            'description' => $pricelist->sat_description ?? '',
+                            'unit' => $pricelist->unit->name ?? '', // Asumiendo que unit tiene name
+                            'quantity' => $consumption->quantity,
+                            'consumed_at' => $consumption->consumed_at?->format('d/m/Y') ?? '',
+                        ];
+                    }
+                }
+                $dataReport['consumedItems'] = $consumedItems;
+
                 $htmlReports .= view('reports.report-work', $dataReport)->render();
             }
 
