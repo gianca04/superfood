@@ -337,7 +337,7 @@ class WorkReportsRelationManager extends RelationManager
                                                     ->columnSpan(1),
 
                                                 Forms\Components\TextInput::make('attended_quantity')
-                                                    ->label('En Almacén')
+                                                    ->label('En stock')
                                                     ->numeric()
                                                     ->readOnly()
                                                     ->extraAttributes(['class' => 'bg-gray-50 font-bold text-primary-600'])
