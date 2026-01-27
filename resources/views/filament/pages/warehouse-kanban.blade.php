@@ -7,21 +7,25 @@
             @foreach ($records as $quoteWarehouse)
                 @php
                     $quote = $quoteWarehouse->quote;
+                    $progress = (float) $quoteWarehouse->progress; // Aseguramos que sea un número
+
+                    // 1. Definimos el color base según tus nuevos rangos
+                    $colorName = match (true) {
+                        $progress <= 40 => 'red',
+                        $progress <= 80 => 'yellow',
+                        $progress > 80 => 'green',
+                        default => 'gray',
+                    };
+
+                    // 2. Definimos el color del status (opcional si lo usas en otra parte)
                     $statusColor = match (strtolower($quoteWarehouse->status)) {
                         'atendido' => 'emerald',
                         'parcial' => 'yellow',
                         'pendiente' => 'red',
                         default => 'gray',
                     };
-                    $progress = $quoteWarehouse->progress;
-                    $progressColor = match (true) {
-                        $progress < 50 => 'red',
-                        $progress >= 50 && $progress < 80 => 'yellow',
-                        $progress >= 80 => 'green',
-                        default => 'gray',
-                    };
 
-                    // Calcular los ítems atendidos
+                    // Lógica de ítems atendidos (se mantiene igual)
                     $itemsAtendidos = $quote->quoteDetails
                         ->filter(function ($detail) use ($quoteWarehouse) {
                             $attendedQuantity = $quoteWarehouse
@@ -69,12 +73,17 @@
                     </div>
 
                     <div class="flex flex-col gap-1.5 mt-auto">
+                        {{-- Barra de progreso --}}
                         <div class="w-full h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                            <div class="h-full bg-{{ $progressColor }}-500 rounded-full"
-                                style="width: {{ $progress }}%"></div>
+                            {{-- Usamos la variable $colorName para construir la clase bg-color-500 --}}
+                            <div class="h-full bg-{{ $colorName }}-500 rounded-full"
+                                style="width: {{ $progress }}%">
+                            </div>
                         </div>
+
                         <div class="flex justify-between text-[10px] font-bold">
-                            <span class="text-{{ $progressColor }}-600">{{ $progress }}%</span>
+                            {{-- Texto del porcentaje con el mismo color --}}
+                            <span class="text-{{ $colorName }}-600">{{ $progress }}%</span>
                             <span class="uppercase text-slate-400">Progreso</span>
                         </div>
                     </div>
