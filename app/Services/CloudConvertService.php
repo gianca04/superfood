@@ -18,12 +18,12 @@ class CloudConvertService
     private bool $isConfigured = false;
     private array $apiKeys = [];
     private int $currentKeyIndex = 0;
-    
+
     /**
      * Cache key para guardar el índice de la última API key que funcionó
      */
     private const CACHE_KEY_INDEX = 'cloudconvert_current_key_index';
-    
+
     /**
      * Tiempo de caché para recordar la última API key usada (24 horas)
      */
@@ -32,23 +32,22 @@ class CloudConvertService
     public function __construct()
     {
         // Cargar todas las API keys disponibles
-        $this->loadApiKeys();
-        
+        //$this->loadApiKeys();
+
         // Recuperar el índice de la última API key que funcionó
         $this->currentKeyIndex = Cache::get(self::CACHE_KEY_INDEX, 0);
-        
+
         // Validar que el índice esté dentro del rango
         if ($this->currentKeyIndex >= count($this->apiKeys)) {
             $this->currentKeyIndex = 0;
         }
-        
+
         // Inicializar con la API key actual
         $this->initializeClient();
     }
 
-    /**
-     * Carga todas las API keys disponibles desde la configuración
-     */
+    /*
+    Carga todas las API keys disponibles desde la configuración
     private function loadApiKeys(): void
     {
         $this->apiKeys = [];
@@ -69,6 +68,7 @@ class CloudConvertService
         
         Log::info('CloudConvert: ' . count($this->apiKeys) . ' API keys cargadas');
     }
+     */
 
     /**
      * Inicializa el cliente con la API key actual
@@ -79,16 +79,16 @@ class CloudConvertService
             $this->isConfigured = false;
             return;
         }
-        
+
         $apiKey = $this->apiKeys[$this->currentKeyIndex] ?? null;
-        
+
         if (!empty($apiKey)) {
             $this->cloudConvert = new CloudConvert([
                 'api_key' => $apiKey,
                 'sandbox' => config('cloudconvert.sandbox', false)
             ]);
             $this->isConfigured = true;
-            
+
             Log::debug('CloudConvert: Usando API key #' . ($this->currentKeyIndex + 1));
         } else {
             $this->isConfigured = false;
@@ -103,28 +103,28 @@ class CloudConvertService
     private function switchToNextApiKey(): bool
     {
         $totalKeys = count($this->apiKeys);
-        
+
         if ($totalKeys <= 1) {
             return false;
         }
-        
+
         // Intentar con la siguiente key
         $nextIndex = ($this->currentKeyIndex + 1) % $totalKeys;
-        
+
         // Si volvimos al inicio, significa que ya probamos todas
         if ($nextIndex === 0 && $this->currentKeyIndex !== 0) {
             Log::warning('CloudConvert: Todas las API keys han sido probadas sin éxito');
             return false;
         }
-        
+
         $this->currentKeyIndex = $nextIndex;
         $this->initializeClient();
-        
+
         // Guardar el nuevo índice en caché
         Cache::put(self::CACHE_KEY_INDEX, $this->currentKeyIndex, self::CACHE_TTL);
-        
+
         Log::info('CloudConvert: Cambiando a API key #' . ($this->currentKeyIndex + 1));
-        
+
         return true;
     }
 
@@ -134,9 +134,9 @@ class CloudConvertService
     private function isCreditsExhaustedError(\Exception $e): bool
     {
         $message = strtolower($e->getMessage());
-        
+
         Log::debug('CloudConvert: Verificando error - ' . $message);
-        
+
         // Patrones comunes de errores por créditos agotados
         $patterns = [
             'credits',
@@ -154,14 +154,14 @@ class CloudConvertService
             'exceeded',
             'exhausted',
         ];
-        
+
         foreach ($patterns as $pattern) {
             if (str_contains($message, $pattern)) {
                 Log::info('CloudConvert: Detectado error de créditos - patrón: ' . $pattern);
                 return true;
             }
         }
-        
+
         // También verificar el código de error HTTP
         if ($e instanceof HttpClientException) {
             $code = $e->getCode();
@@ -170,7 +170,7 @@ class CloudConvertService
                 return true;
             }
         }
-        
+
         return false;
     }
 
@@ -181,7 +181,7 @@ class CloudConvertService
     {
         return $this->isConfigured;
     }
-    
+
     /**
      * Obtiene información sobre las API keys configuradas
      */
@@ -230,7 +230,7 @@ class CloudConvertService
             } catch (\Exception $e) {
                 $lastError = $e;
                 Log::warning('CloudConvert Error con API key #' . ($this->currentKeyIndex + 1) . ': ' . $e->getMessage());
-                
+
                 // Si es un error de créditos, intentar con la siguiente key
                 if ($this->isCreditsExhaustedError($e)) {
                     if (!$this->switchToNextApiKey()) {
@@ -248,7 +248,7 @@ class CloudConvertService
         } while (true);
 
         $this->cleanupTempFile($tempExcelPath);
-        
+
         return [
             'success' => false,
             'content' => null,
@@ -297,7 +297,7 @@ class CloudConvertService
             } catch (\Exception $e) {
                 $lastError = $e;
                 Log::warning('CloudConvert Error con API key #' . ($this->currentKeyIndex + 1) . ': ' . $e->getMessage());
-                
+
                 if ($this->isCreditsExhaustedError($e)) {
                     if (!$this->switchToNextApiKey()) {
                         break;
@@ -353,26 +353,26 @@ class CloudConvertService
             // Subir el archivo - Buscar la tarea de upload
             /** @var \CloudConvert\Models\TaskCollection|null $tasks */
             $tasks = $job->getTasks();
-            
+
             if ($tasks === null) {
                 throw new \Exception('No se pudieron obtener las tareas del job');
             }
-            
+
             if ($tasks->count() === 0) {
                 throw new \Exception('El job no tiene tareas configuradas');
             }
 
             /** @var \CloudConvert\Models\TaskCollection $uploadTasks */
             $uploadTasks = $tasks->whereName('upload-task');
-            
+
             if ($uploadTasks === null || $uploadTasks->count() === 0) {
                 throw new \Exception('No se encontró la tarea de upload');
             }
-            
+
             /** @var \CloudConvert\Models\Task $uploadTask */
             $uploadTask = $uploadTasks[0];
             $filename = basename($filePath);
-            
+
             $this->cloudConvert->tasks()->upload($uploadTask, fopen($filePath, 'r'), $filename);
 
             // Esperar a que termine la conversión
@@ -398,11 +398,10 @@ class CloudConvertService
             }
 
             return $pdfContent;
-            
         } catch (HttpClientException $e) {
             // Capturar errores HTTP del cliente (4xx)
             $errorMessage = $e->getMessage();
-            
+
             // Intentar extraer el mensaje del response body si existe
             try {
                 $response = $e->getResponse();
@@ -415,19 +414,17 @@ class CloudConvertService
             } catch (\Exception $parseError) {
                 // Ignorar errores al parsear
             }
-            
+
             Log::error('CloudConvert HttpClientException: ' . $errorMessage);
             throw new \Exception($errorMessage, $e->getCode(), $e);
-            
         } catch (HttpServerException $e) {
             // Capturar errores HTTP del servidor (5xx)
             Log::error('CloudConvert HttpServerException: ' . $e->getMessage());
             throw new \Exception($e->getMessage(), $e->getCode(), $e);
-            
         } catch (\GuzzleHttp\Exception\ClientException $e) {
             // Capturar errores de Guzzle directamente
             $errorMessage = $e->getMessage();
-            
+
             try {
                 $response = $e->getResponse();
                 if ($response) {
@@ -439,7 +436,7 @@ class CloudConvertService
             } catch (\Exception $parseError) {
                 // Ignorar errores al parsear
             }
-            
+
             Log::error('CloudConvert GuzzleException: ' . $errorMessage);
             throw new \Exception($errorMessage, $e->getCode(), $e);
         }
@@ -522,7 +519,7 @@ class CloudConvertService
     {
         $filename = $filename ?? 'temp_' . uniqid() . '_' . time();
         $tempPath = storage_path('app/' . $filename . '.xlsx');
-        
+
         $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
         $writer->save($tempPath);
 
