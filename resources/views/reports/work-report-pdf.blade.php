@@ -188,6 +188,7 @@
             </tr>
 
             {{-- TABLA DE HERRAMIENTAS Y MATERIALES --}}
+            {{--
             <table class="basic-info-table">
                 <thead>
                     <tr>
@@ -215,6 +216,7 @@
                     @endforelse
                 </tbody>
             </table>
+            --}}
 
             {{-- TABLA DE PERSONAL --}}
             <table class="basic-info-table">

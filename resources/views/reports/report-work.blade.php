@@ -386,7 +386,8 @@
         @endif
 
 
-        <!-- MATERIALES/HERRAMIENTAS TABLE -->
+        {{-- MATERIALES/HERRAMIENTAS TABLE --}}
+        {{--
         <table class="data-table">
             <thead>
                 <tr>
@@ -411,6 +412,7 @@
                 @endif
             </tbody>
         </table>
+        --}}
 
         <!-- PERSONAL TABLE -->
         <table class="data-table">

@@ -390,7 +390,7 @@ class QuoteController extends Controller
             'fecha_ejecucion'   => $quote->execution_date ? $quote->execution_date->format('d/m/Y') : '-',
             'total_general'     => number_format($quote->total_amount, 2),
             'items'             => $itemsData,
-            'categories'   => QuoteCategory::select('id', 'name')->get(),
+            // 'categories'   => QuoteCategory::select('id', 'name')->get(),
         ]);
     }
     public function getStats()

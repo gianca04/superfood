@@ -29,18 +29,20 @@ class WorkReportConsolidatedService
         $excelController = app(\App\Http\Controllers\WorkReportExcelController::class);
 
         // 3. Inicializar contenedores para el consolidado
-        $allToolsAndMaterials = [];
+        // $allToolsAndMaterials = [];
         $allPersonnel = [];
         $totalHoursConsolidated = 0;
 
         foreach ($workReports as $report) {
             // Procesar Herramientas y Materiales
+            /*
             // Se asume que $report->tools y $report->materials son arrays (o json casted)
             $processedTools = $excelController->processToolsAndMaterials(
                 $report->tools ?? [],
                 $report->materials ?? []
             );
             $allToolsAndMaterials = array_merge($allToolsAndMaterials, $processedTools);
+            */
 
             // Procesar Personal
             $processedPersonnelData = $excelController->processPersonnelForPdf(
@@ -63,7 +65,7 @@ class WorkReportConsolidatedService
             'workReports' => $workReports,
             'allPhotos' => $allPhotos,
             'generatedAt' => now(),
-            'toolsAndMaterials' => $allToolsAndMaterials, // Variable corregida
+            // 'toolsAndMaterials' => $allToolsAndMaterials, // Variable corregida
             'personnelList' => $allPersonnel,             // Variable corregida
             'totalHours' => $totalHoursConsolidated        // Dato extra útil
         ]);

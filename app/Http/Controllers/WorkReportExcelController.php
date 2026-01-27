@@ -279,10 +279,13 @@ class WorkReportExcelController extends Controller
         $conclusions = $this->cleanHtmlToText($workReport->conclusions ?? '');
 
         // Procesar herramientas y materiales
+        /*
         $toolsAndMaterials = $this->processToolsAndMaterials(
             $workReport->tools ?? [],
             $workReport->materials ?? []
         );
+        */
+        $toolsAndMaterials = []; // Temporalmente vacío mientras se comenta la lógica
 
         // Procesar personal con nombres y cargos
         $personnelData = $this->processPersonnelForPdf($workReport->personnel ?? []);
@@ -309,20 +312,14 @@ class WorkReportExcelController extends Controller
             'workToDo' => $workToDo ?: 'N/A',
             'conclusions' => $conclusions ?: 'N/A',
             'suggestions' => $suggestions ?: 'N/A',
-            'toolsAndMaterials' => $toolsAndMaterials,
+            // 'toolsAndMaterials' => $toolsAndMaterials,
             'personnel' => $personnelData['personnel'],
             'totalHours' => $personnelData['totalHours'],
             'logoBase64' => $logoBase64,
         ];
     }
 
-    /**
-     * Procesa y combina herramientas y materiales en un solo array
-     *
-     * @param array $tools Array de herramientas [{"herramienta":"...","unidad":"...","cantidad":"..."}]
-     * @param array $materials Array de materiales [{"material":"...","unidad":"...","cantidad":"..."}]
-     * @return array Array combinado con estructura uniforme
-     */
+    /*
     public function processToolsAndMaterials(array $tools, array $materials): array
     {
         $combined = [];
@@ -347,6 +344,7 @@ class WorkReportExcelController extends Controller
 
         return $combined;
     }
+    */
 
     /**
      * Procesa el array de personal resolviendo nombres de empleados y cargos

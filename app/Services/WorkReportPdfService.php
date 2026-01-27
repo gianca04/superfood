@@ -117,10 +117,13 @@ class WorkReportPdfService
     public function prepareViewData(WorkReport $workReport): array
     {
         // Procesar herramientas y materiales (JSON -> array estructurado)
+        /*
         $toolsAndMaterials = $this->processToolsAndMaterials(
             $workReport->tools ?? [],
             $workReport->materials ?? []
         );
+        */
+        $toolsAndMaterials = []; // Temporalmente vacío mientras se comenta la lógica
 
         // Procesar personal con nombres y cargos resueltos
         $personnelData = $this->processPersonnelForPdf($workReport->personnel ?? []);
@@ -132,19 +135,13 @@ class WorkReportPdfService
             'photos' => $workReport->photos,
             'generatedAt' => now(),
             // Nuevos campos procesados
-            'toolsAndMaterials' => $toolsAndMaterials,
+            // 'toolsAndMaterials' => $toolsAndMaterials,
             'personnelList' => $personnelData['personnel'],
             'totalHours' => $personnelData['totalHours'],
         ];
     }
 
-    /**
-     * Procesa y combina herramientas y materiales en un solo array
-     *
-     * @param array $tools Array de herramientas [{"herramienta":"...","unidad":"...","cantidad":"..."}]
-     * @param array $materials Array de materiales [{"material":"...","unidad":"...","cantidad":"..."}]
-     * @return array Array combinado con estructura uniforme
-     */
+    /*
     private function processToolsAndMaterials(array $tools, array $materials): array
     {
         $combined = [];
@@ -171,6 +168,7 @@ class WorkReportPdfService
 
         return $combined;
     }
+    */
 
     /**
      * Procesa el array de personal resolviendo nombres de empleados y cargos

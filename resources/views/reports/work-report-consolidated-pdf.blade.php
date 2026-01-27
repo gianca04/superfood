@@ -234,6 +234,7 @@
         @endif
 
         {{-- TABLA DE HERRAMIENTAS Y MATERIALES --}}
+        {{--
         <table class="basic-info-table">
             <thead>
                 <tr>
@@ -261,6 +262,7 @@
                 @endforelse
             </tbody>
         </table>
+        --}}
 
         <table class="basic-info-table">
             <thead>
