@@ -403,7 +403,12 @@
                 @if(count($consumedItems) > 0)
                     @foreach($consumedItems as $item)
                         <tr>
-                            <td class="col-name">{{ $item['description'] }} ({{ $item['sat_line'] }})</td>
+                            <td class="col-name">
+                                {{ $item['description'] }}
+                                @if(!empty($item['sat_line']))
+                                    ({{ $item['sat_line'] }})
+                                @endif
+                            </td>
                             <td class="col-unit">{{ $item['unit'] }}</td>
                             <td class="col-qty">{{ $item['quantity'] }}</td>
                         </tr>

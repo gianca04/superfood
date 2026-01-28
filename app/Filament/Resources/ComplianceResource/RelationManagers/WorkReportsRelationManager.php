@@ -198,7 +198,7 @@ class WorkReportsRelationManager extends RelationManager
                                 // INICIO DE INPUT DE HORA DE INICIO
                                 Forms\Components\TimePicker::make('start_time')
                                     ->label('Hora de inicio')
-                                    
+
                                     ->seconds(false)
                                     ->displayFormat(format: 'H:i')
                                     ->helperText('Selecciona la hora de inicio del trabajo'),
@@ -722,10 +722,8 @@ class WorkReportsRelationManager extends RelationManager
                     // Acción de Borrar al final (por seguridad y convención)
                     Tables\Actions\DeleteAction::make(),
                 ])
-                    ->icon('heroicon-m-ellipsis-vertical') // Icono clásico de menú
-                    ->tooltip('Acciones')
+                    ->icon('heroicon-m-ellipsis-vertical')
                     ->color('gray')
-                    ->button() // Opcional: convierte el grupo en un botón con texto si prefieres
             ]);
     }
 }
