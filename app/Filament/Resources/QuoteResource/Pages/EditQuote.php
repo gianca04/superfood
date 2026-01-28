@@ -7,6 +7,7 @@ use App\Models\Client;
 use App\Models\PriceType;
 use App\Models\Quote;
 use App\Models\QuoteCategory;
+use App\Filament\Resources\ProjectResource;
 use Filament\Resources\Pages\Page;
 use Illuminate\Support\Collection;
 
@@ -26,6 +27,7 @@ class EditQuote extends Page
     public Collection $quoteCategories;
     public Collection $clients;
     public Collection $priceTypes;
+    public ?string $projectUrl = null;
 
     public function mount(int | string $record): void
     {
@@ -33,9 +35,17 @@ class EditQuote extends Page
         // dd('EditQuote mount reached', $record);
         $this->quoteRecord = Quote::with([
             'subClient',
+            'quoteDetails' => function ($query) {
+                $query->orderBy('line', 'asc');
+            },
             'quoteDetails.pricelist.unit',
             'quoteDetails.pricelist.priceType'
         ])->findOrFail($record);
+
+        if ($this->quoteRecord->project_id) {
+            $this->projectUrl = ProjectResource::getUrl('edit', ['record' => $this->quoteRecord->project_id]);
+        }
+
 
         $this->record = $this->quoteRecord->toArray();
 
