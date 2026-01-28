@@ -52,6 +52,7 @@ class QuoteDetail extends Model
         'quantity',
         'unit_price',
         'comment',
+        'line',
     ];
 
     /**

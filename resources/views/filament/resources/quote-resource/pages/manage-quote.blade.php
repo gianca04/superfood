@@ -112,6 +112,11 @@
                 startX: 0,
                 startWidth: 0,
 
+                // Drag and Drop State
+                draggingItem: null,
+                draggingSection: null,
+                draggingIndex: null,
+
                 startResize(column, event) {
                     this.resizing = column;
                     this.startX = event.pageX;
@@ -136,6 +141,38 @@
 
                     document.addEventListener('mousemove', moveHandler);
                     document.addEventListener('mouseup', upHandler);
+                },
+
+                // Drag and Drop Handlers
+                dragStart(sectionKey, index) {
+                    this.draggingItem = this.items[sectionKey][index];
+                    this.draggingSection = sectionKey;
+                    this.draggingIndex = index;
+                    console.log('Drag start:', sectionKey, index);
+                },
+
+                dragOver(event) {
+                    // Necessary to allow dropping
+                    // event.preventDefault(); // Handled in view
+                    return false;
+                },
+
+                dragDrop(sectionKey, targetIndex) {
+                    // Only allow dropping within the same section for now
+                    if (this.draggingSection !== sectionKey || this.draggingIndex === null) return;
+
+                    const items = this.items[sectionKey];
+                    const itemToMove = items[this.draggingIndex];
+
+                    // Remove from old position
+                    items.splice(this.draggingIndex, 1);
+                    // Insert at new position
+                    items.splice(targetIndex, 0, itemToMove);
+
+                    // Reset state
+                    this.draggingItem = null;
+                    this.draggingSection = null;
+                    this.draggingIndex = null;
                 },
 
                 // Items per section
@@ -255,6 +292,7 @@
                         if (existingQuote.quote_details && existingQuote.quote_details.length > 0) {
                             existingQuote.quote_details.forEach(detail => {
                                 const item = {
+                                    _uid: Math.random().toString(36).substr(2, 9), // Unique ID for Drag & Drop
                                     code: detail.pricelist?.sat_line || '',
                                     description: detail.pricelist?.sat_description || detail.description || '',
                                     comment: detail.comment || '',
@@ -470,6 +508,7 @@
                 addSelectedItems() {
                     this.searchModal.selectedItems.forEach(result => {
                         this.items[this.searchModal.section].push({
+                            _uid: Math.random().toString(36).substr(2, 9),
                             code: result.code,
                             description: result.description,
                             comment: '',
@@ -644,6 +683,7 @@
                 // Items
                 selectItem(result) {
                     this.items[this.searchModal.section].push({
+                        _uid: Math.random().toString(36).substr(2, 9),
                         code: result.code,
                         description: result.description,
                         comment: '', // Campo de comentario editable

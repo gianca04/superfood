@@ -101,12 +101,21 @@
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-gray-700/50">
-                <template x-for="(item, index) in items[section.key]" :key="index">
-                    <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 group">
+                <template x-for="(item, index) in items[section.key]" :key="item._uid">
+                    <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 group transition-all" draggable="true"
+                        @dragstart="dragStart(section.key, index)" @dragover.prevent="dragOver($event)"
+                        @drop="dragDrop(section.key, index)"
+                        :class="{ 'opacity-25 bg-emerald-50': draggingItem === item && draggingSection === section.key }">
 
                         {{-- # --}}
-                        <td class="px-2 py-2 text-center text-gray-400 align-top border-r border-gray-100 dark:border-gray-700/50"
-                            x-text="index + 1"></td>
+                        {{-- # / Drag Handle --}}
+                        <td
+                            class="px-2 py-2 text-center align-top border-r border-gray-100 dark:border-gray-700/50 cursor-grab active:cursor-grabbing text-gray-400 hover:text-emerald-600">
+                            <div class="flex items-center justify-center gap-1">
+                                <span class="text-base material-symbols-outlined">drag_indicator</span>
+                                <span class="text-[10px]" x-text="index + 1"></span>
+                            </div>
+                        </td>
 
                         {{-- Línea --}}
                         <td class="px-2 py-2 align-top border-r border-gray-100 dark:border-gray-700/50">

@@ -38,6 +38,13 @@
             </div>
         </div>
         <div class="flex items-center gap-2">
+            @if(isset($projectUrl) && $projectUrl)
+                <a href="{{ $projectUrl }}" target="_blank"
+                    class="hidden sm:inline-flex items-center gap-1 px-2 py-1 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-200">
+                    <span class="text-sm material-symbols-outlined">open_in_new</span>
+                    Ir al Proyecto
+                </a>
+            @endif
             <span class="hidden sm:inline text-xs font-medium text-gray-400"
                 x-text="sidebarOpen ? 'Ocultar' : 'Datos del proyecto'"></span>
             <span

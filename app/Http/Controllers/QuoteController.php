@@ -112,6 +112,7 @@ class QuoteController extends Controller
                         'unit_price' => $unitPrice,
                         'subtotal' => $subtotal,
                         'comment' => $item['comment'] ?? null,
+                        'line' => $item['line'] ?? null,
                     ]);
                 }
 
@@ -220,6 +221,7 @@ class QuoteController extends Controller
                             'unit_price' => $unitPrice,
                             'subtotal' => $subtotal,
                             'comment' => $item['comment'] ?? null,
+                            'line' => $item['line'] ?? null,
                         ]);
                     }
                 }
