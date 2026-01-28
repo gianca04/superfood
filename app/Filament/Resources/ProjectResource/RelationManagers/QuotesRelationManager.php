@@ -10,13 +10,19 @@ use Filament\Tables\Table;
 class QuotesRelationManager extends RelationManager
 {
     protected static string $relationship = 'quotes';
+    protected static ?string $title = 'Cotizaciones';
 
     public function table(Table $table): Table
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('service_name')->label('Servicio'),
-                Tables\Columns\TextColumn::make('request_number')->label('N° Solicitud'),
+                Tables\Columns\TextColumn::make('request_number')->label('ID Cotización'),
+                Tables\Columns\TextColumn::make('service_name')
+                    ->label('Servicio')
+                    ->getStateUsing(fn($record) => $record->project->name ?? ''),
+                Tables\Columns\TextColumn::make('')
+                    ->label('N° Solicitud')
+                    ->getStateUsing(fn($record) => $record->project->request_number ?? ''),
                 Tables\Columns\TextColumn::make('status')->label('Estado'),
                 Tables\Columns\TextColumn::make('quote_date')->label('Fecha Cotización')->date('d/m/Y'),
             ])
