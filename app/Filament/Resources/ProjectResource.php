@@ -49,8 +49,8 @@ use Maatwebsite\Excel\Facades\Excel;
 class ProjectResource extends Resource
 {
     use Translatable;
-    protected static ?string $pluralModelLabel = 'Proyectos';
-    protected static ?string $modelLabel = 'Proyecto';
+    protected static ?string $pluralModelLabel = 'Solicitudes de trabajo';
+    protected static ?string $modelLabel = 'Solicitud de trabajo';
     protected static ?string $model = Project::class;
     protected static ?string $navigationGroup = 'Control de operaciones';
     protected static ?string $navigationIcon = 'heroicon-o-puzzle-piece';

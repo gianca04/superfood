@@ -13,7 +13,7 @@ class QuoteExportController extends Controller
     public function exportPdf(Quote $quote)
     {
         // 1. Cargar relaciones
-        $quote->load(['employee', 'subClient', 'quoteCategory', 'quoteDetails.pricelist.unit']);
+        $quote->load(['employee', 'subClient', 'quoteCategory', 'quoteDetails.pricelist.unit',  'project']);
 
         // 2. Preparar datos (misma lógica que el preview)
         $ceco = $quote->subClient->ceco ?? $quote->ceco ?? '----------';
@@ -52,11 +52,11 @@ class QuoteExportController extends Controller
             'original_id'       => $quote->id,
             'quote_id'          => $formattedId,
             'numero_cotizacion' => $quote->request_number,
-            'servicio'          => $quote->service_name ?? $quote->quoteCategory->name ?? 'Sin servicio',
+            'servicio'          => $quote->project->name ?? $quote->quoteCategory->name ?? 'Sin servicio',
             'ruc_empresa'       => '20539249640',
             'empresa_nombre'    => 'SAT INDUSTRIALES',
             'cotizado_por'      => $quote->employee ? ($quote->employee->first_name . ' ' . $quote->employee->last_name) : 'No asignado',
-            'n_solicitud'       => $quote->request_number,
+            'n_solicitud'       => $quote->project ? $quote->project->request_number : '',
             'cliente'           => $quote->subClient->name ?? 'Sin cliente',
             'jefe_energia'      => $quote->energy_sci_manager ?? '-',
             'fecha_cotizacion'  => $quote->quote_date ? $quote->quote_date->format('d/m/Y') : '-',
@@ -94,19 +94,19 @@ class QuoteExportController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
 
         // Cargar relaciones necesarias
-        $quote->load(['employee', 'subClient', 'quoteCategory', 'quoteDetails.pricelist.unit']);
+        $quote->load(['employee', 'subClient', 'quoteCategory', 'quoteDetails.pricelist.unit', 'project']);
 
         // Formatear el ID
         $formattedId = str_pad($quote->id, 5, '0', STR_PAD_LEFT);
 
         // Asignar datos a celdas principales
         $sheet->setCellValue('H1', $formattedId);
-        $sheet->setCellValue('C3', $quote->service_name ?? ($quote->quoteCategory->name ?? ''));
+        $sheet->setCellValue('C3', $quote->project->name ?? ($quote->quoteCategory->name ?? ''));
         $sheet->setCellValue('E3', $quote->request_number ?? '');
         $sheet->setCellValue('E4', $quote->subClient->name ?? '');
         $sheet->setCellValue('H3', $quote->quoteCategory->name ?? '');
         $sheet->setCellValue('H4', $quote->subClient->ceco ?? $quote->ceco ?? '');
-        $sheet->setCellValue('C6', $quote->employee ? ($quote->employee->fullname ?? ($quote->employee->first_name . ' ' . $quote->employee->last_name)) : '');
+        $sheet->setCellValue('C6', $quote->employee ? ($quote->employee ? explode(' ', trim($quote->employee->first_name))[0] . ' ' . explode(' ', trim($quote->employee->last_name))[0] : '') : '');
         $sheet->setCellValue('E5', $quote->energy_sci_manager ?? '');
         $sheet->setCellValue('E6', $quote->quote_date ? $quote->quote_date->format('d/m/Y') : '');
         $sheet->setCellValue('H5', $quote->execution_date ? $quote->execution_date->format('d/m/Y') : '');
@@ -149,8 +149,8 @@ class QuoteExportController extends Controller
                     $sheet->setCellValue("D{$currentRow}", $detail->comment ?? '');
                     $sheet->setCellValue("E{$currentRow}", $detail->pricelist->unit->name ?? 'UND');
                     $sheet->setCellValue("F{$currentRow}", $detail->quantity);
-                    $sheet->setCellValue("G{$currentRow}", 'S/. ' . number_format($detail->unit_price, 2));
-                    $sheet->setCellValue("H{$currentRow}", 'S/. ' . number_format($detail->subtotal, 2));
+                    $sheet->setCellValue("G{$currentRow}", 'S/ ' . number_format($detail->unit_price, 2));
+                    $sheet->setCellValue("H{$currentRow}", 'S/ ' . number_format($detail->subtotal, 2));
                     // Estilo Calibri 11 y ajuste de texto
                     $sheet->getStyle("A{$currentRow}:H{$currentRow}")->getFont()->setName('Calibri')->setSize(11);
                     $sheet->getStyle("A{$currentRow}:H{$currentRow}")->getAlignment()->setWrapText(true);

@@ -334,7 +334,8 @@ class QuoteController extends Controller
             'employee',
             'subClient',
             'quoteCategory',
-            'quoteDetails.pricelist.unit'
+            'quoteDetails.pricelist.unit',
+            'project',
         ]);
         $ceco = $quote->subClient->ceco ?? $quote->ceco ?? '----------';
         // 1. Agrupamos los detalles por el tipo de ítem
@@ -377,11 +378,11 @@ class QuoteController extends Controller
             'original_id'       => $quote->id,
             'quote_id'          => $formattedId,
             'numero_cotizacion' => $quote->request_number,
-            'servicio'          => $quote->service_name ?? $quote->quoteCategory->name ?? 'Sin servicio',
+            'servicio'          => $quote->project->name ?? $quote->quoteCategory->name ?? 'Sin servicio',
             'ruc_empresa'       => '20539249640',
             'empresa_nombre'    => 'SAT INDUSTRIALES',
             'cotizado_por'      => $quote->employee ? ($quote->employee->first_name . ' ' . $quote->employee->last_name) : 'No asignado',
-            'n_solicitud'       => $quote->request_number,
+            'n_solicitud'       => $quote->project ? $quote->project->request_number : '',
             'cliente'           => $quote->subClient->name ?? 'Sin cliente',
             'jefe_energia'      => $quote->energy_sci_manager ?? '-',
             'fecha_cotizacion'  => $quote->quote_date ? $quote->quote_date->format('d/m/Y') : '-',
