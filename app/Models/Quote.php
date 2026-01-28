@@ -54,7 +54,7 @@ class Quote extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'service_name',
+        // 'service_name', // Removed as per refactor
         'request_number',
         'project_id',
         'employee_id',
@@ -184,7 +184,9 @@ class Quote extends Model
     {
         return $query->where(function ($q) use ($search) {
             $q->where('request_number', 'LIKE', "%{$search}%")
-                ->orWhere('service_name', 'LIKE', "%{$search}%")
+                ->orWhereHas('project', function ($pq) use ($search) {
+                    $pq->where('name', 'LIKE', "%{$search}%");
+                })
                 ->orWhereHas('subClient', function ($sq) use ($search) {
                     $sq->where('name', 'LIKE', "%{$search}%");
                 })
@@ -203,7 +205,7 @@ class Quote extends Model
             // Creamos el proyecto con los datos mínimos requeridos
             $project = new \App\Models\Project();
             $project->sub_client_id = $data['sub_client_id'] ?? null;
-            $project->name = $data['service_name'] ?? null;
+            $project->name = $data['project_name'] ?? null;
             $project->service_code = null; // Se asigna después
             $project->save();
 

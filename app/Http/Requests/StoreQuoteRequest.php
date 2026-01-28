@@ -34,7 +34,7 @@ class StoreQuoteRequest extends FormRequest
             'quote_category_id' => 'nullable|exists:quote_categories,id',
             'energy_sci_manager' => 'nullable|string|max:255',
             'ceco' => 'nullable|string|max:255',
-            'service_name' => 'required|string|max:255', // Changed to required as per logic
+            'project_name' => 'required|string|max:255', // Changed to required as per logic
             'client_name' => 'nullable|string|max:255',
             'sub_client_name' => 'nullable|string|max:255',
             'quote_date' => 'nullable|date',

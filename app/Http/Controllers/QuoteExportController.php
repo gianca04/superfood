@@ -55,7 +55,7 @@ class QuoteExportController extends Controller
             'servicio'          => $quote->project->name ?? $quote->quoteCategory->name ?? 'Sin servicio',
             'ruc_empresa'       => '20539249640',
             'empresa_nombre'    => 'SAT INDUSTRIALES',
-            'cotizado_por'      => $quote->employee ? ($quote->employee->first_name . ' ' . $quote->employee->last_name) : 'No asignado',
+            'cotizado_por'      => $quote->employee ? $quote->employee->short_name : 'No asignado',
             'n_solicitud'       => $quote->project ? $quote->project->request_number : '',
             'cliente'           => $quote->subClient->name ?? 'Sin cliente',
             'jefe_energia'      => $quote->energy_sci_manager ?? '-',
@@ -106,7 +106,7 @@ class QuoteExportController extends Controller
         $sheet->setCellValue('E4', $quote->subClient->name ?? '');
         $sheet->setCellValue('H3', $quote->quoteCategory->name ?? '');
         $sheet->setCellValue('H4', $quote->subClient->ceco ?? $quote->ceco ?? '');
-        $sheet->setCellValue('C6', $quote->employee ? ($quote->employee ? explode(' ', trim($quote->employee->first_name))[0] . ' ' . explode(' ', trim($quote->employee->last_name))[0] : '') : '');
+        $sheet->setCellValue('C6', $quote->employee ? $quote->employee->short_name : '');
         $sheet->setCellValue('E5', $quote->energy_sci_manager ?? '');
         $sheet->setCellValue('E6', $quote->quote_date ? $quote->quote_date->format('d/m/Y') : '');
         $sheet->setCellValue('H5', $quote->execution_date ? $quote->execution_date->format('d/m/Y') : '');
@@ -114,7 +114,7 @@ class QuoteExportController extends Controller
         $total = $quote->quoteDetails->sum(function ($detail) {
             return $detail->subtotal ?? ($detail->quantity * $detail->unit_price);
         });
-        $sheet->setCellValue('H6', 'S/. ' . number_format($total, 2));
+        $sheet->setCellValue('H6', 'S/ ' . number_format($total, 2));
 
         // --- ITEMS ---
         $groupedDetails = $quote->quoteDetails->groupBy('item_type');

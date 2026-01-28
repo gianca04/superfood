@@ -7,6 +7,7 @@ use App\Models\Client;
 use App\Models\PriceType;
 use App\Models\QuoteCategory;
 use App\Models\Project;
+use App\Filament\Resources\ProjectResource;
 use Filament\Resources\Pages\Page;
 
 use Filament\Resources\Pages\CreateRecord; // Si es para crear un registro
@@ -67,5 +68,20 @@ class CreateQuote extends Page
             $data['project_id'] = $projectId;
         }
         return $data;
+    }
+
+    public function getBreadcrumbs(): array
+    {
+        $breadcrumbs = [];
+
+        $breadcrumbs[QuoteResource::getUrl()] = QuoteResource::getBreadcrumb();
+
+        if ($this->project) {
+            $breadcrumbs[ProjectResource::getUrl('edit', ['record' => $this->project])] = $this->project->name;
+        }
+
+        $breadcrumbs[] = $this->getBreadcrumb();
+
+        return $breadcrumbs;
     }
 }

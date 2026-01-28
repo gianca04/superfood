@@ -142,7 +142,7 @@
                     <div class="quote-card-amount-banner">
                         <p class="text-[10px] uppercase font-bold text-blue-100/80" x-text="quote.service_name"></p>
                         <p class="text-2xl font-black text-white"
-                            x-text="'S/. ' + formatNumber(quote.total_amount || 0)"></p>
+                            x-text="'S/ ' + formatNumber(quote.total_amount || 0)"></p>
                     </div>
 
                     {{-- 4. Información Detallada --}}
@@ -177,8 +177,7 @@
                         {{-- Cotizador --}}
                         <div class="flex items-center gap-2 mt-1">
                             <span class="text-xs text-purple-500 material-symbols-outlined">person</span>
-                            <span class="text-[10px] font-medium text-gray-500 italic"
-                                x-text="quote.employee
+                            <span class="text-[10px] font-medium text-gray-500 italic" x-text="quote.employee
                                         ? ((quote.employee.first_name ? quote.employee.first_name : '') +
                                            (quote.employee.last_name ? ' ' + quote.employee.last_name : '') || 'Sin nombre')
                                         : 'No asignado'"></span>

@@ -24,7 +24,7 @@ class QuoteController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Quote::with(['employee', 'subClient.client', 'quoteCategory', 'quoteDetails']);
+        $query = Quote::with(['employee', 'subClient.client', 'quoteCategory', 'quoteDetails', 'project']);
 
         if ($request->filled('q')) {
             $query->search($request->q);
@@ -141,7 +141,7 @@ class QuoteController extends Controller
                     'showConfirmButton' => false,
                 ]);
 
-                return response()->json($quote->load(['employee', 'subClient', 'quoteCategory', 'details']), 201);
+                return response()->json($quote->load(['employee', 'subClient', 'quoteCategory', 'details', 'project']), 201);
             });
         } catch (\Exception $e) {
             session()->flash('swal', [
@@ -169,7 +169,7 @@ class QuoteController extends Controller
      */
     public function show(Quote $quote): JsonResponse
     {
-        return response()->json($quote->load(['employee', 'subClient', 'quoteCategory', 'details']));
+        return response()->json($quote->load(['employee', 'subClient', 'quoteCategory', 'details', 'project']));
     }
 
     /**
@@ -201,6 +201,11 @@ class QuoteController extends Controller
 
                 // Actualizar la cotización
                 $quote->update($validated);
+
+                // Actualizar nombre del proyecto si se envía
+                if (isset($validated['project_name']) && $quote->project) {
+                    $quote->project->update(['name' => $validated['project_name']]);
+                }
 
                 // Si se envían items, actualizar los detalles
                 if ($request->has('items')) {
@@ -249,7 +254,7 @@ class QuoteController extends Controller
                     'timer' => 2000,
                     'showConfirmButton' => false,
                 ]);
-                return response()->json($quote->load(['employee', 'subClient', 'quoteCategory', 'details']));
+                return response()->json($quote->load(['employee', 'subClient', 'quoteCategory', 'details', 'project']));
             });
         } catch (\Exception $e) {
             session()->flash('swal', [
@@ -383,7 +388,7 @@ class QuoteController extends Controller
             'servicio'          => $quote->project->name ?? $quote->quoteCategory->name ?? 'Sin servicio',
             'ruc_empresa'       => '20539249640',
             'empresa_nombre'    => 'SAT INDUSTRIALES',
-            'cotizado_por'      => $quote->employee ? ($quote->employee->first_name . ' ' . $quote->employee->last_name) : 'No asignado',
+            'cotizado_por'      => $quote->employee ? $quote->employee->short_name : 'No asignado',
             'n_solicitud'       => $quote->project ? $quote->project->request_number : '',
             'cliente'           => $quote->subClient->name ?? 'Sin cliente',
             'jefe_energia'      => $quote->energy_sci_manager ?? '-',

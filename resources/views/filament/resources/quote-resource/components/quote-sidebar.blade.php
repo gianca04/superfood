@@ -86,11 +86,11 @@
             <div class="mb-5">
                 <label class="block mb-1.5 text-[11px] font-bold uppercase tracking-wider text-gray-400">Nombre del
                     Servicio</label>
-                <input x-model="quote.service_name" :readonly="!!projectFromPHP?.name"
+                <input x-model="quote.project_name" :readonly="!!projectFromPHP?.name"
                     :class="{'bg-gray-100 text-gray-500 cursor-not-allowed': !!projectFromPHP?.name}"
                     class="text-sm sidebar-input shadow-inner focus:bg-white transition-all" type="text"
                     placeholder="Ej: Mantenimiento preventivo de equipos..." />
-                <input type="hidden" name="service_name" x-model="quote.service_name">
+                <input type="hidden" name="project_name" x-model="quote.project_name">
             </div>
 
             {{-- Grid de campos en columnas --}}

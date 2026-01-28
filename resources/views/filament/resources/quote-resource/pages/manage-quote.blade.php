@@ -58,7 +58,7 @@
                     request_number: suggestedRequestNumber || projectFromPHP?.service_code ||
                         '', // Si quieres igualar al service_code
                     employee_id: null,
-                    service_name: existingQuote?.service_name || projectFromPHP?.name || '',
+                    project_name: projectFromPHP?.name || existingQuote?.project?.name || '',
                     client_id: projectFromPHP?.client_id || null,
                     sub_client_id: projectFromPHP?.sub_client_id || subClientId || null,
                     quote_category_id: categoriesFromPHP.find(c => c.name === 'II.EE. Baja Tensión')?.id || null,
@@ -241,7 +241,7 @@
                         this.quote.id = existingQuote.id;
                         this.quote.request_number = existingQuote.request_number || '';
                         this.quote.employee_id = existingQuote.employee_id || null;
-                        this.quote.service_name = existingQuote.service_name || '';
+                        this.quote.project_name = existingQuote.project?.name || '';
                         this.quote.client_id = existingQuote.sub_client?.client_id || null;
                         this.quote.sub_client_id = existingQuote.sub_client_id;
                         this.quote.quote_category_id = existingQuote.quote_category_id;
@@ -731,7 +731,7 @@
                             request_number: this.quote.request_number,
                             project_id: this.quote.project_id,
                             employee_id: this.quote.employee_id,
-                            service_name: this.quote.service_name,
+                            project_name: this.quote.project_name,
                             sub_client_id: this.quote.sub_client_id,
                             quote_category_id: this.quote.quote_category_id,
                             energy_sci_manager: this.quote.energy_sci_manager,

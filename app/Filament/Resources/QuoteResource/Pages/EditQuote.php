@@ -39,7 +39,8 @@ class EditQuote extends Page
                 $query->orderBy('line', 'asc');
             },
             'quoteDetails.pricelist.unit',
-            'quoteDetails.pricelist.priceType'
+            'quoteDetails.pricelist.priceType',
+            'project'
         ])->findOrFail($record);
 
         if ($this->quoteRecord->project_id) {
@@ -60,5 +61,20 @@ class EditQuote extends Page
     public function getTitle(): string
     {
         return 'Editar Cotización #' . $this->quoteRecord->id;
+    }
+
+    public function getBreadcrumbs(): array
+    {
+        $breadcrumbs = [];
+
+        $breadcrumbs[QuoteResource::getUrl()] = QuoteResource::getBreadcrumb();
+
+        if ($this->quoteRecord->project) {
+            $breadcrumbs[ProjectResource::getUrl('edit', ['record' => $this->quoteRecord->project])] = $this->quoteRecord->project->name;
+        }
+
+        $breadcrumbs[] = $this->getBreadcrumb();
+
+        return $breadcrumbs;
     }
 }

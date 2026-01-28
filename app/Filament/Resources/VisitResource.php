@@ -177,7 +177,7 @@ class VisitResource extends Resource
 
                                 // Monto
                                 Forms\Components\TextInput::make('amount')
-                                    ->label('Monto (S/.)')
+                                    ->label('Monto (S/)')
                                     ->numeric()
                                     ->prefix('S/ ')
                                     ->prefixIcon('heroicon-m-banknotes')
@@ -310,7 +310,7 @@ class VisitResource extends Resource
                     ->toggleable(),
 
                 Tables\Columns\TextColumn::make('amount')
-                    ->label('Monto (S/.)')
+                    ->label('Monto (S/)')
                     ->money('PEN', divideBy: 1)
                     ->sortable()
                     ->toggleable(),

@@ -201,8 +201,8 @@ class ListPricelists extends ListRecords
             // Validar y limpiar precio unitario
             if (strtolower($precio) === 'n/a') {
                 $precio = null;
-            } elseif (str_starts_with($precio, 'S/.')) {
-                $precio = trim(str_replace(['S/.', ' '], '', $precio));
+            } elseif (str_starts_with($precio, 'S/')) {
+                $precio = trim(str_replace(['S/', ' '], '', $precio));
             }
 
             $estado = 'Omitir';
@@ -346,8 +346,8 @@ class ListPricelists extends ListRecords
             // Validar y limpiar precio unitario
             if (strtolower($precio) === 'n/a') {
                 $precio = null;
-            } elseif (str_starts_with($precio, 'S/.') || str_starts_with($precio, 'S/')) {
-                $precio = trim(str_replace(['S/.', 'S/', ' '], '', $precio));
+            } elseif (str_starts_with($precio, 'S/') || str_starts_with($precio, 'S/')) {
+                $precio = trim(str_replace(['S/', 'S/', ' '], '', $precio));
             }
 
             // Convertir el precio a un número decimal

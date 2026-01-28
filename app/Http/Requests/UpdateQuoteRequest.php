@@ -34,7 +34,7 @@ class UpdateQuoteRequest extends FormRequest
             'quote_category_id' => 'sometimes|nullable|exists:quote_categories,id',
             'energy_sci_manager' => 'sometimes|nullable|string|max:255',
             'ceco' => 'sometimes|nullable|string|max:255',
-            'service_name' => 'sometimes|required|string|max:255',
+            'project_name' => 'sometimes|required|string|max:255',
             'status' => 'sometimes|required|string|in:Pendiente,Enviado,Aprobado,Anulado',
             'quote_date' => 'sometimes|nullable|date',
             'execution_date' => 'sometimes|nullable|date|after_or_equal:quote_date',

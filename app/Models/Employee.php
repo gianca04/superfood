@@ -83,6 +83,13 @@ class Employee extends Model
         return $this->first_name . ' ' . $this->last_name . ' - ' . $this->document_number;
     }
 
+    public function getShortNameAttribute()
+    {
+        $firstName = explode(' ', trim($this->first_name ?? ''))[0] ?? '';
+        $lastName = explode(' ', trim($this->last_name ?? ''))[0] ?? '';
+        return trim("$firstName $lastName");
+    }
+
     // Relación muchos a muchos usando la tabla pivote y el modelo EmployeeProject
     public function employeeProjects()
     {
