@@ -25,6 +25,14 @@ class QuotesRelationManager extends RelationManager
                     ->getStateUsing(fn($record) => $record->project->request_number ?? ''),
                 Tables\Columns\TextColumn::make('status')->label('Estado'),
                 Tables\Columns\TextColumn::make('quote_date')->label('Fecha Cotización')->date('d/m/Y'),
+                Tables\Columns\SelectColumn::make('status')
+                    ->label('Estado')
+                    ->options([
+                        'Pendiente' => 'Pendiente',
+                        'Enviado' => 'Enviado',
+                        'Aprobado' => 'Aprobado',
+                        'Anulado' => 'Anulado',
+                    ]),
             ])
             ->headerActions([
                 Tables\Actions\Action::make('crear_cotizacion')
@@ -54,6 +62,7 @@ class QuotesRelationManager extends RelationManager
                         ->icon('heroicon-o-document-arrow-down')
                         ->url(fn($record) => url("/quotes/{$record->id}/excel"))
                         ->openUrlInNewTab(),
+
                 ])
                     ->icon('heroicon-o-ellipsis-vertical')
                     ->tooltip('Opciones'),

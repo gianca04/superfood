@@ -17,6 +17,15 @@ class QuoteObserver
     /**
      * Handle the Quote "updated" event.
      */
+    public function updated(Quote $quote): void
+    {
+        if ($quote->isDirty('status') && $quote->status === 'Aprobado') {
+            Quote::where('project_id', $quote->project_id)
+                ->where('id', '!=', $quote->id)
+                ->where('status', 'Aprobado')
+                ->update(['status' => 'Anulado']);
+        }
+    }
 
     /**
      * Handle the Quote "deleted" event.

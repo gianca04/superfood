@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int|null $quote_category_id ID de la categoría de cotización
  * @property string|null $energy_sci_manager Nombre del Jefe de Energía/SCI o contacto responsable
  * @property string|null $ceco Centro de Costos asociado a la cotización
- * @property string $status Estado de la cotización (POR HACER, ENVIADO, APROBADO, RECHAZADA)
+ * @property string $status Estado de la cotización (Pendiente, Enviado, Aprobado, Anulado)
  * @property \Illuminate\Support\Carbon|null $quote_date Fecha en que se emite el documento
  * @property \Illuminate\Support\Carbon|null $execution_date Fecha estimada de ejecución del servicio
  * @property \Illuminate\Support\Carbon|null $created_at Fecha de creación del registro
@@ -35,6 +35,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Quote extends Model
 {
     use HasFactory;
+
+    protected static function booted()
+    {
+        static::observe(\App\Observers\QuoteObserver::class);
+    }
 
     /**
      * La tabla asociada al modelo.
