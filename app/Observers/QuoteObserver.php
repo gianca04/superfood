@@ -31,6 +31,13 @@ class QuoteObserver
                 $quote->project->update(['quote_approved_at' => now()]);
             }
         }
+
+        if ($quote->isDirty('status') && $quote->status === 'Enviado') {
+            // Actualizar fecha de envío en el proyecto
+            if ($quote->project) {
+                $quote->project->update(['quote_sent_at' => now()]);
+            }
+        }
     }
 
     /**

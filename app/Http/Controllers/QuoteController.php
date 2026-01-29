@@ -116,7 +116,7 @@ class QuoteController extends Controller
                     ]);
                 }
 
-                }
+
 
                 // Actualizar service_start_date del proyecto con execution_date de la cotización
                 if ($quote->project && $quote->execution_date) {
