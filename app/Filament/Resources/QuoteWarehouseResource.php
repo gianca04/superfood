@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Auth;
 class QuoteWarehouseResource extends Resource
 {
     protected static ?string $model = QuoteWarehouse::class;
-        protected static ?string $title = 'Atención de cotizaciones';
+    protected static ?string $title = 'Atención de cotizaciones';
     protected static ?string $modelLabel = 'Atención de cotizaciones';
     protected static ?string $pluralModelLabel = 'Atención de cotizaciones';
     protected static ?string $singularModelLabel = 'Atención de cotizaciones';

@@ -1,178 +1,90 @@
 <style>
-    @if (!isset($isPdf))
-        @page {
-            size: A4 portrait;
-            margin: 0.5cm;
+    /* Configuración de página y Reset */
+    @page {
+        size: A4 landscape;
+        margin: 0;
+    }
+
+    body {
+        background-color: #f0f0f0;
+        margin: 0;
+        padding: 0;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        font-family: Calibri, 'Trebuchet MS', sans-serif;
+    }
+
+    /* Contenedor Horizontal */
+    .quotation-container {
+        background-color: white;
+        width: 297mm;
+        min-height: 210mm;
+        padding: 10mm 15mm;
+        margin: 20px auto;
+        box-sizing: border-box;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    @media print {
+        body {
+            background: white;
         }
 
-        body {
-            background-color: #f0f0f0;
+        .quotation-container {
             margin: 0;
-            padding: 0;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-            font-family: Calibri, Arial, sans-serif;
+            width: 100%;
+            box-shadow: none;
         }
 
-        .quotation-container {
-            background-color: white;
-            width: 210mm;
-            min-height: 297mm;
-            padding: 15mm 12mm 12mm 12mm;
-            margin: 30px auto;
-            font-family: Calibri, Arial, sans-serif;
-            color: #333;
-            box-sizing: border-box;
-        }
-
-        @media print {
-
-            html,
-            body {
-                width: 210mm;
-                height: 297mm;
-                margin: 0 !important;
-                padding: 0 !important;
-                background: white !important;
-            }
-
-            .no-print {
-                display: none !important;
-            }
-
-            .quotation-container {
-                margin: 0 !important;
-                padding: 0.5cm !important;
-                width: 100% !important;
-                min-height: 0 !important;
-                box-shadow: none !important;
-                border: none !important;
-            }
-        }
-    @else
-        body {
-            background: white !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            font-family: Calibri, Arial, sans-serif !important;
-        }
-
-        .quotation-container {
-            background-color: white !important;
-            width: 100% !important;
-            min-height: unset !important;
-            margin: 0 !important;
-            padding: 0.5cm !important;
-            box-shadow: none !important;
-            border: none !important;
-            font-family: Calibri, Arial, sans-serif !important;
-            color: #333;
-            box-sizing: border-box;
-            page-break-inside: avoid;
-        }
-
-        .action-bar,
         .no-print {
             display: none !important;
         }
-    @endif
+    }
 
+    /* Barra de Acciones */
     .action-bar {
         background: #333;
-        padding: 18px 0 18px 0;
+        padding: 15px;
         display: flex;
         justify-content: center;
-        gap: 28px;
+        gap: 20px;
         position: sticky;
         top: 0;
         z-index: 1000;
-        border-radius: 0 0 12px 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
     }
 
     .btn {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 11px 26px;
-        border-radius: 6px;
+        padding: 10px 20px;
+        border-radius: 5px;
+        color: white;
         text-decoration: none;
-        font-family: Calibri, Arial, sans-serif;
-        font-size: 15px;
         font-weight: bold;
-        cursor: pointer;
+        font-size: 14px;
         border: none;
-        transition: background 0.18s, box-shadow 0.18s;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-        outline: none;
+        cursor: pointer;
     }
 
     .btn-back {
         background: #6c757d;
-        color: white;
-    }
-
-    .btn-back:hover,
-    .btn-back:focus {
-        background: #565e64;
-    }
-
-    .btn-pdf {
-        background: #d9534f;
-        color: white;
-    }
-
-    .btn-pdf:hover,
-    .btn-pdf:focus {
-        background: #b52b27;
     }
 
     .btn-print {
         background: #0275d8;
-        color: white;
     }
 
-    .btn-print:hover,
-    .btn-print:focus {
-        background: #025aa5;
+    .btn-pdf {
+        background: #d9534f;
     }
 
     .btn-excel {
         background: #28a745;
-        color: white;
     }
 
-    .btn-excel:hover,
-    .btn-excel:focus {
-        background: #1e7e34;
-    }
-
-    .btn svg {
-        width: 18px;
-        height: 18px;
-        vertical-align: middle;
-        fill: currentColor;
-    }
-
-    /* Contenedor de la hoja A4 */
-    .quotation-container {
-        background-color: white;
-        width: 210mm;
-        min-height: 297mm;
-        padding: 15mm 12mm 12mm 12mm;
-        margin: 30px auto;
-        /* box-shadow: 0 0 15px rgba(0, 0, 0, 0.1); */
-        font-family: Calibri, Arial, sans-serif;
-        color: #333;
-        box-sizing: border-box;
-        border: none !important;
-    }
-
-    /* Título */
+    /* Estilos de la Cotización - COLOR BLANCO */
     .q-title-section {
-        background-color: #28a745 !important;
-        border: 1px solid #d1d5db;
-        font-family: Calibri, Arial, sans-serif;
+        background-color: #00b050 !important;
+        color: white !important;
+        // border: 1px solid #000; // Quitado para eliminar bordes
     }
 
     .q-title-table {
@@ -181,270 +93,275 @@
     }
 
     .q-title-table td {
-        color: white !important;
-        padding: 8px 15px;
+        padding: 2px 15px;
         font-weight: bold;
-        font-family: Calibri, Arial, sans-serif;
+        // border: 1px solid #000; // Quitado para eliminar bordes
+        color: white !important;
     }
 
-    /* Cuadrícula de Información (Contenido más pequeño) */
+    /* Panel de Información en una sola fila con 3 columnas */
     .q-info-table {
         width: 100%;
         border-collapse: collapse;
-        margin-top: -1px;
         table-layout: fixed;
-        font-family: Calibri, Arial, sans-serif;
+        // border: 1px solid #000; // Quitado para eliminar bordes verticales
     }
 
     .q-info-table td {
-        border: 1px solid #d1d5db;
-        padding: 6px 6px;
-        font-size: 10px;
+        padding: 6px;
+        font-size: 12.5px; // Mantener base
         vertical-align: top;
-        line-height: 1.3;
-        color: #444;
-        font-family: Calibri, Arial, sans-serif;
+        border: none; // Mantener sin bordes
+        /* Quitamos bordes internos de guía */
     }
 
-    .box {
-        border: 1px solid #d1d5db;
-        padding: 1px 5px;
-        background: #f9fafb;
-        min-width: 50px;
+    .q-info-table td:nth-child(1) {
+        font-size: 13.5px; // Aumentar 1px para la primera columna
+    }
+
+    .q-info-table td:nth-child(2) {
+        text-align: right; // Cambiado de left para alinear a la derecha
+    }
+
+    .q-info-table td:nth-child(1) span,
+    .q-info-table td:nth-child(2) span {
+        margin-bottom: 0px; // Cambiado a 0px para bordes pegados
+        display: block;
+    }
+
+    .label-bold {
+        font-weight: bold;
+        width: 115px;
         display: inline-block;
-        font-family: Calibri, Arial, sans-serif;
-    }
-
-    .pink {
-        background-color: #ffdce0 !important;
-    }
-
-    /* TOTAL: Negrita, más grande y sin el cuadrado negro fuerte */
-    .total-label {
-        font-size: 13px;
-        font-weight: bold;
         color: #000;
-        font-family: Calibri, Arial, sans-serif;
     }
 
-    .yellow {
-        background-color: #fff200 !important;
-        border: 1px solid #d1d5db;
-        font-weight: bold;
-        text-align: center;
-        font-size: 15px;
+    .box-data {
+        border: 1px solid #000;
+        padding: 1px 10px;
+        background: white;
+        display: inline-block;
+        min-width: 90px;
         color: #000;
-        padding: 4px;
-        font-family: Calibri, Arial, sans-serif;
     }
 
     .text-blue {
-        color: #0056b3 !important;
+        color: #0000FF !important;
         font-weight: bold;
-        font-family: Calibri, Arial, sans-serif;
     }
 
-    /* TABLA DE ITEMS: Líneas Negras */
+    .pink-cell {
+        background-color: #fce4d6 !important; // Mantener para otros
+    }
+
+    .soft-red {
+        background-color: #ffcccc !important; // Nuevo color rojo suave para Fecha ejec
+    }
+
+    .yellow-total {
+        background-color: #ffff00 !important;
+        font-weight: bold;
+        font-size: 15px;
+        text-align: center;
+        border: 1px solid #000;
+        padding: 3px;
+        color: #000;
+    }
+
+    /* Tabla de Ítems */
     .q-table {
         width: 100%;
         border-collapse: collapse;
-        margin-top: 15px;
-        border: 1px solid #000;
+        margin-top: 10px;
         table-layout: fixed;
-        font-family: Calibri, Arial, sans-serif;
+        border: 1px solid #000;
     }
 
     .q-table th {
-        background-color: #28a745 !important;
-        color: white !important;
+        background-color: #00b050 !important;
+        color: white;
         border: 1px solid #000;
-        padding: 8px 4px;
-        font-size: 12px;
-        font-family: Calibri, Arial, sans-serif;
+        padding: 8px 5px;
+        font-size: 14px;
+        /* Encabezado más grande */
     }
 
     .q-table td {
         border: 1px solid #000;
-        padding: 8px 4px;
+        padding: 4px;
         font-size: 11px;
-        word-wrap: break-word;
-        line-height: 1.2;
         color: #000;
-        font-family: Calibri, Arial, sans-serif;
-    }
-
-    /* Ajuste de anchos para que la tabla ocupe más espacio y no se desacomoden los textos */
-    .q-table th:nth-child(1),
-    .q-table td:nth-child(1) {
-        width: 6%;
-    }
-
-    .q-table th:nth-child(2),
-    .q-table td:nth-child(2) {
-        width: 12%;
-    }
-
-    .q-table th:nth-child(3),
-    .q-table td:nth-child(3) {
-        width: 32%;
-    }
-
-    .q-table th:nth-child(4),
-    .q-table td:nth-child(4) {
-        width: 16%;
-    }
-
-    .q-table th:nth-child(5),
-    .q-table td:nth-child(5) {
-        width: 10%;
-    }
-
-    .q-table th:nth-child(6),
-    .q-table td:nth-child(6) {
-        width: 7%;
-    }
-
-    .q-table th:nth-child(7),
-    .q-table td:nth-child(7) {
-        width: 8%;
-    }
-
-    .q-table th:nth-child(8),
-    .q-table td:nth-child(8) {
-        width: 9%;
     }
 
     .row-category {
         background-color: #c6e0b4 !important;
         font-weight: bold;
-        text-transform: uppercase;
-        font-family: Calibri, Arial, sans-serif;
     }
 
-    .empty-row td {
-        height: 20px;
+    .center {
+        text-align: center;
+    }
+
+    .right {
+        text-align: right;
+    }
+
+    .mini-table {
+        // Remover estilos de mini-table ya que no se usa
+    }
+
+    .mini-table td {
+        padding: 4px;
+        font-size: 12px;
+        border: none; // Por defecto sin borde
+        text-align: center; // Centrar todo el contenido
+    }
+
+    .mini-table .label-cell {
+        font-weight: bold;
+        width: 70px; // Ajustado para mejor ajuste
+        border: none; // Sin borde para etiquetas
+    }
+
+    .mini-table .value-cell {
+        border: 1px solid #000; // Solo bordes para valores
+        min-width: 100px; // Ajustado para consistencia
+        // text-align: center; // Ya centrado globalmente
     }
 </style>
 
 @if (!isset($isPdf))
     <div class="action-bar no-print">
-        <a href="javascript:window.close()" class="btn btn-back">
-            <svg viewBox="0 0 20 20">
-                <path
-                    d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 111.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" />
-            </svg>
-            Volver
-        </a>
-        <button onclick="window.print()" class="btn btn-print">
-            <svg viewBox="0 0 20 20">
-                <path
-                    d="M6 2a2 2 0 00-2 2v2h12V4a2 2 0 00-2-2H6zm10 6H4a2 2 0 00-2 2v5a2 2 0 002 2h1v2a1 1 0 001 1h8a1 1 0 001-1v-2h1a2 2 0 002-2v-5a2 2 0 00-2-2zm-3 9H7v-3h6v3z" />
-            </svg>
-            Imprimir
-        </button>
-        <a href="{{ route('quotes.pdf', $original_id) }}" class="btn btn-pdf">
-            <svg viewBox="0 0 20 20">
-                <path
-                    d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2H6zm2 2h4v4H8V4zm-2 6h8v6H6v-6z" />
-            </svg>
-            Descargar PDF
-        </a>
-        <a href="{{ route('quotes.excel', $original_id) }}" class="btn btn-excel">
-            <svg viewBox="0 0 20 20">
-                <path
-                    d="M17 3a2 2 0 012 2v10a2 2 0 01-2 2H3a2 2 0 01-2-2V5a2 2 0 012-2h14zm-4.293 7.707a1 1 0 00-1.414-1.414L10 10.586 8.707 9.293a1 1 0 00-1.414 1.414L8.586 12l-1.293 1.293a1 1 0 101.414 1.414L10 13.414l1.293 1.293a1 1 0 001.414-1.414L11.414 12l1.293-1.293z" />
-            </svg>
-            Descargar EXCEL
-        </a>
+        <a href="javascript:window.close()" class="btn btn-back">Volver</a>
+        <button onclick="window.print()" class="btn btn-print">Imprimir</button>
+        <a href="{{ route('quotes.pdf', $original_id) }}" class="btn btn-pdf">Descargar PDF</a>
+        <a href="{{ route('quotes.excel', $original_id) }}" class="btn btn-excel">Descargar EXCEL</a>
     </div>
 @endif
 
-<div class="quotation-container">
+@if (isset($isPdf))
+    <style>
+        @page {
+            margin: 5mm;
+        }
+
+        body {
+            background-color: white;
+        }
+
+        .q-table td {
+            font-size: 11px;
+        }
+
+        .q-table th {
+            font-size: 12px;
+        }
+
+        .q-title-table td {
+            padding: 2px 15px;
+        }
+    </style>
+@endif
+
+<div class="quotation-container"
+    @if (isset($isPdf)) style="width: 100%; max-width: 287mm; margin: 0 auto; min-height: auto; padding: 0;" @endif>
     {{-- Header Principal --}}
     <div class="q-title-section">
         <table class="q-title-table">
             <tr>
-                <td align="center" style="font-size: 18px; letter-spacing: 1px;">COTIZACIÓN DE SERVICIOS</td>
-                <td width="22%" align="right" style="border-left: 1px solid #d1d5db;">
-                    N° <span
-                        style="background: #c6e0b4; color: black; padding: 3px 12px; border: 1px solid #d1d5db;">{{ $quote_id }}</span>
+                <td align="center" style="font-size: 18px; letter-spacing: 1px; color: white; padding: 4px 15px;">
+                    COTIZACIÓN DE SERVICIOS
+                </td>
+                <td width="150px" align="center" style="color: white;">N°</td> <!-- Quitado border-left -->
+                <td width="120px" align="center" style="background: #00b050; color: white; font-size: 18px;">
+                    <!-- Quitado border-left -->
+                    {{ $quote_id }}
                 </td>
             </tr>
         </table>
     </div>
 
+
+    {{-- Panel de Información de 3 Columnas --}}
     <table class="q-info-table">
         <tr>
-            <td width="36%">
-                <strong>Servicio :</strong> <span>{{ $servicio }}</span><br>
-                <strong>RUC :</strong> <span style="margin-left: 25px;">{{ $ruc_empresa }}</span><br>
-                <strong>Empresa :</strong> <span class="text-blue">{{ $empresa_nombre }}</span><br>
-                <strong>Cotizado Por :</strong> <span style="text-transform: uppercase;">{{ $cotizado_por }}</span>
+            {{-- Columna 1 --}}
+            <td width="35%">
+                <span class="label-bold" style="margin-bottom: 5px;">Servicio :</span> <strong><u
+                        style="text-decoration-thickness: 2px; text-underline-offset: 2px;">{{ strtoupper($servicio) }}</u></strong><br>
+                <span class="label-bold" style="margin-bottom: 5px;">RUC :</span> {{ $ruc_empresa }}<br>
+                <span class="label-bold" style="margin-bottom: 5px;">Empresa :</span> <span
+                    class="text-blue">{{ $empresa_nombre }}</span><br>
+                <span class="label-bold">Cotizado Por :</span> {{ $cotizado_por }}
             </td>
-            <td width="34%">
-                <strong>N° de Solicitud :</strong> <span class="box">{{ $n_solicitud }}</span><br>
-                <strong>Cliente :</strong> <span class="text-blue">{{ $cliente }}</span><br>
-                <strong>Jefe de Energía y SCI :</strong> <span class="box">{{ $jefe_energia }}</span><br>
-                <strong>Fecha de cotización :</strong> <span class="box pink">{{ $fecha_cotizacion }}</span>
+
+            {{-- Columna 2 (Alineada con Unidad) --}}
+            <td width="40%" style="text-align: right;">
+                <span class="label-bold" style="width: 140px;">N° de Solicitud:</span> <span class="text-blue"
+                    style="border: 1px solid #000; padding: 3px 10px; width: 100px; display: inline-block; text-align: left;">{{ $n_solicitud }}</span><br>
+                <span class="label-bold" style="width: 140px;">Cliente:</span> <span class="text-blue"
+                    style="border: 1px solid #000; padding: 3px 10px; width: 100px; display: inline-block; text-align: left;">{{ $cliente }}</span><br>
+                <span class="label-bold" style="width: 140px;">Jefe de Energía y SCI:</span> <span
+                    style="border: 1px solid #000; padding: 3px 10px; width: 100px; display: inline-block; text-align: left;">{{ $jefe_energia }}</span><br>
+                <span class="label-bold" style="width: 140px;">Fecha de cotización:</span> <span
+                    style="border: 1px solid #000; padding: 3px 10px; width: 100px; display: inline-block; text-align: left;">{{ $fecha_cotizacion }}</span>
             </td>
-            <td width="30%">
-                <strong>Categoria :</strong> <span class="box">{{ $categoria }}</span><br>
-                <strong>CECO :</strong> <span class="box">{{ $ceco }}</span><br>
-                <strong>Fecha ejec :</strong> <span class="box pink">{{ $fecha_ejecucion }}</span><br>
-                <table width="100%" style="margin-top: 10px; border-collapse: collapse;">
-                    <tr>
-                        <td style="border:none; padding:0;" class="total-label">TOTAL :</td>
-                        <td class="yellow" width="75%">S/ {{ $total_general }}</td>
-                    </tr>
-                </table>
+
+            {{-- Columna 3 (Alineada con Subtotal) --}}
+            <td width="25%">
+                <span class="label-bold" style="width: 80px;">Categoria:</span> <span
+                    style="border: 1px solid #000; padding: 3px 10px; font-weight: bold; width: 120px; display: inline-block;">{{ $categoria }}</span><br>
+                <span class="label-bold" style="width: 80px;">CECO:</span> <span
+                    style="border: 1px solid #000; padding: 3px 10px; width: 120px; display: inline-block;">{{ $ceco }}</span><br>
+                <span class="label-bold" style="width: 80px;">Fecha ejec:</span> <span
+                    style="border: 1px solid #000; padding: 3px 10px; background-color: #ffcccc; width: 120px; display: inline-block;">{{ $fecha_ejecucion }}</span><br>
+                <span class="label-bold" style="width: 80px;">Total:</span>
+                <span
+                    style="border: 1px solid #000; padding: 3px 10px; background-color: #ffff00; font-weight: bold; text-align: center; width: 120px; display: inline-block;">S/
+                    {{ $total_general }}</span>
+
             </td>
         </tr>
     </table>
 
-    <table class="q-table">
+    {{-- Tabla de Detalles --}}
+    <table class="q-table" @if (isset($isPdf)) style="table-layout: auto; width: 100%;" @endif>
         <thead>
             <tr>
-                <th width="5%">Item</th>
-                <th width="10%">Línea</th>
-                <th width="36%">Descripción de línea del preciario</th>
-                <th width="15%">Comentario</th>
-                <th width="12%">Unidad</th>
-                <th width="6%">Cant.</th>
-                <th width="8%">P.U</th>
-                <th width="8%">Subtotal</th>
+                <th style="width: 3%;">Item</th>
+                <th style="width: 7%;">Línea</th>
+                <th style="width: 32%;">Descripción de línea del preciario</th>
+                <th style="width: 20%;">Comentario</th>
+                <th style="width: 10%;">Unidad</th>
+                <th style="width: 5%;">Cant.</th>
+                <th style="width: 8%;">P.u</th>
+                <th style="width: 13%;">Subtotal</th>
             </tr>
         </thead>
         <tbody>
             @foreach ($items as $item)
                 @if ($item['tipo'] == 'header')
                     <tr class="row-category">
-                        <td align="center">{{ $item['numero'] }}</td>
-                        <td colspan="7" style="padding-left: 15px;">{{ $item['nombre'] }}</td>
+                        <td class="center">{{ $item['numero'] }}</td>
+                        <td colspan="7" style="padding-left: 10px;">{{ $item['nombre'] }}</td>
                     </tr>
                 @else
                     <tr>
-                        <td align="center"></td>
-                        <td align="center" style="font-size: 9px; font-weight: bold;">{{ $item['linea'] }}</td>
-                        <td style="font-size: 9.5px;">{{ $item['descripcion'] }}</td>
-                        <td style="font-size: 9px;">{{ $item['comentario'] }}</td>
-                        <td align="center" style="font-size: 8.5px;">{{ $item['unidad'] }}</td>
-                        <td align="center" style="font-weight: bold;">
-                            {{ $item['cantidad'] > 0 ? $item['cantidad'] : '' }}</td>
-                        <td align="right" style="white-space: nowrap;">
-                            {{ $item['pu'] > 0 ? 'S/ ' . number_format($item['pu'], 2) : '#N/D' }}
+                        <td class="center"></td>
+                        <td class="center"><strong>{{ $item['linea'] }}</strong></td>
+                        <td style="padding: 5px;">{{ $item['descripcion'] }}</td>
+                        <td style="padding: 5px;">{{ $item['comentario'] }}</td>
+                        <td class="center">{{ $item['unidad'] }}</td>
+                        <td class="center">{{ $item['cantidad'] > 0 ? $item['cantidad'] : '' }}</td>
+                        <td class="center" style="padding-right: 5px;">
+                            {{ $item['pu'] > 0 ? 'S/ ' . number_format($item['pu'], 2) : '' }}
                         </td>
-                        <td align="right" style="font-weight: bold; white-space: nowrap;">
+                        <td class="center" style="padding-right: 5px; font-weight: bold;">
                             S/ {{ number_format($item['subtotal'], 2) }}
                         </td>
                     </tr>
                 @endif
             @endforeach
-            {{-- Elimina la fila vacía extra --}}
-            {{-- <tr class="empty-row">
-                @for ($j = 0; $j < 8; $j++)
-                    <td>&nbsp;</td>
-                @endfor
-            </tr> --}}
         </tbody>
     </table>
 </div>

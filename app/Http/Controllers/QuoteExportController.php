@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Quote;
-use Mpdf\Mpdf;
+use Barryvdh\DomPDF\Facade\Pdf; // Cambiar a DomPDF
 use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
@@ -67,24 +67,11 @@ class QuoteExportController extends Controller
             'items'             => $itemsData,
             'isPdf'             => true, // Marcador para la vista
         ];
-
-        // 3. Generar HTML desde la vista
         $html = view('filament.resources.quote-resource.pages.preview', $data)->render();
-        // 4. Configurar mPDF
-        $mpdf = new Mpdf([
-            'format' => 'A4',
-            'margin_left' => 1,
-            'margin_right' => 1,
-            'margin_top' => 1,
-            'margin_bottom' => 1,
-            'tempDir' => storage_path('app/public')
-        ]);
 
-        $mpdf->SetTitle("Cotización " . $quote->request_number);
-
-        // 5. Descargar archivo
-        $mpdf->WriteHTML($html);
-        return $mpdf->Output("Cotizacion_{$quote->request_number}.pdf", 'D');
+        // Usar DomPDF en lugar de mPDF
+        $pdf = Pdf::loadHtml($html)->setPaper('a4', 'landscape');
+        return $pdf->download("Cotizacion_{$quote->request_number}.pdf");
     }
     public function exportExcel(Quote $quote)
     {
