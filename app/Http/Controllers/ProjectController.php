@@ -40,7 +40,7 @@ class ProjectController extends Controller
                     'name' => $project->name,
                     'start_date' => $project->start_date,
                     'end_date' => $project->end_date,
-                    'tdr' => $project->quote ? $project->quote->TDR : null,
+                    //'tdr' => $project->quote ? $project->quote->TDR : null,
                     'quote_id' => $project->quote ? $project->quote->id : null,
                     'client' => $project->quote && $project->quote->client ? [
                         'id' => $project->quote->client->id,

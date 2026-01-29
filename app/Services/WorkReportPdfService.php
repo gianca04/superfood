@@ -76,7 +76,7 @@ class WorkReportPdfService
             'project:id,name,end_date,sub_client_id,quote_id',
             'project.subClient:id,name,client_id',
             'project.subClient.client:id,business_name,document_number,logo',
-            'project.quote:id,TDR',
+            //'project.quote:id,TDR',
             'photos' => function ($query) {
                 $query->select([
                     'id',

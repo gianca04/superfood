@@ -26,7 +26,7 @@ class QuoteFactory extends Factory
             'client_id' => Client::factory(),
             'employee_id' => Employee::factory(),
             'sub_client_id' => SubClient::factory(),
-            'TDR' => $this->faker->sentence(3),
+            //'TDR' => $this->faker->sentence(3),
             'quote_file' => $this->faker->optional()->word() . '.pdf',
             'correlative' => $this->faker->unique()->regexify('[A-Z]{3}-[0-9]{4}'),
             'contractor' => $this->faker->company(),
@@ -44,7 +44,7 @@ class QuoteFactory extends Factory
      */
     public function accepted(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'status' => 'accepted',
         ]);
     }
@@ -54,7 +54,7 @@ class QuoteFactory extends Factory
      */
     public function pending(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'status' => 'pending',
         ]);
     }
@@ -64,7 +64,7 @@ class QuoteFactory extends Factory
      */
     public function rejected(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'status' => 'rejected',
         ]);
     }
