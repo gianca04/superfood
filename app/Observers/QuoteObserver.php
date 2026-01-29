@@ -20,10 +20,23 @@ class QuoteObserver
     public function updated(Quote $quote): void
     {
         if ($quote->isDirty('status') && $quote->status === 'Aprobado') {
+            // Anular otras cotizaciones aprobadas del mismo proyecto
             Quote::where('project_id', $quote->project_id)
                 ->where('id', '!=', $quote->id)
                 ->where('status', 'Aprobado')
                 ->update(['status' => 'Anulado']);
+
+            // Actualizar fecha de aprobación en el proyecto
+            if ($quote->project) {
+                $quote->project->update(['quote_approved_at' => now()]);
+            }
+        }
+
+        if ($quote->isDirty('status') && $quote->status === 'Enviado') {
+            // Actualizar fecha de envío en el proyecto
+            if ($quote->project) {
+                $quote->project->update(['quote_sent_at' => now()]);
+            }
         }
     }
 

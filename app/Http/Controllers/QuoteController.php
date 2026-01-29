@@ -116,6 +116,15 @@ class QuoteController extends Controller
                     ]);
                 }
 
+
+
+                // Actualizar service_start_date del proyecto con execution_date de la cotización
+                if ($quote->project && $quote->execution_date) {
+                    $quote->project->update([
+                        'service_start_date' => $quote->execution_date
+                    ]);
+                }
+
                 // Crear registro en quote_warehouse si el status es 'Aprobado' o 'APROBADO'
                 if (
                     isset($validated['status']) &&
@@ -205,6 +214,13 @@ class QuoteController extends Controller
                 // Actualizar nombre del proyecto si se envía
                 if (isset($validated['project_name']) && $quote->project) {
                     $quote->project->update(['name' => $validated['project_name']]);
+                }
+
+                // Actualizar service_start_date del proyecto con execution_date de la cotización
+                if ($quote->project && $quote->execution_date) {
+                    $quote->project->update([
+                        'service_start_date' => $quote->execution_date
+                    ]);
                 }
 
                 // Si se envían items, actualizar los detalles

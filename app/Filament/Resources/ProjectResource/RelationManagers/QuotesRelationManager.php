@@ -43,7 +43,7 @@ class QuotesRelationManager extends RelationManager
                         'sub_client_id' => $this->getOwnerRecord()->sub_client_id,
                         'service_code' => $this->getOwnerRecord()->service_code,
                         'name' => $this->getOwnerRecord()->name,
-                    ]))->openUrlInNewTab(),
+                    ])),
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
