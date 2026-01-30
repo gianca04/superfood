@@ -98,7 +98,7 @@ class QuoteController extends Controller
 
                 // 3. Procesar los detalles (items)
                 $items = $request->input('items', []);
-
+                $line = 1; // Inicializar contador de línea
                 foreach ($items as $item) {
                     // Cálculo backend del subtotal
                     $quantity = (float) $item['quantity'];
@@ -112,7 +112,7 @@ class QuoteController extends Controller
                         'unit_price' => $unitPrice,
                         'subtotal' => $subtotal,
                         'comment' => $item['comment'] ?? null,
-                        'line' => $item['line'] ?? null,
+                        'line' => $line++, // Asignar línea incremental
                     ]);
                 }
 
@@ -230,6 +230,7 @@ class QuoteController extends Controller
 
                     // Crear nuevos detalles
                     $items = $request->input('items', []);
+                    $line = 1; // Inicializar contador de línea
                     foreach ($items as $item) {
                         $quantity = (float) $item['quantity'];
                         $unitPrice = (float) $item['unit_price'];
@@ -242,7 +243,7 @@ class QuoteController extends Controller
                             'unit_price' => $unitPrice,
                             'subtotal' => $subtotal,
                             'comment' => $item['comment'] ?? null,
-                            'line' => $item['line'] ?? null,
+                            'line' => $line++, // Asignar línea incremental
                         ]);
                     }
                 }
@@ -382,10 +383,14 @@ class QuoteController extends Controller
                     'nombre' => $label
                 ]);
 
-                // Añadimos los ítems de esta sección
-                foreach ($groupedDetails->get($type) as $detail) {
+                // Ordenar los detalles por 'line' antes de añadirlos
+                $sortedDetails = $groupedDetails->get($type)->sortBy('line');
+
+                // Añadimos los ítems de esta sección ordenados por line
+                foreach ($sortedDetails as $detail) {
                     $itemsData->push([
                         'tipo'        => 'item',
+                        'line'        => $detail->line,  // Añadido para pasar el número de línea
                         'linea'       => $detail->pricelist->sat_line ?? '-',
                         'descripcion' => $detail->pricelist->sat_description ?? 'Sin descripción',
                         'comentario'  => $detail->comment ?? '-',
@@ -400,12 +405,12 @@ class QuoteController extends Controller
         return view('filament.resources.quote-resource.pages.preview', [
             'original_id'       => $quote->id,
             'quote_id'          => $formattedId,
-            'numero_cotizacion' => $quote->request_number,
+            'numero_cotizacion' => $quote->request_number ?? '-',
             'servicio'          => $quote->project->name ?? $quote->quoteCategory->name ?? 'Sin servicio',
             'ruc_empresa'       => '20539249640',
             'empresa_nombre'    => 'SAT INDUSTRIALES',
             'cotizado_por'      => $quote->employee ? $quote->employee->short_name : 'No asignado',
-            'n_solicitud'       => $quote->project ? $quote->project->request_number : '',
+            'n_solicitud'       => $quote->project && $quote->project->request_number ? $quote->project->request_number : '-',  // Ajustado para mostrar '-' si no hay request_number
             'cliente'           => $quote->subClient->name ?? 'Sin cliente',
             'jefe_energia'      => $quote->energy_sci_manager ?? '-',
             'fecha_cotizacion'  => $quote->quote_date ? $quote->quote_date->format('d/m/Y') : '-',

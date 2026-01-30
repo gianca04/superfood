@@ -298,7 +298,7 @@
             {{-- Columna 2 (Alineada con Unidad) --}}
             <td width="40%" style="text-align: right;">
                 <span class="label-bold" style="width: 140px;">N° de Solicitud:</span> <span class="text-blue"
-                    style="border: 1px solid #000; padding: 3px 10px; width: 100px; display: inline-block; text-align: left;">{{ $n_solicitud }}</span><br>
+                    style="border: 1px solid #000; padding: 3px 10px; min-width: 100px; display: inline-block; text-align: left;">{{ $n_solicitud }}</span><br>
                 <span class="label-bold" style="width: 140px;">Cliente:</span> <span class="text-blue"
                     style="border: 1px solid #000; padding: 3px 10px; width: 100px; display: inline-block; text-align: left;">{{ $cliente }}</span><br>
                 <span class="label-bold" style="width: 140px;">Jefe de Energía y SCI:</span> <span
@@ -347,7 +347,7 @@
                     </tr>
                 @else
                     <tr>
-                        <td class="center"></td>
+                        <td class="center">{{ $item['line'] }}</td> <!-- Cambiado para mostrar el número de línea -->
                         <td class="center"><strong>{{ $item['linea'] }}</strong></td>
                         <td style="padding: 5px;">{{ $item['descripcion'] }}</td>
                         <td style="padding: 5px;">{{ $item['comentario'] }}</td>

@@ -73,29 +73,29 @@
 
                 // Sections
                 sections: [{
-                    key: 'viaticos',
-                    title: 'Viáticos',
-                    icon: 'flight_takeoff',
-                    priceTypeId: 3,
-                    bgClass: 'bg-blue-100 dark:bg-blue-900/30',
-                    iconClass: 'text-blue-600 dark:text-blue-400'
-                },
-                {
-                    key: 'suministros',
-                    title: 'Suministros',
-                    icon: 'inventory_2',
-                    priceTypeId: 2,
-                    bgClass: 'bg-amber-100 dark:bg-amber-900/30',
-                    iconClass: 'text-amber-600 dark:text-amber-400'
-                },
-                {
-                    key: 'mano_obra',
-                    title: 'Mano de Obra',
-                    icon: 'engineering',
-                    priceTypeId: 2,
-                    bgClass: 'bg-purple-100 dark:bg-purple-900/30',
-                    iconClass: 'text-purple-600 dark:text-purple-400'
-                },
+                        key: 'viaticos',
+                        title: 'Viáticos',
+                        icon: 'flight_takeoff',
+                        priceTypeId: 3,
+                        bgClass: 'bg-blue-100 dark:bg-blue-900/30',
+                        iconClass: 'text-blue-600 dark:text-blue-400'
+                    },
+                    {
+                        key: 'suministros',
+                        title: 'Suministros',
+                        icon: 'inventory_2',
+                        priceTypeId: 2,
+                        bgClass: 'bg-amber-100 dark:bg-amber-900/30',
+                        iconClass: 'text-amber-600 dark:text-amber-400'
+                    },
+                    {
+                        key: 'mano_obra',
+                        title: 'Mano de Obra',
+                        icon: 'engineering',
+                        priceTypeId: 2,
+                        bgClass: 'bg-purple-100 dark:bg-purple-900/30',
+                        iconClass: 'text-purple-600 dark:text-purple-400'
+                    },
                 ],
 
                 // Column Resizing
@@ -290,6 +290,8 @@
 
                         // Cargar Items
                         if (existingQuote.quote_details && existingQuote.quote_details.length > 0) {
+                            // Ordenar los detalles por 'line' ascendente para respetar el orden visual
+                            existingQuote.quote_details.sort((a, b) => a.line - b.line);
                             existingQuote.quote_details.forEach(detail => {
                                 const item = {
                                     _uid: Math.random().toString(36).substr(2, 9), // Unique ID for Drag & Drop
@@ -699,7 +701,7 @@
                     this.items[sectionKey].splice(index, 1);
                 },
 
-                recalculate() { },
+                recalculate() {},
 
                 // Calculations
                 getSectionSubtotal(sectionKey) {

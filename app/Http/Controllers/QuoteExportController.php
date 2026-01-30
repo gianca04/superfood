@@ -33,9 +33,12 @@ class QuoteExportController extends Controller
         foreach ($sections as $type => $label) {
             if ($groupedDetails->has($type)) {
                 $itemsData->push(['tipo' => 'header', 'numero' => $sectionIndex++, 'nombre' => $label]);
-                foreach ($groupedDetails->get($type) as $detail) {
+                // Ordenar los detalles por 'line' antes de añadirlos
+                $sortedDetails = $groupedDetails->get($type)->sortBy('line');
+                foreach ($sortedDetails as $detail) {
                     $itemsData->push([
                         'tipo'        => 'item',
+                        'line'        => $detail->line,  // Añadido para incluir el número de línea
                         'linea'       => $detail->pricelist->sat_line ?? '-',
                         'descripcion' => $detail->pricelist->sat_description ?? 'Sin descripción',
                         'comentario'  => $detail->comment ?? '-',
@@ -56,7 +59,7 @@ class QuoteExportController extends Controller
             'ruc_empresa'       => '20539249640',
             'empresa_nombre'    => 'SAT INDUSTRIALES',
             'cotizado_por'      => $quote->employee ? $quote->employee->short_name : 'No asignado',
-            'n_solicitud'       => $quote->project ? $quote->project->request_number : '',
+            'n_solicitud'       => $quote->project && $quote->project->request_number ? $quote->project->request_number : '-',  // Ajustado para mostrar '-' si no hay request_number
             'cliente'           => $quote->subClient->name ?? 'Sin cliente',
             'jefe_energia'      => $quote->energy_sci_manager ?? '-',
             'fecha_cotizacion'  => $quote->quote_date ? $quote->quote_date->format('d/m/Y') : '-',
@@ -129,8 +132,11 @@ class QuoteExportController extends Controller
                 $sheet->getStyle("A{$currentRow}:H{$currentRow}")->getFont()->setBold(true)->setName('Calibri')->setSize(11);
 
                 $currentRow++;
-                foreach ($groupedDetails->get($type) as $detail) {
-                    // A: vacío, B: línea, C: descripción, D: comentario, E: unidad, F: cantidad, G: P.U., H: subtotal
+                // Ordenar los detalles por 'line' antes de añadirlos
+                $sortedDetails = $groupedDetails->get($type)->sortBy('line');
+                foreach ($sortedDetails as $detail) {
+                    // A: line, B: línea, C: descripción, D: comentario, E: unidad, F: cantidad, G: P.U., H: subtotal
+                    $sheet->setCellValue("A{$currentRow}", $detail->line);
                     $sheet->setCellValue("B{$currentRow}", $detail->pricelist->sat_line ?? '');
                     $sheet->setCellValue("C{$currentRow}", $detail->pricelist->sat_description ?? '');
                     $sheet->setCellValue("D{$currentRow}", $detail->comment ?? '');
