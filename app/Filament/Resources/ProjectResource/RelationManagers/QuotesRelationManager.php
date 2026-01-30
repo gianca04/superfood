@@ -57,6 +57,11 @@ class QuotesRelationManager extends RelationManager
                         ->icon('heroicon-o-pencil-square')
                         ->url(fn($record) => QuoteResource::getUrl('edit', ['record' => $record->id]))
                         ->openUrlInNewTab(),
+                    Tables\Actions\Action::make('export_pdf')
+                        ->label(label: 'Descargar PDF')
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->url(fn($record) => url("/quotes/{$record->id}/pdf"))
+                        ->openUrlInNewTab(),
                     Tables\Actions\Action::make('export_excel')
                         ->label('Exportar Excel')
                         ->icon('heroicon-o-document-arrow-down')
